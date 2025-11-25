@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router';
 import { X, Home, Users, ShoppingCart, BarChart3, Settings, LogOut } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const navigate = useNavigate();
@@ -13,10 +14,42 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   ];
 
   const logout = async () => {
-    try {
-      navigate('/');
-    } catch (err) {
-      console.error('Logout failed:', err);
+    const result = await Swal.fire({
+      title: 'ยืนยันการออกจากระบบ',
+      text: 'คุณแน่ใจหรือไม่ว่าต้องการออกจากระบบ?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'ยืนยัน',
+      cancelButtonText: 'ยกเลิก'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        // Clear any stored authentication data
+        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
+
+        // Navigate to login page
+        navigate('/');
+
+        // Show success message
+        Swal.fire({
+          title: 'ออกจากระบบสำเร็จ!',
+          text: 'คุณได้ออกจากระบบเรียบร้อยแล้ว',
+          icon: 'success',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      } catch (err) {
+        console.error('Logout failed:', err);
+        Swal.fire({
+          title: 'ข้อผิดพลาด',
+          text: 'เกิดข้อผิดพลาดในการออกจากระบบ',
+          icon: 'error'
+        });
+      }
     }
   };
 
