@@ -9,6 +9,13 @@ import Register from './pages/web/Register'
 import WebLayout from './components/layouts/WebLayout'
 import Contact from './pages/web/Contact'
 
+import AdminLayout from './components/layouts/AdminLayout'
+import Dashboard from './pages/admin/Dashboard'
+import Users from './pages/admin/Users'
+import Orders from './pages/admin/Orders'
+import Analytics from './pages/admin/Analytics'
+import Settings from './pages/admin/Settings'
+
 const App = () => {
   return (
     <BrowserRouter>
@@ -20,6 +27,15 @@ const App = () => {
           <Route path='/booking' element={<Booking />} />
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register />} />
+        </Route>
+
+        <Route element={<AdminLayout />}>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/users" element={<Users />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/settings" element={<Settings />} />
         </Route>
 
       </Routes>
