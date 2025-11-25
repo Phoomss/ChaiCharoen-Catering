@@ -1,8 +1,18 @@
 import React from 'react'
+import Features from '../../components/web/Features'
+import Menu from './../../components/web/Menu';
+import Testimonials from './../../components/web/Testimonials';
+import Hero from './../../components/web/Hero';
+
 
 const Home = () => {
   return (
-    <div>Home</div>
+    <div>
+      <Hero />
+      <Features />
+      <Menu />
+      <Testimonials />
+    </div>
   )
 }
 

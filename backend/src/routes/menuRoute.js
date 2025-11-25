@@ -1,0 +1,14 @@
+const express = require("express");
+const router = express.Router();
+const menuController = require("../controllers/menuController");
+
+router.post("/", menuController.createMenu);
+router.get("/", menuController.getAllMenus);
+router.get("/:id", menuController.getMenuById);
+router.put("/:id", menuController.updateMenu);
+router.delete("/:id", menuController.deleteMenu);
+
+// Soft delete
+router.patch("/:id/toggle", menuController.toggleActive);
+
+module.exports = router;

@@ -117,6 +117,7 @@ const autoCreateAdmin = async () => {
                 title: "Mr.",
                 firstName: "System",
                 lastName: "Admin",
+                email:"admin@admin.com",
                 username: "admin",
                 password: hashedPassword,
                 phone: "0000000000",
