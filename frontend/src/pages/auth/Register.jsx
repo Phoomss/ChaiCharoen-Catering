@@ -1,7 +1,160 @@
-import React from 'react'
-import { Link } from 'react-router'
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router';
+import authService from '../../services/AuthService';
+import Swal from 'sweetalert2';
 
 const Register = () => {
+  const [formData, setFormData] = useState({
+    title: '',
+    firstName: '',
+    lastName: '',
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    phone: '',
+    role: 'customer'
+  });
+
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors({
+        ...errors,
+        [name]: ''
+      });
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    // Validate required fields
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'กรุณากรอกชื่อ';
+    }
+
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'กรุณากรอกนามสกุล';
+    }
+
+    if (!formData.username.trim()) {
+      newErrors.username = 'กรุณากรอกชื่อผู้ใช้';
+    }
+
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'กรุณากรอกเบอร์โทรศัพท์';
+    } else if (!/^[0-9]{10}$/.test(formData.phone)) {
+      newErrors.phone = 'กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง (10 หลัก)';
+    }
+
+    if (!formData.password) {
+      newErrors.password = 'กรุณากรอกรหัสผ่าน';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'รหัสผ่านไม่ตรงกัน';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      // Show validation errors using SweetAlert
+      const errorMessages = Object.values(errors).join('\n');
+      Swal.fire({
+        icon: 'error',
+        title: 'ข้อมูลไม่ครบถ้วน',
+        text: 'กรุณากรอกข้อมูลให้ครบถ้วน',
+        footer: errorMessages
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const registerData = {
+        title: formData.title,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone,
+        role: formData.role
+      };
+
+      const response = await authService.register(registerData);
+
+      if (response.data.success === false || response.status === 400) {
+        Swal.fire({
+          icon: 'error',
+          title: 'การสมัครสมาชิกล้มเหลว',
+          text: response.data.msg || 'เกิดข้อผิดพลาดในการสมัครสมาชิก'
+        });
+      } else {
+        Swal.fire({
+          icon: 'success',
+          title: 'สมัครสมาชิกสำเร็จ!',
+          text: 'คุณได้สมัครสมาชิกเรียบร้อยแล้ว กรุณาเข้าสู่ระบบเพื่อดำเนินการต่อ',
+          confirmButtonText: 'ตกลง'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Clear form after successful registration
+            setFormData({
+              title: '',
+              firstName: '',
+              lastName: '',
+              username: '',
+              email: '',
+              password: '',
+              confirmPassword: '',
+              phone: '',
+              role: 'customer'
+            });
+            // Redirect to login
+            navigate('/login');
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      let errorMessage = 'เกิดข้อผิดพลาดในการเชื่อมต่อ';
+
+      if (error.response) {
+        errorMessage = error.response.data.msg || 'เกิดข้อผิดพลาดในการสมัครสมาชิก';
+      } else if (error.request) {
+        errorMessage = 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้';
+      }
+
+      Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด',
+        text: errorMessage
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-green-50 px-4">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md border border-green-200">
@@ -10,61 +163,132 @@ const Register = () => {
           <p className="text-gray-600 mt-2">กรุณากรอกรายละเอียดเพื่อสร้างบัญชีผู้ใช้</p>
         </div>
 
-        <form className="space-y-6">
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="label text-green-700 font-medium">คำนำหน้า</label>
+              <select
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                className="select select-bordered w-full bg-white border-green-200"
+              >
+                <option value="">เลือกคำนำหน้า</option>
+                <option value="นาย.">นาย</option>
+                <option value="นาง.">นาง</option>
+                <option value="นางสาว.">นางสาว</option>
+                <option value="Mr.">Mr.</option>
+                <option value="Mrs.">Mrs.</option>
+                <option value="Ms.">Ms.</option>
+              </select>
+              {errors.title && <span className="text-red-500 text-sm">{errors.title}</span>}
+            </div>
+
+            <div>
+              <label className="label text-green-700 font-medium">ชื่อ</label>
+              <input
+                type="text"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                placeholder="กรุณากรอกชื่อของคุณ"
+                className="input input-bordered w-full bg-white border-green-200"
+              />
+              {errors.firstName && <span className="text-red-500 text-sm">{errors.firstName}</span>}
+            </div>
+          </div>
+
           <div>
-            <label className="label text-green-700 font-medium">ชื่อ-นามสกุล</label>
+            <label className="label text-green-700 font-medium">นามสกุล</label>
             <input
               type="text"
-              placeholder="กรุณากรอกชื่อ-นามสกุลของคุณ"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              placeholder="กรุณากรอกนามสกุลของคุณ"
               className="input input-bordered w-full bg-white border-green-200"
             />
+            {errors.lastName && <span className="text-red-500 text-sm">{errors.lastName}</span>}
+          </div>
+
+          <div>
+            <label className="label text-green-700 font-medium">ชื่อผู้ใช้</label>
+            <input
+              type="text"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              placeholder="กรุณากรอกชื่อผู้ใช้"
+              className="input input-bordered w-full bg-white border-green-200"
+            />
+            {errors.username && <span className="text-red-500 text-sm">{errors.username}</span>}
           </div>
 
           <div>
             <label className="label text-green-700 font-medium">อีเมล</label>
             <input
               type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
               placeholder="กรุณากรอกอีเมลของคุณ"
               className="input input-bordered w-full bg-white border-green-200"
             />
+            {errors.email && <span className="text-red-500 text-sm">{errors.email}</span>}
           </div>
 
           <div>
             <label className="label text-green-700 font-medium">เบอร์โทรศัพท์</label>
             <input
               type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
               placeholder="กรุณากรอกเบอร์โทรศัพท์ของคุณ"
               className="input input-bordered w-full bg-white border-green-200"
             />
+            {errors.phone && <span className="text-red-500 text-sm">{errors.phone}</span>}
           </div>
 
           <div>
             <label className="label text-green-700 font-medium">รหัสผ่าน</label>
             <input
               type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
               placeholder="กรุณากรอกรหัสผ่านของคุณ"
               className="input input-bordered w-full bg-white border-green-200"
             />
+            {errors.password && <span className="text-red-500 text-sm">{errors.password}</span>}
           </div>
 
           <div>
             <label className="label text-green-700 font-medium">ยืนยันรหัสผ่าน</label>
             <input
               type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
               placeholder="กรุณายืนยันรหัสผ่านของคุณ"
               className="input input-bordered w-full bg-white border-green-200"
             />
+            {errors.confirmPassword && <span className="text-red-500 text-sm">{errors.confirmPassword}</span>}
           </div>
 
           <div className="flex items-center">
-            <input type="checkbox" className="checkbox checkbox-green" />
+            <input type="checkbox" className="checkbox checkbox-green" defaultChecked />
             <label className="label-text ml-2 text-gray-600">
               ฉันยอมรับ <Link to="#" className="text-green-600 underline">เงื่อนไขและข้อตกลง</Link> ทั้งหมด
             </label>
           </div>
 
-          <button type="submit" className="btn bg-green-600 text-white hover:bg-green-700 w-full py-3">
-            ลงทะเบียน
+          <button
+            type="submit"
+            className={`btn bg-green-600 text-white hover:bg-green-700 w-full py-3 ${loading ? 'loading' : ''}`}
+            disabled={loading}
+          >
+            {loading ? 'กำลังลงทะเบียน...' : 'ลงทะเบียน'}
           </button>
         </form>
 
