@@ -61,18 +61,25 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const { login, password } = req.body;
 
-        if (!username || !password) {
+        if (!login || !password) {
             return res.status(400).json({ msg: "กรุณากรอกชื่อผู้ใช้และรหัสผ่าน" });
         }
 
-        const user = await userModel.findOne({ username });
+        // Find by username OR email
+        const user = await userModel.findOne({
+            $or: [
+                { username: login },
+                { email: login }
+            ]
+        });
+
         if (!user) {
             return res.status(404).json({ msg: "ไม่พบผู้ใช้งานนี้" });
         }
 
-        // Check password
+        // Compare password
         const passwordMatch = await comparePassword(password, user.password);
         if (!passwordMatch) {
             return res.status(401).json({ msg: "รหัสผ่านไม่ถูกต้อง" });
@@ -95,6 +102,7 @@ const login = async (req, res) => {
             data: {
                 full_name: `${user.title || ""} ${user.firstName} ${user.lastName}`.trim(),
                 username: user.username,
+                email: user.email,
                 phone: user.phone,
                 role: user.role,
                 token
