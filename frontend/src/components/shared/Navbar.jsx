@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useLocation } from 'react-router';
+import TextScaleButton from './TextScaleButton';
 
 const Navbar = () => {
     const location = useLocation();
@@ -17,9 +18,9 @@ const Navbar = () => {
                 <div className="dropdown">
                     <div tabIndex={0} role="button" className="btn btn-ghost text-green-700 lg:hidden">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none"
-                             viewBox="0 0 24 24" stroke="currentColor">
+                            viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                                  d="M4 6h16M4 12h16M4 18h16" />
+                                d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </div>
 
@@ -61,9 +62,12 @@ const Navbar = () => {
 
             {/* RIGHT */}
             <div className="navbar-end">
-                <Link to="/login" className="btn bg-green-600 text-white hover:bg-green-700">
-                    เข้าสู่ระบบ
-                </Link>
+                <div className="navbar-end flex items-center space-x-4">
+                    <TextScaleButton />
+                    <Link to="/login" className="btn bg-green-600 text-white hover:bg-green-700">
+                        เข้าสู่ระบบ
+                    </Link>
+                </div>
             </div>
         </div>
     );
