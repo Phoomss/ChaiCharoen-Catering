@@ -22,6 +22,7 @@ import Bookings from './pages/admin/Bookings'
 import Locations from './pages/admin/Locations'
 import Reports from './pages/admin/Reports'
 import Chefs from './pages/admin/Chefs'
+import SetPackages from './pages/admin/SetPackages'
 
 const App = () => {
   return (
@@ -48,6 +49,7 @@ const App = () => {
           <Route path="/admin/locations" element={<Locations />} />
           <Route path="/admin/reports" element={<Reports />} />
           <Route path="/admin/analytics" element={<Analytics />} />
+          <Route path="/admin/set-packages" element={<SetPackages />} />
           <Route path="/admin/settings" element={<Settings />} />
         </Route>
 
