@@ -1,16 +1,23 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router';
-import { X, Home, Users, ShoppingCart, BarChart3, Settings, LogOut } from 'lucide-react';
+import { X, Home, Users, ShoppingCart, BarChart3, Settings, LogOut, Utensils, Calendar, Package, Menu, ChefHat, Users2, MapPinned, FileText } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const navigate = useNavigate();
   const sidebarItems = [
-    { path: '/dashboard', icon: Home, label: 'Dashboard' },
-    { path: '/users', icon: Users, label: 'Users' },
-    { path: '/orders', icon: ShoppingCart, label: 'Orders' },
-    { path: '/analytics', icon: BarChart3, label: 'Analytics' },
-    { path: '/settings', icon: Settings, label: 'Settings' },
+    { path: '/admin/dashboard', icon: Home, label: 'Dashboard' },
+    { path: '/admin/menu', icon: Menu, label: 'Menu Management' },
+    { path: '/admin/food-items', icon: Utensils, label: 'Food Items' },
+    { path: '/admin/categories', icon: Package, label: 'Categories' },
+    { path: '/admin/bookings', icon: Calendar, label: 'Bookings' },
+    { path: '/admin/orders', icon: ShoppingCart, label: 'Orders' },
+    { path: '/admin/customers', icon: Users2, label: 'Customers' },
+    { path: '/admin/chefs', icon: ChefHat, label: 'Chefs & Staff' },
+    { path: '/admin/locations', icon: MapPinned, label: 'Locations' },
+    { path: '/admin/reports', icon: FileText, label: 'Reports' },
+    { path: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
+    { path: '/admin/settings', icon: Settings, label: 'Settings' },
   ];
 
   const logout = async () => {
