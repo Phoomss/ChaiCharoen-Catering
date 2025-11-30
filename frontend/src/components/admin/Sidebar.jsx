@@ -18,7 +18,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     { path: '/admin/locations', icon: MapPinned, label: 'Locations' },
     { path: '/admin/reports', icon: FileText, label: 'Reports' },
     { path: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
-    { path: '/admin/settings', icon: Settings, label: 'Settings' },
   ];
 
   const logout = async () => {
