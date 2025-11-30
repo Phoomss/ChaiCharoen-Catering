@@ -14,9 +14,7 @@ import Dashboard from './pages/admin/Dashboard'
 import Users from './pages/admin/Users'
 import Orders from './pages/admin/Orders'
 import Analytics from './pages/admin/Analytics'
-import Settings from './pages/admin/Settings'
 import MenuManagement from './pages/admin/MenuManagement'
-import FoodItems from './pages/admin/FoodItems'
 import Categories from './pages/admin/Categories'
 import Bookings from './pages/admin/Bookings'
 import Locations from './pages/admin/Locations'
@@ -40,7 +38,6 @@ const App = () => {
         <Route element={<AdminLayout />}>
           <Route path="/admin/dashboard" element={<Dashboard />} />
           <Route path="/admin/menu" element={<MenuManagement />} />
-          <Route path="/admin/food-items" element={<FoodItems />} />
           <Route path="/admin/categories" element={<Categories />} />
           <Route path="/admin/bookings" element={<Bookings />} />
           <Route path="/admin/orders" element={<Orders />} />
@@ -50,7 +47,6 @@ const App = () => {
           <Route path="/admin/reports" element={<Reports />} />
           <Route path="/admin/analytics" element={<Analytics />} />
           <Route path="/admin/set-packages" element={<SetPackages />} />
-          <Route path="/admin/settings" element={<Settings />} />
         </Route>
 
       </Routes>
