@@ -8,7 +8,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const sidebarItems = [
     { path: '/admin/dashboard', icon: Home, label: 'Dashboard' },
     { path: '/admin/menu', icon: Menu, label: 'Menu Management' },
-    { path: '/admin/food-items', icon: Utensils, label: 'Food Items' },
     { path: '/admin/set-packages', icon: Package, label: 'Set Packages' },
     { path: '/admin/categories', icon: Package, label: 'Categories' },
     { path: '/admin/bookings', icon: Calendar, label: 'Bookings' },
