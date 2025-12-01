@@ -3,24 +3,36 @@ const menuPackageModel = require("../models/menuPackageModel");
 // สร้าง MenuPackage ใหม่
 exports.createMenuPackage = async (req, res) => {
   try {
-    const { price, menus, maxSelect, extraMenuPrice } = req.body;
+    const { name, price, menus, maxSelect, extraMenuPrice, description } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ message: "Package name is required" });
+    }
 
     if (!price) {
       return res.status(400).json({ message: "Package price is required" });
     }
 
-    // ตรวจสอบว่า price ซ้ำไหม
-    const exists = await menuPackageModel.findOne({ price });
-    if (exists) {
+    // ตรวจสอบว่า name หรือ price ซ้ำไหม
+    const existsByName = await menuPackageModel.findOne({ name });
+    const existsByPrice = await menuPackageModel.findOne({ price });
+
+    if (existsByName) {
+      return res.status(400).json({ message: "Package name already exists" });
+    }
+
+    if (existsByPrice) {
       return res.status(400).json({ message: "Package price already exists" });
     }
 
     // สร้าง package
     const menuPackage = await menuPackageModel.create({
+      name,
       price,
       menus,
       maxSelect,
       extraMenuPrice,
+      description
     });
 
     res.status(201).json({ message: "MenuPackage created successfully", data: menuPackage });
@@ -30,12 +42,52 @@ exports.createMenuPackage = async (req, res) => {
   }
 };
 
-// อ่าน MenuPackage ทั้งหมด
+// อ่าน MenuPackage ทั้งหมด + filter
 exports.getAllMenuPackages = async (req, res) => {
   try {
-    const packages = await menuPackageModel.find()
-      .populate("menus"); // แสดงรายละเอียด menu ด้วย
-    res.status(200).json(packages);
+    const { search, minPrice, maxPrice } = req.query;
+
+    let filter = {};
+
+    // ถ้ามีการค้นหา ให้ค้นหาทั้งชื่อและราคา
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { price: { $regex: search, $options: "i" } }
+      ];
+    }
+
+    // สร้าง price filter object แยก
+    let priceFilter = {};
+    if (minPrice !== undefined) {
+      priceFilter.$gte = Number(minPrice);
+    }
+    if (maxPrice !== undefined) {
+      priceFilter.$lte = Number(maxPrice);
+    }
+
+    // ถ้ามี price filter อย่างน้อยหนึ่งเงื่อนไข
+    if (Object.keys(priceFilter).length > 0) {
+      // ถ้า filter ว่างเปล่า (ไม่มี search) ให้กำหนด price filter โดยตรง
+      // ถ้า filter มีค่าอยู่แล้ว (จาก search) ให้เพิ่มเข้าไปใน $and
+      if (Object.keys(filter).length === 0) {
+        filter.price = priceFilter;
+      } else {
+        // ถ้ามี filter จาก search แล้ว ให้ใช้ $and
+        filter = {
+          $and: [
+            filter,
+            { price: priceFilter }
+          ]
+        };
+      }
+    }
+
+    const packages = await menuPackageModel.find(filter)
+      .populate("menus") // แสดงรายละเอียด menu ด้วย
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ count: packages.length, data: packages });
   } catch (error) {
     console.error("getAllMenuPackages Error:", error);
     res.status(500).json({ message: error.message });
@@ -61,7 +113,32 @@ exports.getMenuPackageById = async (req, res) => {
 exports.updateMenuPackage = async (req, res) => {
   try {
     const { id } = req.params;
-    const updateData = req.body;
+    const updateData = { ...req.body };
+
+    // ตรวจสอบว่ามีการอัปเดต name หรือไม่
+    if (updateData.name) {
+      // ตรวจสอบว่า name นี้มีอยู่แล้วหรือไม่ (เว้นแต่จะเป็น record เดียวกัน)
+      const existingPackage = await menuPackageModel.findOne({
+        name: updateData.name,
+        _id: { $ne: id }
+      });
+
+      if (existingPackage) {
+        return res.status(400).json({ message: "Package name already exists" });
+      }
+    }
+
+    // ถ้ามีการอัปเดต price ต้องตรวจสอบว่าไม่ซ้ำกับ record อื่น
+    if (updateData.price !== undefined) {
+      const existingPackage = await menuPackageModel.findOne({
+        price: updateData.price,
+        _id: { $ne: id }
+      });
+
+      if (existingPackage) {
+        return res.status(400).json({ message: "Package price already exists" });
+      }
+    }
 
     const menuPackage = await menuPackageModel.findByIdAndUpdate(id, updateData, { new: true });
     if (!menuPackage) {
@@ -89,3 +166,4 @@ exports.deleteMenuPackage = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+

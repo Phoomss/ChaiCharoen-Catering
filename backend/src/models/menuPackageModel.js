@@ -1,14 +1,22 @@
 const mongoose = require("mongoose");
+const Decimal128 = mongoose.Types.Decimal128; 
 
 const menuPackageSchema = new mongoose.Schema(
   {
-    price: {
-      type: Number,
-      required: true,  // เช่น 1800, 2000, 3500
-      unique: true,
+    name: { 
+        type: String,
+        required: [true, "Package name is required"],
+        trim: true,
+        unique: true
     },
 
-    // รายการเมนูทั้งหมดที่ package นี้ "รวมถึง"
+    price: {
+      type: Decimal128, 
+      required: true, 
+      unique: true, // ราคาต่อโต๊ะ (เช่น 1800.00)
+    },
+
+    // รายการเมนูทั้งหมดที่ package นี้ "รวมถึง" (References to Menu)
     menus: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -20,13 +28,18 @@ const menuPackageSchema = new mongoose.Schema(
     maxSelect: {
       type: Number,
       default: 8,
+      min: 1
     },
 
-    // ถ้าเลือกเกินให้คิดราคาเพิ่มเมนูละกี่บาท
-    extraMenuPrice: {
-      type: Number,
+    extraMenuPrice: { 
+      type: Decimal128,
       default: 200,
     },
+    
+    description: {
+        type: String,
+        default: ""
+    }
   },
   { timestamps: true }
 );

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Decimal128 = mongoose.Types.Decimal128;
 
 const categoryList = ["appetizer", "maincourse", "carb", "soup", "dessert"];
 
@@ -36,14 +37,14 @@ const menuSchema = new mongoose.Schema(
 
     // ราคาปกติ
     price: {
-      type: Number,
+      type: Decimal128,
       default: 0,
       min: 0,
     },
 
     // ราคาจัดชุด (ใช้ในโต๊ะจีน)
     packagePrice: {
-      type: Number,
+      type: Decimal128,
       default: 0,
       min: 0,
     },
