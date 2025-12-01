@@ -107,8 +107,11 @@ const Login = () => {
           case 'admin':
             navigate('/admin/dashboard')
             break;
-          case 'user':
-            navigate('/')
+          case 'customer':
+            navigate('/customer/dashboard')
+            break;
+          case 'chef':
+            navigate('/chef/dashboard')
             break;
           default:
             navigate('/')

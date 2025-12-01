@@ -22,6 +22,12 @@ import Reports from './pages/admin/Reports'
 import Chefs from './pages/admin/Chefs'
 import MenuPackages from './pages/admin/MenuPackages'
 
+import CustomerLayout from './components/layouts/CustomerLayout'
+import CustomerDashboard from './pages/customer/CustomerDashboard'
+import CustomerProfile from './pages/customer/CustomerProfile'
+import CustomerBookings from './pages/customer/CustomerBookings'
+import CustomerOrders from './pages/customer/CustomerOrders'
+
 const App = () => {
   return (
     <BrowserRouter>
@@ -47,6 +53,13 @@ const App = () => {
           <Route path="/admin/reports" element={<Reports />} />
           <Route path="/admin/analytics" element={<Analytics />} />
           <Route path="/admin/menu-packages" element={<MenuPackages />} />
+        </Route>
+
+        <Route element={<CustomerLayout />}>
+          <Route path="/customer/dashboard" element={<CustomerDashboard />} />
+          <Route path="/customer/profile" element={<CustomerProfile />} />
+          <Route path="/customer/bookings" element={<CustomerBookings />} />
+          <Route path="/customer/orders" element={<CustomerOrders />} />
         </Route>
 
       </Routes>
