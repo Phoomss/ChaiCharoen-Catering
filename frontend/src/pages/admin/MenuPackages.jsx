@@ -15,10 +15,12 @@ const MenuPackages = () => {
 
   // Form state for creating/editing
   const [formData, setFormData] = useState({
+    name: '',
     price: '',
     maxSelect: 8,
     extraMenuPrice: 200,
-    menus: []
+    menus: [],
+    description: ''
   });
 
   const [formErrors, setFormErrors] = useState({});
@@ -54,6 +56,7 @@ const MenuPackages = () => {
 
   // Filter menu packages based on search
   const filteredMenuPackages = menuPackages.filter(pkg =>
+    pkg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     pkg.price.toString().includes(searchTerm) ||
     pkg.maxSelect.toString().includes(searchTerm) ||
     pkg.extraMenuPrice.toString().includes(searchTerm)
@@ -63,10 +66,12 @@ const MenuPackages = () => {
   const openCreateModal = () => {
     setCurrentPackage(null);
     setFormData({
+      name: '',
       price: '',
       maxSelect: 8,
       extraMenuPrice: 200,
-      menus: []
+      menus: [],
+      description: ''
     });
     setFormErrors({});
     setShowModal(true);
@@ -76,10 +81,12 @@ const MenuPackages = () => {
   const openEditModal = (pkg) => {
     setCurrentPackage(pkg);
     setFormData({
+      name: pkg.name || '',
       price: pkg.price || '',
       maxSelect: pkg.maxSelect || 8,
       extraMenuPrice: pkg.extraMenuPrice || 200,
-      menus: pkg.menus.map(menu => typeof menu === 'object' ? menu._id : menu) || []
+      menus: pkg.menus.map(menu => typeof menu === 'object' ? menu._id : menu) || [],
+      description: pkg.description || ''
     });
     setFormErrors({});
     setShowModal(true);
@@ -116,6 +123,10 @@ const MenuPackages = () => {
   const validateForm = () => {
     const errors = {};
 
+    if (!formData.name) {
+      errors.name = 'Package name is required';
+    }
+
     if (!formData.price) {
       errors.price = 'Package price is required';
     } else if (formData.price <= 0) {
@@ -149,7 +160,7 @@ const MenuPackages = () => {
         Swal.fire({
           icon: 'success',
           title: 'อัปเดตเรียบร้อยแล้ว!',
-          text: `ชุด套餐 "${currentPackage.price}" ได้รับการอัปเดตเรียบร้อยแล้ว`,
+          text: `ชุด套餐 "${currentPackage.name}" ได้รับการอัปเดตเรียบร้อยแล้ว`,
           confirmButtonColor: '#22c55e'
         });
       } else {
@@ -169,10 +180,12 @@ const MenuPackages = () => {
 
       // Reset form
       setFormData({
+        name: '',
         price: '',
         maxSelect: 8,
         extraMenuPrice: 200,
-        menus: []
+        menus: [],
+        description: ''
       });
     } catch (err) {
       if (err.response?.data?.message) {
@@ -194,7 +207,7 @@ const MenuPackages = () => {
   const deleteMenuPackage = async (pkg) => {
     const result = await Swal.fire({
       title: 'คุณแน่ใจหรือไม่?',
-      text: `คุณกำลังจะลบชุด套餐 ฿${pkg.price}. การกระทำนี้ไม่สามารถย้อนกลับได้`,
+      text: `คุณกำลังจะลบชุด套餐 "${pkg.name}". การกระทำนี้ไม่สามารถย้อนกลับได้`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#dc2626',
@@ -222,7 +235,7 @@ const MenuPackages = () => {
         Swal.fire({
           icon: 'success',
           title: 'ลบเรียบร้อยแล้ว!',
-          text: `ชุด套餐 ฿${pkg.price} ได้ถูกลบเรียบร้อยแล้ว`,
+          text: `ชุด套餐 "${pkg.name}" ได้ถูกลบเรียบร้อยแล้ว`,
           confirmButtonColor: '#22c55e'
         });
       } catch (err) {
@@ -343,7 +356,7 @@ const MenuPackages = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
               type="text"
-              placeholder="Search packages by price..."
+              placeholder="Search packages by name or price..."
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -362,6 +375,7 @@ const MenuPackages = () => {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50">
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Package Name</th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Max Selection</th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Extra Price</th>
@@ -372,6 +386,7 @@ const MenuPackages = () => {
             <tbody className="divide-y divide-gray-200">
               {filteredMenuPackages.map((pkg) => (
                 <tr key={pkg._id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{pkg.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">฿{pkg.price}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{pkg.maxSelect}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">฿{pkg.extraMenuPrice}</td>
@@ -430,7 +445,26 @@ const MenuPackages = () => {
 
               <form onSubmit={handleSubmit}>
                 <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Name *
+                      </label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          formErrors.name ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        placeholder="Package name"
+                      />
+                      {formErrors.name && (
+                        <p className="mt-1 text-sm text-red-600">{formErrors.name}</p>
+                      )}
+                    </div>
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Price *
@@ -450,7 +484,9 @@ const MenuPackages = () => {
                         <p className="mt-1 text-sm text-red-600">{formErrors.price}</p>
                       )}
                     </div>
+                  </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Max Selection
@@ -490,6 +526,20 @@ const MenuPackages = () => {
                         <p className="mt-1 text-sm text-red-600">{formErrors.extraMenuPrice}</p>
                       )}
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
+                    <textarea
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Package description"
+                      rows="3"
+                    />
                   </div>
 
                   <div>

@@ -37,7 +37,7 @@ exports.createBooking = async (req, res) => {
       },
       package: {
         packageID: menuPackage._id,
-        package_name: `Package ${menuPackage.price}`,
+        package_name: menuPackage.name || `Package ${menuPackage.price}`,
         price_per_table: pricePerTable
       },
       event_datetime,

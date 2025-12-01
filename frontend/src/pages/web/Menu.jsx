@@ -138,7 +138,7 @@ const Menu = () => {
                   <div className="bg-gray-200 border-2 border-dashed rounded-xl w-full h-40 mb-4 flex items-center justify-center">
                     <span className="text-gray-500">Package Image</span>
                   </div>
-                  <h3 className="font-bold text-green-800 text-xl mb-2">ชุด ฿{pkg.price.toLocaleString()}</h3>
+                  <h3 className="font-bold text-green-800 text-xl mb-2">{pkg.name} (฿{pkg.price.toLocaleString()})</h3>
                   <div className="mb-3">
                     <p className="text-gray-600 text-sm">
                       <span className="font-medium">เลือกได้:</span> {pkg.maxSelect} อย่าง
