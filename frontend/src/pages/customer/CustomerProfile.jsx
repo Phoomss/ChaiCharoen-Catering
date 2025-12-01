@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import CustomerService from '../../services/CustomerService';
+import Swal from 'sweetalert2';
 
 const CustomerProfile = () => {
     const [customerData, setCustomerData] = useState({
@@ -141,11 +142,23 @@ const CustomerProfile = () => {
                                             try {
                                                 await CustomerService.updateProfile(customerData);
 
-                                                alert('อัปเดตโปรไฟล์สำเร็จ');
+                                                Swal.fire({
+                                                    title: 'สำเร็จ!',
+                                                    text: 'อัปเดตโปรไฟล์สำเร็จ',
+                                                    icon: 'success',
+                                                    confirmButtonText: 'ตกลง',
+                                                    confirmButtonColor: '#10b981'
+                                                });
                                                 setEditing(false);
                                             } catch (error) {
                                                 console.error('Error updating profile:', error);
-                                                alert('เกิดข้อผิดพลาดในการอัปเดตโปรไฟล์');
+                                                Swal.fire({
+                                                    title: 'เกิดข้อผิดพลาด!',
+                                                    text: 'เกิดข้อผิดพลาดในการอัปเดตโปรไฟล์',
+                                                    icon: 'error',
+                                                    confirmButtonText: 'ตกลง',
+                                                    confirmButtonColor: '#ef4444'
+                                                });
                                             }
                                         }}
                                     >

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import CustomerService from '../../services/CustomerService';
 import MenuPackageService from '../../services/MenuPackageService';
+import UserService from '../../services/UserService';
+import Swal from 'sweetalert2';
 
 const CustomerBooking = () => {
     const navigate = useNavigate();
@@ -11,6 +13,7 @@ const CustomerBooking = () => {
             phone: '',
             email: ''
         },
+        customerID: '', // 💡 เพิ่ม State เพื่อเก็บ ID สำหรับ Payload
         event_datetime: '',
         table_count: '',
         package: {
@@ -27,22 +30,9 @@ const CustomerBooking = () => {
     const [menuPackages, setMenuPackages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [agreed, setAgreed] = useState(false);
+    const [userInfo, setUserInfo] = useState({})
 
     useEffect(() => {
-        // Get user info from localStorage
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (user) {
-            setBookingData(prev => ({
-                ...prev,
-                customer: {
-                    name: `${user.title}${user.firstName} ${user.lastName}`,
-                    phone: user.phone,
-                    email: user.email
-                }
-            }));
-        }
-
-        // Fetch menu packages
         const fetchMenuPackages = async () => {
             try {
                 const response = await MenuPackageService.getAllMenuPackages();
@@ -54,6 +44,27 @@ const CustomerBooking = () => {
             }
         }
         fetchMenuPackages();
+
+        const fetchUserInfo = async () => {
+            try {
+                const response = await UserService.getUserInfo();
+                const user = response.data.data;
+
+                setUserInfo(user);
+                setBookingData((preData) => ({
+                    ...preData,
+                    customer: { // ข้อมูลสำหรับฟอร์ม (Pre-fill)
+                        name: `${user.title || ''}${user.firstName} ${user.lastName}`,
+                        phone: user.phone,
+                        email: user.email
+                    },
+                    customerID: user._id // 💡 เก็บ ID ที่ดึงมาจาก Service
+                }))
+            } catch (error) {
+                console.error('Error fetching user info:', error);
+            }
+        }
+        fetchUserInfo();
     }, []);
 
     const handleInputChange = (e) => {
@@ -89,7 +100,7 @@ const CustomerBooking = () => {
         const selectedPackage = menuPackages.find(pkg => pkg._id === e.target.value);
 
         if (selectedPackage) {
-            //  การแก้ไข: ดึงค่าที่เป็น String จาก $numberDecimal หรือใช้ค่าตรงๆ
+            // การแก้ไข: ดึงค่าที่เป็น String จาก $numberDecimal หรือใช้ค่าตรงๆ
             const priceValue = typeof selectedPackage.price === 'object'
                 ? selectedPackage.price.$numberDecimal
                 : selectedPackage.price;
@@ -99,7 +110,7 @@ const CustomerBooking = () => {
                 package: {
                     packageID: selectedPackage._id,
                     package_name: selectedPackage.name,
-                    //  เก็บราคาเป็น String/Number ที่ใช้งานได้แล้ว
+                    // เก็บราคาเป็น String/Number ที่ใช้งานได้แล้ว
                     price_per_table: priceValue
                 }
             }));
@@ -119,19 +130,22 @@ const CustomerBooking = () => {
         e.preventDefault();
 
         if (!agreed) {
-            alert('กรุณาตกลงเงื่อนไขและข้อตกลงก่อนดำเนินการต่อ');
+            Swal.fire({
+                title: 'กรุณาตกลงเงื่อนไข!',
+                text: 'กรุณาตกลงเงื่อนไขและข้อตกลงก่อนดำเนินการต่อ',
+                icon: 'warning',
+                confirmButtonText: 'ตกลง',
+                confirmButtonColor: '#10b981'
+            });
             return;
         }
 
         try {
             // Prepare booking data for submission
             const bookingPayload = {
-                customer: {
-                    customerID: JSON.parse(localStorage.getItem('user'))._id,
-                    name: bookingData.customer.name,
-                    phone: bookingData.customer.phone,
-                    email: bookingData.customer.email
-                },
+                // 💡 การแก้ไข: ใช้ Customer ID ที่ถูกดึงมาจาก Service แล้ว
+                customer: bookingData.customerID, 
+                
                 packageId: bookingData.package.packageID,
                 event_datetime: new Date(bookingData.event_datetime).toISOString(),
                 table_count: parseInt(bookingData.table_count),
@@ -151,7 +165,13 @@ const CustomerBooking = () => {
             navigate(`/customer/booking-confirmation/${response.data.data._id}`);
         } catch (error) {
             console.error('Error creating booking:', error);
-            alert('เกิดข้อผิดพลาดในการจอง กรุณาลองใหม่อีกครั้ง');
+            Swal.fire({
+                title: 'เกิดข้อผิดพลาด!',
+                text: 'เกิดข้อผิดพลาดในการจอง กรุณาลองใหม่อีกครั้ง',
+                icon: 'error',
+                confirmButtonText: 'ตกลง',
+                confirmButtonColor: '#ef4444'
+            });
         }
     };
 
