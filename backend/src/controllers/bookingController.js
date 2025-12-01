@@ -1,5 +1,5 @@
 const BookingModel = require("../models/bookingModel");
-const MenuPackageModel = require("../models/setPackageModel");
+const MenuPackageModel = require("../models/menuPackageModel");
 
 // สร้าง Booking
 exports.createBooking = async (req, res) => {

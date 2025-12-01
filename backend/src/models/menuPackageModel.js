@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const setPackageSchema = new mongoose.Schema(
+const menuPackageSchema = new mongoose.Schema(
   {
     price: {
       type: Number,
@@ -31,4 +31,4 @@ const setPackageSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("SetPackage", setPackageSchema);
+module.exports = mongoose.model("MenuPackage", menuPackageSchema);
