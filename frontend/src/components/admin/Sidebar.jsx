@@ -8,7 +8,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const sidebarItems = [
     { path: '/admin/dashboard', icon: Home, label: 'Dashboard' },
     { path: '/admin/menu', icon: Menu, label: 'Menu Management' },
-    { path: '/admin/set-packages', icon: Package, label: 'Set Packages' },
+    { path: '/admin/menu-packages', icon: Package, label: 'Menu Packages' },
     { path: '/admin/categories', icon: Package, label: 'Categories' },
     { path: '/admin/bookings', icon: Calendar, label: 'Bookings' },
     { path: '/admin/orders', icon: ShoppingCart, label: 'Orders' },

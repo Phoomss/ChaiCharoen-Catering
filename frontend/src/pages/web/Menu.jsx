@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import menuService from '../../services/MenuService';
-import setPackageService from '../../services/SetPackageService';
+import menuPackageService from '../../services/MenuPackageService';
 
 const Menu = () => {
   const [activeCategory, setActiveCategory] = useState('all');
   const [menuItems, setMenuItems] = useState([]);
-  const [setPackages, setSetPackages] = useState([]);
+  const [menuPackages, setMenuPackages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Load menu items and set packages from API
+  // Load menu items and menu packages from API
   useEffect(() => {
     loadMenuData();
   }, []);
@@ -19,11 +19,11 @@ const Menu = () => {
       setLoading(true);
       const [menuResponse, packageResponse] = await Promise.all([
         menuService.getAllMenus(),
-        setPackageService.getAllSetPackages()
+        menuPackageService.getAllMenuPackages()
       ]);
 
       setMenuItems(menuResponse.data.data || []);
-      setSetPackages(packageResponse.data || []);
+      setMenuPackages(packageResponse.data || []);
       setError(null);
     } catch (err) {
       setError('ไม่สามารถโหลดข้อมูลเมนูได้ กรุณาลองอีกครั้ง');
@@ -127,13 +127,13 @@ const Menu = () => {
           )}
         </section>
 
-        {/* Set Packages Section */}
+        {/* Menu Packages Section */}
         <section className="mb-12">
           <h2 className="text-2xl font-bold text-green-700 text-center mb-6">ชุดอาหารโต๊ะจีน</h2>
 
-          {setPackages.length > 0 ? (
+          {menuPackages.length > 0 ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {setPackages.map((pkg) => (
+              {menuPackages.map((pkg) => (
                 <div key={pkg._id} className="bg-white p-6 rounded-xl shadow-md border border-green-100">
                   <div className="bg-gray-200 border-2 border-dashed rounded-xl w-full h-40 mb-4 flex items-center justify-center">
                     <span className="text-gray-500">Package Image</span>

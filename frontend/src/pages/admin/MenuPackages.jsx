@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Search, Package, Utensils, X, Save, Minus, PlusCircle } from 'lucide-react';
-import setPackageService from '../../services/SetPackageService';
+import menuPackageService from '../../services/MenuPackageService';
 import menuService from '../../services/MenuService';
 import Swal from 'sweetalert2';
 
-const SetPackages = () => {
-  const [setPackages, setSetPackages] = useState([]);
+const MenuPackages = () => {
+  const [menuPackages, setMenuPackages] = useState([]);
   const [menus, setMenus] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -23,21 +23,21 @@ const SetPackages = () => {
 
   const [formErrors, setFormErrors] = useState({});
 
-  // Load set packages and menus from API
+  // Load menu packages and menus from API
   useEffect(() => {
-    loadSetPackages();
+    loadMenuPackages();
     loadMenus();
   }, []);
 
-  const loadSetPackages = async () => {
+  const loadMenuPackages = async () => {
     try {
       setLoading(true);
-      const response = await setPackageService.getAllSetPackages();
-      setSetPackages(response.data || []);
+      const response = await menuPackageService.getAllMenuPackages();
+      setMenuPackages(response.data || []);
       setError(null);
     } catch (err) {
-      setError('Failed to load set packages');
-      console.error('Error loading set packages:', err);
+      setError('Failed to load menu packages');
+      console.error('Error loading menu packages:', err);
     } finally {
       setLoading(false);
     }
@@ -52,8 +52,8 @@ const SetPackages = () => {
     }
   };
 
-  // Filter set packages based on search
-  const filteredSetPackages = setPackages.filter(pkg => 
+  // Filter menu packages based on search
+  const filteredMenuPackages = menuPackages.filter(pkg =>
     pkg.price.toString().includes(searchTerm) ||
     pkg.maxSelect.toString().includes(searchTerm) ||
     pkg.extraMenuPrice.toString().includes(searchTerm)
@@ -90,10 +90,10 @@ const SetPackages = () => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'price' || name === 'maxSelect' || name === 'extraMenuPrice' ? 
+      [name]: name === 'price' || name === 'maxSelect' || name === 'extraMenuPrice' ?
         (name === 'price' ? parseFloat(value) || 0 : parseInt(value) || 0) : value
     }));
-    
+
     // Clear error when user starts typing
     if (formErrors[name]) {
       setFormErrors(prev => ({ ...prev, [name]: '' }));
@@ -104,10 +104,10 @@ const SetPackages = () => {
   const handleMenuSelect = (menuId) => {
     setFormData(prev => {
       const isSelected = prev.menus.includes(menuId);
-      const newMenus = isSelected 
+      const newMenus = isSelected
         ? prev.menus.filter(id => id !== menuId)
         : [...prev.menus, menuId];
-      
+
       return { ...prev, menus: newMenus };
     });
   };
@@ -115,17 +115,17 @@ const SetPackages = () => {
   // Validate form
   const validateForm = () => {
     const errors = {};
-    
+
     if (!formData.price) {
       errors.price = 'Package price is required';
     } else if (formData.price <= 0) {
       errors.price = 'Package price must be greater than 0';
     }
-    
+
     if (!formData.maxSelect || formData.maxSelect <= 0) {
       errors.maxSelect = 'Max selection count must be greater than 0';
     }
-    
+
     if (!formData.extraMenuPrice || formData.extraMenuPrice < 0) {
       errors.extraMenuPrice = 'Extra menu price cannot be negative';
     }
@@ -137,7 +137,7 @@ const SetPackages = () => {
   // Submit form (create or update)
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -145,7 +145,7 @@ const SetPackages = () => {
     try {
       if (currentPackage) {
         // Update existing package
-        await setPackageService.updateSetPackage(currentPackage._id, formData);
+        await menuPackageService.updateMenuPackage(currentPackage._id, formData);
         Swal.fire({
           icon: 'success',
           title: 'อัปเดตเรียบร้อยแล้ว!',
@@ -154,7 +154,7 @@ const SetPackages = () => {
         });
       } else {
         // Create new package
-        await setPackageService.createSetPackage(formData);
+        await menuPackageService.createMenuPackage(formData);
         Swal.fire({
           icon: 'success',
           title: 'เพิ่มเรียบร้อยแล้ว!',
@@ -162,11 +162,11 @@ const SetPackages = () => {
           confirmButtonColor: '#22c55e'
         });
       }
-      
+
       // Refresh packages
-      await loadSetPackages();
+      await loadMenuPackages();
       setShowModal(false);
-      
+
       // Reset form
       setFormData({
         price: '',
@@ -178,9 +178,9 @@ const SetPackages = () => {
       if (err.response?.data?.message) {
         setFormErrors({ general: err.response.data.message });
       } else {
-        setFormErrors({ general: 'Failed to save set package' });
+        setFormErrors({ general: 'Failed to save menu package' });
       }
-      console.error('Error saving set package:', err);
+      console.error('Error saving menu package:', err);
       Swal.fire({
         icon: 'error',
         title: 'การบันทึกล้มเหลว',
@@ -190,8 +190,8 @@ const SetPackages = () => {
     }
   };
 
-  // Delete set package with SweetAlert confirmation
-  const deleteSetPackage = async (pkg) => {
+  // Delete menu package with SweetAlert confirmation
+  const deleteMenuPackage = async (pkg) => {
     const result = await Swal.fire({
       title: 'คุณแน่ใจหรือไม่?',
       text: `คุณกำลังจะลบชุด套餐 ฿${pkg.price}. การกระทำนี้ไม่สามารถย้อนกลับได้`,
@@ -215,10 +215,10 @@ const SetPackages = () => {
             Swal.showLoading();
           }
         });
-        
-        await setPackageService.deleteSetPackage(pkg._id);
-        await loadSetPackages();
-        
+
+        await menuPackageService.deleteMenuPackage(pkg._id);
+        await loadMenuPackages();
+
         Swal.fire({
           icon: 'success',
           title: 'ลบเรียบร้อยแล้ว!',
@@ -226,7 +226,7 @@ const SetPackages = () => {
           confirmButtonColor: '#22c55e'
         });
       } catch (err) {
-        console.error('Error deleting set package:', err);
+        console.error('Error deleting menu package:', err);
         Swal.fire({
           icon: 'error',
           title: 'การลบล้มเหลว',
@@ -267,10 +267,10 @@ const SetPackages = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Set Packages</h1>
-          <p className="text-gray-600">Manage catering set packages for customers</p>
+          <h1 className="text-2xl font-bold text-gray-900">Menu Packages</h1>
+          <p className="text-gray-600">Manage catering menu packages for customers</p>
         </div>
-        <button 
+        <button
           onClick={openCreateModal}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center"
         >
@@ -288,7 +288,7 @@ const SetPackages = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Packages</p>
-              <p className="text-2xl font-semibold text-gray-900">{setPackages.length}</p>
+              <p className="text-2xl font-semibold text-gray-900">{menuPackages.length}</p>
             </div>
           </div>
         </div>
@@ -301,7 +301,7 @@ const SetPackages = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Avg. Price</p>
               <p className="text-2xl font-semibold text-gray-900">
-                ฿{setPackages.length > 0 ? Math.round(setPackages.reduce((sum, pkg) => sum + pkg.price, 0) / setPackages.length) : 0}
+                ฿{menuPackages.length > 0 ? Math.round(menuPackages.reduce((sum, pkg) => sum + pkg.price, 0) / menuPackages.length) : 0}
               </p>
             </div>
           </div>
@@ -315,7 +315,7 @@ const SetPackages = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Avg. Items</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {setPackages.length > 0 ? Math.round(setPackages.reduce((sum, pkg) => sum + (pkg.menus?.length || 0), 0) / setPackages.length) : 0}
+                {menuPackages.length > 0 ? Math.round(menuPackages.reduce((sum, pkg) => sum + (pkg.menus?.length || 0), 0) / menuPackages.length) : 0}
               </p>
             </div>
           </div>
@@ -329,7 +329,7 @@ const SetPackages = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Avg. Selection</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {setPackages.length > 0 ? Math.round(setPackages.reduce((sum, pkg) => sum + pkg.maxSelect, 0) / setPackages.length) : 0}
+                {menuPackages.length > 0 ? Math.round(menuPackages.reduce((sum, pkg) => sum + pkg.maxSelect, 0) / menuPackages.length) : 0}
               </p>
             </div>
           </div>
@@ -352,10 +352,10 @@ const SetPackages = () => {
         </div>
       </div>
 
-      {/* Set Packages Table */}
+      {/* Menu Packages Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800">Set Packages</h3>
+          <h3 className="text-lg font-semibold text-gray-800">Menu Packages</h3>
         </div>
 
         <div className="overflow-x-auto">
@@ -370,7 +370,7 @@ const SetPackages = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredSetPackages.map((pkg) => (
+              {filteredMenuPackages.map((pkg) => (
                 <tr key={pkg._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">฿{pkg.price}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{pkg.maxSelect}</td>
@@ -378,14 +378,14 @@ const SetPackages = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{pkg.menus?.length || 0}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <div className="flex items-center space-x-2">
-                      <button 
+                      <button
                         onClick={() => openEditModal(pkg)}
                         className="p-1 hover:bg-gray-100 rounded text-blue-600"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button 
-                        onClick={() => deleteSetPackage(pkg)}
+                      <button
+                        onClick={() => deleteMenuPackage(pkg)}
                         className="p-1 hover:bg-gray-100 rounded text-red-600"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -397,10 +397,10 @@ const SetPackages = () => {
             </tbody>
           </table>
         </div>
-        
-        {filteredSetPackages.length === 0 && (
+
+        {filteredMenuPackages.length === 0 && (
           <div className="text-center py-8 text-gray-500">
-            No set packages found matching your criteria
+            No menu packages found matching your criteria
           </div>
         )}
       </div>
@@ -412,9 +412,9 @@ const SetPackages = () => {
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">
-                  {currentPackage ? 'Edit Set Package' : 'Create New Set Package'}
+                  {currentPackage ? 'Edit Menu Package' : 'Create New Menu Package'}
                 </h3>
-                <button 
+                <button
                   onClick={() => setShowModal(false)}
                   className="text-gray-400 hover:text-gray-600"
                 >
@@ -507,8 +507,8 @@ const SetPackages = () => {
                             <div
                               key={menu._id}
                               className={`flex items-center p-2 rounded cursor-pointer ${
-                                formData.menus.includes(menu._id) 
-                                  ? 'bg-blue-100 border border-blue-300' 
+                                formData.menus.includes(menu._id)
+                                  ? 'bg-blue-100 border border-blue-300'
                                   : 'hover:bg-gray-50 border border-gray-200'
                               }`}
                               onClick={() => handleMenuSelect(menu._id)}
@@ -557,4 +557,4 @@ const SetPackages = () => {
   );
 };
 
-export default SetPackages;
+export default MenuPackages;
