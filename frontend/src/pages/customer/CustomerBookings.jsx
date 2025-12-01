@@ -110,7 +110,7 @@ const CustomerBookings = () => {
                                             : booking.total_price} บาท
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <Link to={`/booking/${booking._id}`} className="text-green-600 hover:text-green-900 mr-3">ดูรายละเอียด</Link>
+                                        <Link to={`/customer/booking/${booking._id}`} className="text-green-600 hover:text-green-900 mr-3">ดูรายละเอียด</Link>
                                         <Link to="#" className="text-gray-600 hover:text-gray-900">ยกเลิก</Link>
                                     </td>
                                 </tr>

@@ -13,7 +13,7 @@ const CustomerBooking = () => {
             phone: '',
             email: ''
         },
-        customerID: '', // 💡 เพิ่ม State เพื่อเก็บ ID สำหรับ Payload
+        customerID: '',
         event_datetime: '',
         table_count: '',
         package: {
@@ -53,12 +53,12 @@ const CustomerBooking = () => {
                 setUserInfo(user);
                 setBookingData((preData) => ({
                     ...preData,
-                    customer: { // ข้อมูลสำหรับฟอร์ม (Pre-fill)
+                    customer: { // ข้อมูลสำหรับฟอร์ม
                         name: `${user.title || ''}${user.firstName} ${user.lastName}`,
                         phone: user.phone,
                         email: user.email
                     },
-                    customerID: user._id // 💡 เก็บ ID ที่ดึงมาจาก Service
+                    customerID: user._id
                 }))
             } catch (error) {
                 console.error('Error fetching user info:', error);
@@ -100,7 +100,7 @@ const CustomerBooking = () => {
         const selectedPackage = menuPackages.find(pkg => pkg._id === e.target.value);
 
         if (selectedPackage) {
-            // การแก้ไข: ดึงค่าที่เป็น String จาก $numberDecimal หรือใช้ค่าตรงๆ
+            //  การแก้ไข: ดึงค่าที่เป็น String จาก $numberDecimal หรือใช้ค่าตรงๆ
             const priceValue = typeof selectedPackage.price === 'object'
                 ? selectedPackage.price.$numberDecimal
                 : selectedPackage.price;
@@ -110,7 +110,7 @@ const CustomerBooking = () => {
                 package: {
                     packageID: selectedPackage._id,
                     package_name: selectedPackage.name,
-                    // เก็บราคาเป็น String/Number ที่ใช้งานได้แล้ว
+                    //  เก็บราคาเป็น String/Number ที่ใช้งานได้แล้ว
                     price_per_table: priceValue
                 }
             }));
@@ -143,9 +143,12 @@ const CustomerBooking = () => {
         try {
             // Prepare booking data for submission
             const bookingPayload = {
-                // 💡 การแก้ไข: ใช้ Customer ID ที่ถูกดึงมาจาก Service แล้ว
-                customer: bookingData.customerID, 
-                
+                customer: {
+                    customerID: bookingData.customerID,
+                    name: bookingData.customer.name,
+                    phone: bookingData.customer.phone,
+                    email: bookingData.customer.email
+                },
                 packageId: bookingData.package.packageID,
                 event_datetime: new Date(bookingData.event_datetime).toISOString(),
                 table_count: parseInt(bookingData.table_count),

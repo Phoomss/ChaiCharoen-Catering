@@ -30,7 +30,7 @@ exports.createBooking = async (req, res) => {
 
     const booking = await BookingModel.create({
       customer: {
-        customerID: customerInfo.customerID || null,
+        customerID: customerInfo.customerID,
         name: customerInfo.name,
         phone: customerInfo.phone,
         email: customerInfo.email

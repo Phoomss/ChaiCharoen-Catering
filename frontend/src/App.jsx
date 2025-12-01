@@ -29,6 +29,7 @@ import CustomerBookings from './pages/customer/CustomerBookings'
 import CustomerOrders from './pages/customer/CustomerOrders'
 import CustomerBooking from './pages/customer/CustomerBooking'
 import BookingConfirmation from './pages/customer/BookingConfirmation'
+import BookingDetails from './pages/customer/BookingDetails'
 
 const App = () => {
   return (
@@ -64,6 +65,7 @@ const App = () => {
           <Route path="/customer/orders" element={<CustomerOrders />} />
           <Route path="/customer/booking" element={<CustomerBooking />} />
           <Route path="/customer/booking-confirmation/:id" element={<BookingConfirmation />} />
+          <Route path="/customer/booking/:id" element={<BookingDetails />} />
         </Route>
 
       </Routes>
