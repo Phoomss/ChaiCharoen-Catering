@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import menuService from '../../services/MenuService';
 import menuPackageService from '../../services/MenuPackageService';
+import { formatPriceWithCurrency, convertDecimalValue } from '../../utils/priceUtils';
 
 const Menu = () => {
   const [activeCategory, setActiveCategory] = useState('all');
@@ -138,13 +139,13 @@ const Menu = () => {
                   <div className="bg-gray-200 border-2 border-dashed rounded-xl w-full h-40 mb-4 flex items-center justify-center">
                     <span className="text-gray-500">Package Image</span>
                   </div>
-                  <h3 className="font-bold text-green-800 text-xl mb-2">{pkg.name} (฿{pkg.price.toLocaleString()})</h3>
+                  <h3 className="font-bold text-green-800 text-xl mb-2">{pkg.name} ({formatPriceWithCurrency(pkg.price)})</h3>
                   <div className="mb-3">
                     <p className="text-gray-600 text-sm">
                       <span className="font-medium">เลือกได้:</span> {pkg.maxSelect} อย่าง
                     </p>
                     <p className="text-gray-600 text-sm">
-                      <span className="font-medium">ราคาเพิ่มเติม:</span> ฿{pkg.extraMenuPrice}/อย่าง
+                      <span className="font-medium">ราคาเพิ่มเติม:</span> ฿{convertDecimalValue(pkg.extraMenuPrice)}/อย่าง
                     </p>
                   </div>
                   <div className="mb-4">

@@ -87,7 +87,7 @@ exports.getAllMenuPackages = async (req, res) => {
       .populate("menus") // แสดงรายละเอียด menu ด้วย
       .sort({ createdAt: -1 });
 
-    res.status(200).json({ count: packages.length, data: packages });
+    res.status(200).json(packages);
   } catch (error) {
     console.error("getAllMenuPackages Error:", error);
     res.status(500).json({ message: error.message });

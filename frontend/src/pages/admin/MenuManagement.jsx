@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Search, Package, Utensils, X, Save } from 'lucide-react';
 import menuService from '../../services/MenuService';
 import Swal from 'sweetalert2';
+import { formatPriceWithCurrency } from '../../utils/priceUtils';
 
 const MenuManagement = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -444,7 +445,7 @@ const MenuManagement = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 capitalize">{item.category}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">฿{item.price}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{formatPriceWithCurrency(item.price)}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(item.active)}`}>
                       {getStatusText(item.active)}

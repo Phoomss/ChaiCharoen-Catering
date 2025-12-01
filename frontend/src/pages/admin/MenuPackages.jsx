@@ -3,6 +3,7 @@ import { Plus, Edit, Trash2, Search, Package, Utensils, X, Save, Minus, PlusCirc
 import menuPackageService from '../../services/MenuPackageService';
 import menuService from '../../services/MenuService';
 import Swal from 'sweetalert2';
+import { formatPriceWithCurrency, convertDecimalValue } from '../../utils/priceUtils';
 
 const MenuPackages = () => {
   const [menuPackages, setMenuPackages] = useState([]);
@@ -57,9 +58,9 @@ const MenuPackages = () => {
   // Filter menu packages based on search
   const filteredMenuPackages = menuPackages.filter(pkg =>
     pkg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    pkg.price.toString().includes(searchTerm) ||
+    convertDecimalValue(pkg.price).toString().includes(searchTerm) ||
     pkg.maxSelect.toString().includes(searchTerm) ||
-    pkg.extraMenuPrice.toString().includes(searchTerm)
+    convertDecimalValue(pkg.extraMenuPrice).toString().includes(searchTerm)
   );
 
   // Open modal for creating new package
@@ -82,9 +83,9 @@ const MenuPackages = () => {
     setCurrentPackage(pkg);
     setFormData({
       name: pkg.name || '',
-      price: pkg.price || '',
+      price: convertDecimalValue(pkg.price) || '',
       maxSelect: pkg.maxSelect || 8,
-      extraMenuPrice: pkg.extraMenuPrice || 200,
+      extraMenuPrice: convertDecimalValue(pkg.extraMenuPrice) || 200,
       menus: pkg.menus.map(menu => typeof menu === 'object' ? menu._id : menu) || [],
       description: pkg.description || ''
     });
@@ -314,7 +315,7 @@ const MenuPackages = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Avg. Price</p>
               <p className="text-2xl font-semibold text-gray-900">
-                ฿{menuPackages.length > 0 ? Math.round(menuPackages.reduce((sum, pkg) => sum + pkg.price, 0) / menuPackages.length) : 0}
+                ฿{menuPackages.length > 0 ? Math.round(menuPackages.reduce((sum, pkg) => sum + convertDecimalValue(pkg.price), 0) / menuPackages.length) : 0}
               </p>
             </div>
           </div>
@@ -387,9 +388,9 @@ const MenuPackages = () => {
               {filteredMenuPackages.map((pkg) => (
                 <tr key={pkg._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{pkg.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">฿{pkg.price}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{formatPriceWithCurrency(pkg.price)}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{pkg.maxSelect}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">฿{pkg.extraMenuPrice}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{formatPriceWithCurrency(pkg.extraMenuPrice)}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{pkg.menus?.length || 0}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <div className="flex items-center space-x-2">
@@ -572,7 +573,7 @@ const MenuPackages = () => {
                                 />
                                 <span className="text-sm">{menu.name}</span>
                               </div>
-                              <span className="ml-auto text-xs text-gray-500">฿{menu.price}</span>
+                              <span className="ml-auto text-xs text-gray-500">{formatPriceWithCurrency(menu.price)}</span>
                             </div>
                           ))}
                         </div>
