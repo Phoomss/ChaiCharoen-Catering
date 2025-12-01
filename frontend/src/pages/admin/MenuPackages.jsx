@@ -36,7 +36,7 @@ const MenuPackages = () => {
     try {
       setLoading(true);
       const response = await menuPackageService.getAllMenuPackages();
-      setMenuPackages(response.data || []);
+      setMenuPackages(response.data.data || []);
       setError(null);
     } catch (err) {
       setError('Failed to load menu packages');
@@ -55,13 +55,6 @@ const MenuPackages = () => {
     }
   };
 
-  // Filter menu packages based on search
-  const filteredMenuPackages = menuPackages.filter(pkg =>
-    pkg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    convertDecimalValue(pkg.price).toString().includes(searchTerm) ||
-    pkg.maxSelect.toString().includes(searchTerm) ||
-    convertDecimalValue(pkg.extraMenuPrice).toString().includes(searchTerm)
-  );
 
   // Open modal for creating new package
   const openCreateModal = () => {
@@ -385,7 +378,14 @@ const MenuPackages = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredMenuPackages.map((pkg) => (
+              {Array.isArray(menuPackages) && menuPackages
+                .filter(pkg =>
+                  pkg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  convertDecimalValue(pkg.price).toString().includes(searchTerm) ||
+                  pkg.maxSelect.toString().includes(searchTerm) ||
+                  convertDecimalValue(pkg.extraMenuPrice).toString().includes(searchTerm)
+                )
+                .map((pkg) => (
                 <tr key={pkg._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{pkg.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{formatPriceWithCurrency(pkg.price)}</td>
@@ -414,7 +414,12 @@ const MenuPackages = () => {
           </table>
         </div>
 
-        {filteredMenuPackages.length === 0 && (
+        {Array.isArray(menuPackages) && menuPackages.filter(pkg =>
+          pkg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          convertDecimalValue(pkg.price).toString().includes(searchTerm) ||
+          pkg.maxSelect.toString().includes(searchTerm) ||
+          convertDecimalValue(pkg.extraMenuPrice).toString().includes(searchTerm)
+        ).length === 0 && (
           <div className="text-center py-8 text-gray-500">
             No menu packages found matching your criteria
           </div>

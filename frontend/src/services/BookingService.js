@@ -18,11 +18,16 @@ const updateBookingStatus = (id, statusData) => {
     return http.put(`${API_URL}/${id}/status`, statusData);
 };
 
+const deleteBooking = (id) => {
+    return http.delete(`${API_URL}/${id}`);
+};
+
 const bookingService = {
     createBooking,
     getAllBookings,
     getBookingById,
-    updateBookingStatus
+    updateBookingStatus,
+    deleteBooking
 };
 
 export default bookingService;
