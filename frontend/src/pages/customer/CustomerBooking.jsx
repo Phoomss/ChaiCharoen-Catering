@@ -45,21 +45,20 @@ const CustomerBooking = () => {
         // Fetch menu packages
         const fetchMenuPackages = async () => {
             try {
-                const response = await MenuPackageService.getAll();
+                const response = await MenuPackageService.getAllMenuPackages();
                 setMenuPackages(response.data.data);
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching menu packages:', error);
                 setLoading(false);
             }
-        };
-
+        }
         fetchMenuPackages();
     }, []);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        
+
         if (name.startsWith('customer.')) {
             const field = name.split('.')[1];
             setBookingData(prev => ({
@@ -88,13 +87,20 @@ const CustomerBooking = () => {
 
     const handlePackageChange = (e) => {
         const selectedPackage = menuPackages.find(pkg => pkg._id === e.target.value);
+
         if (selectedPackage) {
+            //  การแก้ไข: ดึงค่าที่เป็น String จาก $numberDecimal หรือใช้ค่าตรงๆ
+            const priceValue = typeof selectedPackage.price === 'object'
+                ? selectedPackage.price.$numberDecimal
+                : selectedPackage.price;
+
             setBookingData(prev => ({
                 ...prev,
                 package: {
                     packageID: selectedPackage._id,
                     package_name: selectedPackage.name,
-                    price_per_table: selectedPackage.price
+                    //  เก็บราคาเป็น String/Number ที่ใช้งานได้แล้ว
+                    price_per_table: priceValue
                 }
             }));
         }
@@ -102,7 +108,7 @@ const CustomerBooking = () => {
 
     const calculateTotalPrice = () => {
         if (bookingData.package.price_per_table && bookingData.table_count) {
-            const price = parseFloat(bookingData.package.price_per_table.$numberDecimal || bookingData.package.price_per_table);
+            const price = parseFloat(bookingData.package.price_per_table);
             const count = parseInt(bookingData.table_count);
             return price * count;
         }
@@ -251,10 +257,10 @@ const CustomerBooking = () => {
                                 required
                             >
                                 <option value="" disabled>เลือกชื่อชุดโต๊ะจีน</option>
-                                {menuPackages.map(pkg => (
+                                {menuPackages?.map(pkg => (
                                     <option key={pkg._id} value={pkg._id}>
-                                        {pkg.name} - {typeof pkg.price === 'object' 
-                                            ? `${pkg.price.$numberDecimal} บาท/โต๊ะ` 
+                                        {pkg.name} - {typeof pkg.price === 'object'
+                                            ? `${pkg.price.$numberDecimal} บาท/โต๊ะ`
                                             : `${pkg.price} บาท/โต๊ะ`}
                                     </option>
                                 ))}
@@ -304,9 +310,8 @@ const CustomerBooking = () => {
                                     <div>
                                         <p className="text-gray-600">ราคาต่อโต๊ะ:</p>
                                         <p className="font-medium">
-                                            {typeof bookingData.package.price_per_table === 'object' 
-                                                ? `${bookingData.package.price_per_table.$numberDecimal} บาท` 
-                                                : `${bookingData.package.price_per_table} บาท`}
+                                            {/* 💡 ปรับปรุง: ใช้ค่าตรงๆ ได้เลย */}
+                                            {parseFloat(bookingData.package.price_per_table).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท
                                         </p>
                                     </div>
                                     <div>
@@ -321,12 +326,12 @@ const CustomerBooking = () => {
 
                         {/* Terms and Conditions */}
                         <div className="flex items-center mt-6">
-                            <input 
-                                type="checkbox" 
+                            <input
+                                type="checkbox"
                                 id="agreement"
                                 checked={agreed}
                                 onChange={(e) => setAgreed(e.target.checked)}
-                                className="checkbox checkbox-green" 
+                                className="checkbox checkbox-green"
                             />
                             <label htmlFor="agreement" className="label-text ml-2 text-gray-600">
                                 ฉันยอมรับ <a href="#" className="text-green-600 underline">เงื่อนไขและข้อตกลง</a> ทั้งหมด
@@ -334,8 +339,8 @@ const CustomerBooking = () => {
                         </div>
 
                         {/* Submit Button */}
-                        <button 
-                            type="submit" 
+                        <button
+                            type="submit"
                             className="btn bg-green-600 text-white hover:bg-green-700 w-full mt-6 py-4 text-lg"
                             disabled={!agreed}
                         >

@@ -66,7 +66,7 @@ exports.getMenuById = async (req, res) => {
 
     if (!menu) return res.status(404).json({ message: "Menu not found" });
 
-    res.status(200).json(menu);
+    res.status(200).json({ data: menu });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -105,7 +105,7 @@ exports.deleteMenu = async (req, res) => {
       return res.status(404).json({ message: "Menu not found" });
     }
 
-    res.status(200).json({ message: "Menu deleted successfully" });
+    res.status(200).json({ message: "Menu deleted successfully", data: deleted });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

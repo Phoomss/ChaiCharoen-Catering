@@ -68,10 +68,10 @@ const updateProfile = async (req, res) => {
         const userId = req.user._id;
 
         const user = await userModel.findById(userId);
-        if (!user) return res.status(404).json({ msg: "ไม่พบผู้ใช้" });
+        if (!user) return res.status(404).json({ message: "ไม่พบผู้ใช้" });
 
         if (req.body.role && req.body.role !== user.role) {
-            return res.status(403).json({ msg: "คุณไม่มีสิทธิ์แก้ไข Role" });
+            return res.status(403).json({ message: "คุณไม่มีสิทธิ์แก้ไข Role" });
         }
 
         const exists = await userModel.findOne({
@@ -103,7 +103,7 @@ const updateProfile = async (req, res) => {
             username: username ?? user.username,
             email: email ?? user.email,
             password: hashedPassword,
-            phone: phone ?? user.phon
+            phone: phone ?? user.phone
         };
 
         const updatedUser = await userModel.findByIdAndUpdate(
@@ -187,7 +187,7 @@ const deleteUser = async (req, res) => {
         const user = await userModel.findByIdAndDelete(id);
         if (!user) return res.status(404).json({ message: "User not found" });
 
-        res.status(200).json({ message: "User deleted successfully" });
+        res.status(200).json({ message: "User deleted successfully", data: user });
 
     } catch (error) {
         console.error("deleteUser Error:", error);

@@ -8,12 +8,12 @@ const register = async (req, res) => {
 
         // Validate required fields
         if (!username || !password || !phone || !firstName || !lastName) {
-            return res.status(400).json({ msg: "กรุณากรอกข้อมูลให้ครบถ้วน" });
+            return res.status(400).json({ message: "กรุณากรอกข้อมูลให้ครบถ้วน" });
         }
 
         // Validate phone format
         if (!/^[0-9]{10}$/.test(phone)) {
-            return res.status(400).json({ msg: "กรุณากรอกเบอร์โทรให้ครบ 10 ตัวเลข" });
+            return res.status(400).json({ message: "กรุณากรอกเบอร์โทรให้ครบ 10 ตัวเลข" });
         }
 
         // Check unique fields
@@ -23,7 +23,7 @@ const register = async (req, res) => {
 
         if (existingUser) {
             return res.status(400).json({
-                msg: existingUser.username === username
+                message: existingUser.username === username
                     ? "Username นี้ถูกใช้งานแล้ว"
                     : "เบอร์โทรนี้ถูกใช้งานแล้ว"
             });
@@ -45,7 +45,7 @@ const register = async (req, res) => {
         });
 
         res.status(201).json({
-            msg: "สมัครสมาชิกสำเร็จ",
+            message: "สมัครสมาชิกสำเร็จ",
             data: {
                 id: newUser._id,
                 username: newUser.username,
@@ -55,7 +55,7 @@ const register = async (req, res) => {
         });
     } catch (error) {
         console.error("Register Error:", error);
-        res.status(500).json({ msg: "Internal Server Error" });
+        res.status(500).json({ message: "Internal Server Error" });
     }
 };
 
@@ -64,7 +64,7 @@ const login = async (req, res) => {
         const { login, password } = req.body;
 
         if (!login || !password) {
-            return res.status(400).json({ msg: "กรุณากรอกชื่อผู้ใช้และรหัสผ่าน" });
+            return res.status(400).json({ message: "กรุณากรอกชื่อผู้ใช้และรหัสผ่าน" });
         }
 
         // Find by username OR email
@@ -76,13 +76,13 @@ const login = async (req, res) => {
         });
 
         if (!user) {
-            return res.status(404).json({ msg: "ไม่พบผู้ใช้งานนี้" });
+            return res.status(404).json({ message: "ไม่พบผู้ใช้งานนี้" });
         }
 
         // Compare password
         const passwordMatch = await comparePassword(password, user.password);
         if (!passwordMatch) {
-            return res.status(401).json({ msg: "รหัสผ่านไม่ถูกต้อง" });
+            return res.status(401).json({ message: "รหัสผ่านไม่ถูกต้อง" });
         }
 
         // Generate token
@@ -98,7 +98,7 @@ const login = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            msg: "เข้าสู่ระบบสำเร็จ",
+            message: "เข้าสู่ระบบสำเร็จ",
             data: {
                 full_name: `${user.title || ""} ${user.firstName} ${user.lastName}`.trim(),
                 username: user.username,
@@ -110,7 +110,7 @@ const login = async (req, res) => {
         });
     } catch (error) {
         console.error("Login Error:", error);
-        res.status(500).json({ msg: "Internal Server Error" });
+        res.status(500).json({ message: "Internal Server Error" });
     }
 };
 

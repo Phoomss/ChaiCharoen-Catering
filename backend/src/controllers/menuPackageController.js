@@ -87,7 +87,7 @@ exports.getAllMenuPackages = async (req, res) => {
       .populate("menus") // แสดงรายละเอียด menu ด้วย
       .sort({ createdAt: -1 });
 
-    res.status(200).json(packages);
+    res.status(200).json({ data: packages });
   } catch (error) {
     console.error("getAllMenuPackages Error:", error);
     res.status(500).json({ message: error.message });
@@ -102,7 +102,7 @@ exports.getMenuPackageById = async (req, res) => {
     if (!menuPackage) {
       return res.status(404).json({ message: "MenuPackage not found" });
     }
-    res.status(200).json(menuPackage);
+    res.status(200).json({ data: menuPackage });
   } catch (error) {
     console.error("getMenuPackageById Error:", error);
     res.status(500).json({ message: error.message });
