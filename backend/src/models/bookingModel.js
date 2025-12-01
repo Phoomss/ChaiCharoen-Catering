@@ -1,138 +1,97 @@
 const mongoose = require("mongoose");
+const Decimal128 = mongoose.Types.Decimal128; 
+
+const paymentStatusEnums = ['pending-deposit', 'deposit-paid', 'full-payment', 'cancelled'];
+const paymentTypeEnums = ['deposit', 'balance', 'full-payment']; // ประเภทการจ่ายใน Array 'payments'
 
 const bookingSchema = new mongoose.Schema(
   {
-    bookingCode: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-    },
-
     customer: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+      customerID: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+      name: { type: String, required: true },
+      phone: { type: String, required: true },
+      email: { type: String, required: true },
     },
 
-    eventDate: {
+    package: {
+      packageID: { // อาจใช้ ID อ้างอิงได้ ถ้าต้องการทราบว่าอิงจากแพ็กเกจใด
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "MenuPackage",
+        required: true,
+      },
+      package_name: { type: String, required: true },
+      price_per_table: { type: Decimal128, required: true },
+    },
+
+    booking_date: {
       type: Date,
       required: true,
+      default: Date.now // วันที่ทำการจอง
     },
 
-    eventTime: {
-      type: String,
+    event_datetime: {
+      type: Date, // วัน/เวลาที่จัดงาน (รวม Date และ Time)
       required: true,
     },
 
-    venue: {
-      type: String,
+    table_count: {
+      type: Number, // จำนวนโต๊ะที่จอง
       required: true,
-      trim: true,
+      min: 1
     },
 
-    contactPhone: {
-      type: String,
-      required: true,
-    },
-
-    tableCount: {
-      type: Number,
-      required: true,
-      min: 1,
-    },
-
-    // ----------------------------
-    // 📌 เลือกแพ็กเกจ เช่น 1800, 2000, 3500
-    // ----------------------------
-    menuPackage: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "MenuPackage",
-      required: true,
-    },
-
-    // ----------------------------
-    // 📌 เมนูที่ลูกค้าเลือกจริง (IDs)
-    // ----------------------------
-    selectedMenus: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Menu",
+    location: {
+      address: { type: String, required: true },
+      latitude: {
+        type: Number, 
+        required: true,
       },
+      longitude: {
+        type: Number, 
+        required: true,
+      },
+    },
+
+    payment_status: {
+      type: String, // สถานะการชำระเงิน
+      required: true,
+      enum: paymentStatusEnums,
+      default: 'pending-deposit'
+    },
+    
+    total_price: {
+      type: Decimal128, // ราคารวมทั้งหมด
+      default: 0
+    },
+
+    deposit_required: {
+      type: Decimal128, // ยอดมัดจำที่ต้องชำระ
+      required: true
+    },
+
+    menu_sets: [
+      {
+        menu_name: { type: String, required: true },
+        quantity: { type: Number, required: true }
+      }
     ],
 
-    // ----------------------------
-    // 📌 จำนวนเมนูเกินที่คิดเพิ่ม
-    // เช่น maxSelect = 8 แต่เลือก 10 → extraCount = 2
-    // ----------------------------
-    extraMenuCount: {
-      type: Number,
-      default: 0,
-    },
-
-    // ----------------------------
-    // 📌 ราคาเพิ่มรวมของเมนูเกิน
-    // extraMenuCount * extraPrice * tableCount
-    // ----------------------------
-    extraMenuCost: {
-      type: Number,
-      default: 0,
-    },
-
-    // ----------------------------
-    // 📌 ราคาต่อโต๊ะของแพ็กเกจ (เผื่อมีการแก้ราคาในอนาคต)
-    // ----------------------------
-    packagePrice: {
-      type: Number,
-      required: true,
-    },
-
-    // ----------------------------
-    // 📌 ราคารวมทั้งหมดของงานนี้
-    // (tableCount * packagePrice) + extraMenuCost
-    // ----------------------------
-    totalPrice: {
-      type: Number,
-      default: 0,
-    },
-
-    specialRequest: {
-      type: String,
-      default: "",
-    },
-
-    status: {
-      type: String,
-      enum: [
-        "pending",        // จองใหม่
-        "confirmed",      // ร้านคอนเฟิร์มแล้ว
-        "deposit-paid",   // จ่ายมัดจำแล้ว
-        "completed",      // งานจบ
-        "cancelled",
-      ],
-      default: "pending",
-    },
-
-    // ----------------------------
-    // 📌 ประวัติการเปลี่ยนสถานะ (Activity log)
-    // ----------------------------
-    statusLogs: [
+    payments: [
       {
-        status: String,
-        message: String,
-        updatedAt: { type: Date, default: Date.now },
-      },
-    ],
-
-    // ----------------------------
-    // 📌 ส่วนการชำระเงิน
-    // ----------------------------
-    payment: {
-      depositAmount: { type: Number, default: 0 },   // มัดจำที่ต้องจ่าย
-      depositPaid: { type: Boolean, default: false },
-      paidAt: { type: Date, default: null },
-      slipImage: { type: String, default: "" },
-    }
+        payment_date: { type: Date, default: Date.now },
+        amount: { type: Decimal128, required: true },
+        payment_type: { 
+            type: String,
+            enum: paymentTypeEnums,
+            required: true // มัดจำ, ยอดคงเหลือ
+        },
+        slip_image: { type: String } // หลักฐานการชำระเงิน
+      }
+    ]
   },
   { timestamps: true }
 );

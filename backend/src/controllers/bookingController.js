@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const BookingModel = require("../models/bookingModel");
 const MenuPackageModel = require("../models/menuPackageModel");
 
@@ -5,45 +6,47 @@ const MenuPackageModel = require("../models/menuPackageModel");
 exports.createBooking = async (req, res) => {
   try {
     const {
-      bookingCode,
-      customer,
-      eventDate,
-      eventTime,
-      venue,
-      contactPhone,
-      tableCount,
-      menuPackage: packageId,
-      selectedMenus = [],
+      customer: customerInfo,
+      packageId,
+      event_datetime,
+      table_count,
+      location,
       specialRequest,
+      deposit_required
     } = req.body;
 
     // ตรวจสอบ package
-    const menuPackage = await MenuPackageModel.findById(packageId).populate("menus");
+    const menuPackage = await MenuPackageModel.findById(packageId);
     if (!menuPackage) {
       return res.status(404).json({ message: "Menu package not found" });
     }
 
-    // คำนวณเมนูเกิน
-    const extraCount = Math.max(0, selectedMenus.length - menuPackage.maxSelect);
-    const extraCost = extraCount * menuPackage.extraMenuPrice * tableCount;
-    const totalPrice = tableCount * menuPackage.price + extraCost;
+    // คำนวณยอดรวมและแปลงเป็น Decimal128
+    const totalPrice = new mongoose.Types.Decimal128((menuPackage.price * table_count).toString());
+    const pricePerTable = new mongoose.Types.Decimal128(menuPackage.price.toString());
+    const depositRequired = deposit_required ?
+      new mongoose.Types.Decimal128(deposit_required.toString()) :
+      new mongoose.Types.Decimal128((menuPackage.price * 0.3 * table_count).toString()); // 30% as default deposit
 
     const booking = await BookingModel.create({
-      bookingCode,
-      customer,
-      eventDate,
-      eventTime,
-      venue,
-      contactPhone,
-      tableCount,
-      menuPackage: packageId,
-      selectedMenus,
-      extraMenuCount: extraCount,
-      extraMenuCost: extraCost,
-      packagePrice: menuPackage.price,
-      totalPrice,
-      specialRequest,
-      status: "pending",
+      customer: {
+        customerID: customerInfo.customerID || null,
+        name: customerInfo.name,
+        phone: customerInfo.phone,
+        email: customerInfo.email
+      },
+      package: {
+        packageID: menuPackage._id,
+        package_name: `Package ${menuPackage.price}`,
+        price_per_table: pricePerTable
+      },
+      event_datetime,
+      table_count,
+      location,
+      specialRequest: specialRequest || "",
+      deposit_required: depositRequired,
+      total_price: totalPrice,
+      booking_date: new Date()
     });
 
     res.status(201).json({ message: "Booking created successfully", data: booking });
@@ -57,9 +60,8 @@ exports.createBooking = async (req, res) => {
 exports.getAllBookings = async (req, res) => {
   try {
     const bookings = await BookingModel.find()
-      .populate("customer", "name email phone")
-      .populate("menuPackage")
-      .populate("selectedMenus");
+      .populate("customer.customerID", "name email phone")
+      .populate("package.packageID");
 
     res.status(200).json({ data: bookings });
   } catch (error) {
@@ -72,9 +74,8 @@ exports.getAllBookings = async (req, res) => {
 exports.getBookingById = async (req, res) => {
   try {
     const booking = await BookingModel.findById(req.params.id)
-      .populate("customer", "name email phone")
-      .populate("menuPackage")
-      .populate("selectedMenus");
+      .populate("customer.customerID", "name email phone")
+      .populate("package.packageID");
 
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
@@ -97,8 +98,16 @@ exports.updateBookingStatus = async (req, res) => {
       return res.status(404).json({ message: "Booking not found" });
     }
 
-    booking.status = status;
-    booking.statusLogs.push({ status, message });
+    booking.payment_status = status;
+    if (status && message) {
+      booking.payments = booking.payments || [];
+      booking.payments.push({
+        payment_date: new Date(),
+        amount: booking.deposit_required,
+        payment_type: 'deposit',
+        slip_image: null
+      });
+    }
     await booking.save();
 
     res.status(200).json({ message: "Booking status updated", data: booking });
