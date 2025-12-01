@@ -6,8 +6,8 @@ const Booking = () => {
 
   // Check if user is logged in as customer
   useEffect(() => {
-    const token = localStorage.getItem('userToken');
-    const user = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('username');
 
     if (token && user) {
       // If user is logged in, redirect to customer booking page

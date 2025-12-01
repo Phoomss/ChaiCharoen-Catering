@@ -16,8 +16,9 @@ const CustomerNavbar = () => {
     // Function to handle logout
     const handleLogout = () => {
         // Clear user session/token
-        localStorage.removeItem('userToken');
-        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+         localStorage.removeItem('userRole');
         // Redirect to login or home
         window.location.href = '/login';
     };

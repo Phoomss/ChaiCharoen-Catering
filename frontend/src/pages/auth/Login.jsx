@@ -79,15 +79,17 @@ const Login = () => {
 
       const response = await authService.login(loginData)
       const userRole = response.data.data.role;
+      const token = response.data.data.token
       if (response.data.success) {
         // Store token in localStorage or sessionStorage based on "remember me" option
         if (loginData.rememberMe) {
-          localStorage.setItem('token', response.data.data.token)
+          localStorage.setItem('token', token)
         } else {
-          sessionStorage.setItem('token', response.data.data.token)
+          sessionStorage.setItem('token', token)
         }
 
         // Store user info
+        localStorage.setItem('token', token)
         localStorage.setItem('userRole', userRole)
         localStorage.setItem('username', response.data.data.username)
 
