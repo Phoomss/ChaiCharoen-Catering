@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router';
-import axios from 'axios';
+import CustomerService from '../../services/CustomerService';
 
 const CustomerDashboard = () => {
     const [dashboardData, setDashboardData] = useState({
@@ -13,12 +13,7 @@ const CustomerDashboard = () => {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const token = localStorage.getItem('userToken');
-                const response = await axios.get('http://localhost:3000/api/customer/dashboard', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+                const response = await CustomerService.getDashboardSummary();
 
                 setDashboardData(response.data.data);
                 setLoading(false);

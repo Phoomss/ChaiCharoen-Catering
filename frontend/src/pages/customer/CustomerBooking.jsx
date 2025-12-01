@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import axios from 'axios';
+import CustomerService from '../../services/CustomerService';
+import MenuPackageService from '../../services/MenuPackageService';
 
 const CustomerBooking = () => {
     const navigate = useNavigate();
@@ -44,7 +45,7 @@ const CustomerBooking = () => {
         // Fetch menu packages
         const fetchMenuPackages = async () => {
             try {
-                const response = await axios.get('http://localhost:3000/api/menu-packages');
+                const response = await MenuPackageService.getAll();
                 setMenuPackages(response.data.data);
                 setLoading(false);
             } catch (error) {
@@ -117,7 +118,6 @@ const CustomerBooking = () => {
         }
 
         try {
-            const token = localStorage.getItem('userToken');
             // Prepare booking data for submission
             const bookingPayload = {
                 customer: {
@@ -139,16 +139,7 @@ const CustomerBooking = () => {
                 deposit_required: calculateTotalPrice() * 0.3
             };
 
-            const response = await axios.post(
-                'http://localhost:3000/api/bookings',
-                bookingPayload,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
+            const response = await CustomerService.createBooking(bookingPayload);
 
             // Navigate to confirmation page
             navigate(`/customer/booking-confirmation/${response.data.data._id}`);

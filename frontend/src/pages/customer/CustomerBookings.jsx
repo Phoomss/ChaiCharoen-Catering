@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router';
-import axios from 'axios';
+import CustomerService from '../../services/CustomerService';
 
 const CustomerBookings = () => {
     const [bookings, setBookings] = useState([]);
@@ -10,12 +10,7 @@ const CustomerBookings = () => {
     useEffect(() => {
         const fetchBookings = async () => {
             try {
-                const token = localStorage.getItem('userToken');
-                const response = await axios.get(`http://localhost:3000/api/customer/bookings${statusFilter ? `?status=${statusFilter}` : ''}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+                const response = await CustomerService.getBookings(statusFilter);
 
                 setBookings(response.data.data);
                 setLoading(false);

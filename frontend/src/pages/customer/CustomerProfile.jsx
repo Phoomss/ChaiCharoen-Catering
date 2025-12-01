@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router';
-import axios from 'axios';
+import CustomerService from '../../services/CustomerService';
 
 const CustomerProfile = () => {
     const [customerData, setCustomerData] = useState({
@@ -18,12 +18,7 @@ const CustomerProfile = () => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const token = localStorage.getItem('userToken');
-                const response = await axios.get('http://localhost:3000/api/customer/profile', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+                const response = await CustomerService.getProfile();
 
                 setCustomerData(response.data.data);
                 setLoading(false);
@@ -144,17 +139,7 @@ const CustomerProfile = () => {
                                         className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                                         onClick={async () => {
                                             try {
-                                                const token = localStorage.getItem('userToken');
-                                                const response = await axios.put(
-                                                    'http://localhost:3000/api/customer/profile',
-                                                    customerData,
-                                                    {
-                                                        headers: {
-                                                            'Authorization': `Bearer ${token}`,
-                                                            'Content-Type': 'application/json'
-                                                        }
-                                                    }
-                                                );
+                                                await CustomerService.updateProfile(customerData);
 
                                                 alert('อัปเดตโปรไฟล์สำเร็จ');
                                                 setEditing(false);
@@ -173,12 +158,7 @@ const CustomerProfile = () => {
                                             // Reset data to original
                                             const fetchProfile = async () => {
                                                 try {
-                                                    const token = localStorage.getItem('userToken');
-                                                    const response = await axios.get('http://localhost:3000/api/customer/profile', {
-                                                        headers: {
-                                                            'Authorization': `Bearer ${token}`
-                                                        }
-                                                    });
+                                                    const response = await CustomerService.getProfile();
                                                     setCustomerData(response.data.data);
                                                 } catch (error) {
                                                     console.error('Error fetching profile:', error);
