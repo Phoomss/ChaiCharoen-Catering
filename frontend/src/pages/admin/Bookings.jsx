@@ -453,7 +453,9 @@ const Bookings = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     {booking.table_count || 0} tables<br />
-                    <span className="font-medium">฿{booking.total_price?.toString() || 0}</span>
+                    <span className="font-medium"> {typeof booking.total_price === 'object'
+                                            ? booking.total_price.$numberDecimal
+                                            : booking.total_price} บาท</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <select
@@ -564,11 +566,11 @@ const Bookings = () => {
                     </div>
                     <div className="flex">
                       <span className="font-medium w-32 text-gray-600">Total Price:</span>
-                      <span className="text-gray-800 font-medium">฿{selectedBooking.total_price?.toString() || 0}</span>
+                      <span className="text-gray-800 font-medium">{typeof selectedBooking.total_price === 'object' ? selectedBooking.total_price.$numberDecimal : selectedBooking.total_price} บาท</span>
                     </div>
                     <div className="flex">
                       <span className="font-medium w-32 text-gray-600">Deposit Required:</span>
-                      <span className="text-gray-800 font-medium">฿{selectedBooking.deposit_required?.toString() || 0}</span>
+                      <span className="text-gray-800 font-medium">{typeof selectedBooking.deposit_required === 'object' ? selectedBooking.deposit_required.$numberDecimal : selectedBooking.booking.deposit_required} บาท</span>
                     </div>
                   </div>
                 </div>
