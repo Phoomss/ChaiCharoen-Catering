@@ -23,4 +23,7 @@ router.get('/profile', authenticateToken, asyncHandler(customerController.getCus
 // PUT: update customer profile
 router.put('/profile', authenticateToken, asyncHandler(customerController.updateCustomerProfile));
 
+// DELETE: cancel customer booking
+router.delete('/booking/:id', authenticateToken, asyncHandler(customerController.cancelCustomerBooking));
+
 module.exports = router;

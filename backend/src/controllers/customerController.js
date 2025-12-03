@@ -75,7 +75,7 @@ const getCustomerBookings = async (req, res) => {
 
         const bookings = await bookingModel.find(query)
             .sort({ createdAt: -1 })
-            .select('package.package_name event_datetime table_count payment_status total_price createdAt');
+            // .select('package.package_name event_datetime table_count payment_status total_price createdAt');
 
         res.status(200).json({ data: bookings });
 
@@ -151,9 +151,50 @@ const updateCustomerProfile = async (req, res) => {
     }
 };
 
+// Cancel customer's booking
+const cancelCustomerBooking = async (req, res) => {
+    try {
+        const customerId = req.user._id;
+        const { id } = req.params;
+
+        // Find the booking that belongs to the customer
+        const booking = await bookingModel.findOne({
+            _id: id,
+            'customer.customerID': customerId
+        });
+
+        if (!booking) {
+            return res.status(404).json({ message: "Booking not found or does not belong to customer" });
+        }
+
+        // Check if the booking can be cancelled (only allow cancellation if status is pending-deposit)
+        if (booking.payment_status !== 'pending-deposit') {
+            return res.status(400).json({
+                message: `Cannot cancel booking with status: ${booking.payment_status}. Only pending bookings can be cancelled.`
+            });
+        }
+
+        // Update booking status to cancelled
+        booking.payment_status = 'cancelled';
+        await booking.save();
+
+        // Optionally, you could add a cancellation record or note here
+
+        res.status(200).json({
+            message: "Booking cancelled successfully",
+            data: booking
+        });
+
+    } catch (error) {
+        console.error("cancelCustomerBooking Error:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
 module.exports = {
     getCustomerDashboardSummary,
     getCustomerBookings,
     getCustomerProfile,
-    updateCustomerProfile
+    updateCustomerProfile,
+    cancelCustomerBooking
 };

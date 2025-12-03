@@ -361,14 +361,29 @@ const CustomerBooking = () => {
                             </label>
                         </div>
 
-                        {/* Submit Button */}
-                        <button
-                            type="submit"
-                            className="btn bg-green-600 text-white hover:bg-green-700 w-full mt-6 py-4 text-lg"
-                            disabled={!agreed}
-                        >
-                            ยืนยันการจอง
-                        </button>
+                        {agreed ? (
+                            <div>
+                                <button
+                                    type="submit"
+                                    className="btn bg-green-600 text-white hover:bg-green-700 w-full mt-6 py-4 text-lg"
+                                >
+                                    ยืนยันการจอง
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="opacity-50 cursor-not-allowed">
+                                <button
+                                    type="button"
+                                    className="btn bg-green-600 text-white w-full mt-6 py-4 text-lg"
+                                    disabled
+                                >
+                                    ยืนยันการจอง
+                                </button>
+                                <p className="text-center text-red-500 mt-2 font-medium">
+                                    กรุณาตกลงเงื่อนไขและข้อตกลงก่อนยืนยันการจอง
+                                </p>
+                            </div>
+                        )}
                     </form>
                 </div>
 

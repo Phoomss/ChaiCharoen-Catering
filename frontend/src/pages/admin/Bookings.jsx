@@ -210,6 +210,7 @@ const Bookings = () => {
   const filteredBookings = bookings.filter(booking => {
     // Search term filter - ensure properties exist and are strings before calling toLowerCase
     const matchesSearch =
+      (booking.bookingCode && typeof booking.bookingCode === 'string' && booking.bookingCode.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (booking._id && typeof booking._id === 'string' && booking._id.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (booking.customer?.name && typeof booking.customer.name === 'string' && booking.customer.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (booking.customer?.email && typeof booking.customer.email === 'string' && booking.customer.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -432,7 +433,7 @@ const Bookings = () => {
             <tbody className="divide-y divide-gray-200">
               {filteredBookings.map((booking, index) => (
                 <tr key={booking._id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{index + 1}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{booking.bookingCode || booking._id}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{booking.customer?.name || booking.customer || 'N/A'}</div>
                     <div className="text-sm text-gray-600">{booking.customer?.email || 'N/A'}</div>
@@ -538,6 +539,10 @@ const Bookings = () => {
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h4 className="text-lg font-semibold text-gray-700 mb-3">Booking Information</h4>
                   <div className="space-y-2">
+                    <div className="flex">
+                      <span className="font-medium w-32 text-gray-600">Booking Code:</span>
+                      <span className="text-gray-800">{selectedBooking.bookingCode || 'N/A'}</span>
+                    </div>
                     <div className="flex">
                       <span className="font-medium w-32 text-gray-600">Booking ID:</span>
                       <span className="text-gray-800">{selectedBooking._id}</span>

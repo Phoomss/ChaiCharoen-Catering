@@ -1,11 +1,30 @@
 const mongoose = require("mongoose");
-const Decimal128 = mongoose.Types.Decimal128; 
+const Decimal128 = mongoose.Types.Decimal128;
 
 const paymentStatusEnums = ['pending-deposit', 'deposit-paid', 'full-payment', 'cancelled'];
 const paymentTypeEnums = ['deposit', 'balance', 'full-payment']; // ประเภทการจ่ายใน Array 'payments'
 
+// Function to generate unique booking code
+function generateBookingCode() {
+  const date = new Date();
+  const year = date.getFullYear().toString();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const randomNum = Math.floor(1000 + Math.random() * 9000); // 4 digit random number
+  return `BK-${year}${month}${day}${randomNum}`;
+}
+
 const bookingSchema = new mongoose.Schema(
   {
+    bookingCode: {
+      type: String,
+      required: true,
+      unique: true, // Ensures uniqueness
+      default: function() {
+        return generateBookingCode();
+      },
+      index: true
+    },
     customer: {
       customerID: {
         type: mongoose.Schema.Types.ObjectId,
@@ -47,11 +66,11 @@ const bookingSchema = new mongoose.Schema(
     location: {
       address: { type: String, required: true },
       latitude: {
-        type: Number, 
+        type: Number,
         required: true,
       },
       longitude: {
-        type: Number, 
+        type: Number,
         required: true,
       },
     },
@@ -62,7 +81,7 @@ const bookingSchema = new mongoose.Schema(
       enum: paymentStatusEnums,
       default: 'pending-deposit'
     },
-    
+
     total_price: {
       type: Decimal128, // ราคารวมทั้งหมด
       default: 0
@@ -84,10 +103,10 @@ const bookingSchema = new mongoose.Schema(
       {
         payment_date: { type: Date, default: Date.now },
         amount: { type: Decimal128, required: true },
-        payment_type: { 
-            type: String,
-            enum: paymentTypeEnums,
-            required: true // มัดจำ, ยอดคงเหลือ
+        payment_type: {
+          type: String,
+          enum: paymentTypeEnums,
+          required: true // มัดจำ, ยอดคงเหลือ
         },
         slip_image: { type: String } // หลักฐานการชำระเงิน
       }

@@ -9,6 +9,43 @@ const BookingDetails = () => {
     const [booking, setBooking] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    const cancelBooking = async (bookingId, bookingCode) => {
+        const result = await Swal.fire({
+            title: 'คุณแน่ใจหรือไม่?',
+            text: `คุณต้องการยกเลิกการจอง ${bookingCode || `ID: ${bookingId}`  } ใช่หรือไม่?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'ใช่, ยกเลิกเลย!',
+            cancelButtonText: 'ยกเลิก'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await CustomerService.cancelBooking(bookingId);
+
+                Swal.fire({
+                    title: 'ยกเลิกแล้ว!',
+                    text: 'การจองของคุณได้รับการยกเลิกเรียบร้อยแล้ว',
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6'
+                });
+
+                // Refresh the booking details
+                fetchBookingDetails();
+            } catch (error) {
+                console.error('Error cancelling booking:', error);
+                Swal.fire({
+                    title: 'เกิดข้อผิดพลาด!',
+                    text: error.response?.data?.message || 'ไม่สามารถยกเลิกการจองได้ กรุณาลองใหม่อีกครั้ง',
+                    icon: 'error',
+                    confirmButtonColor: '#d33'
+                });
+            }
+        }
+    };
+
     useEffect(() => {
         const fetchBookingDetails = async () => {
             try {
@@ -85,7 +122,7 @@ const BookingDetails = () => {
                 <div className="bg-white rounded-xl shadow-md border border-green-200 p-6 mb-6">
                     <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-800">รายละเอียดการจอง #{booking._id?.substring(0, 8)}</h1>
+                            <h1 className="text-2xl font-bold text-gray-800">รายละเอียดการจอง {booking.bookingCode ? `#${booking.bookingCode}` : `#${booking._id?.substring(0, 8)}`}</h1>
                             <p className="text-gray-600">วันที่จอง: {new Date(booking.createdAt).toLocaleDateString('th-TH', {
                                 year: 'numeric',
                                 month: 'long',
@@ -284,9 +321,19 @@ const BookingDetails = () => {
                                 <button className="btn w-full bg-gray-200 text-gray-700 hover:bg-gray-300">
                                     พิมพ์ใบแจ้งหนี้
                                 </button>
-                                <button className="btn w-full border border-red-500 text-red-500 hover:bg-red-50">
-                                    ยกเลิกการจอง
-                                </button>
+                                {booking.payment_status === 'pending-deposit' ? (
+                                    <button
+                                        onClick={() => cancelBooking(booking._id, booking.bookingCode)}
+                                        className="btn w-full border border-red-500 text-red-500 hover:bg-red-50">
+                                        ยกเลิกการจอง
+                                    </button>
+                                ) : (
+                                    <button
+                                        className="btn w-full border border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed"
+                                        disabled={true}>
+                                        ยกเลิกการจอง
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>

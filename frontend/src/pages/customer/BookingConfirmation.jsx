@@ -65,7 +65,8 @@ const BookingConfirmation = () => {
                         <h2 className="text-xl font-bold text-green-700 mb-4">รายละเอียดการจอง</h2>
                         <div className="grid md:grid-cols-2 gap-6">
                             <div>
-                                <h3 className="text-lg font-semibold text-gray-800 mb-2">ข้อมูลลูกค้า</h3>
+                                <h3 className="text-lg font-semibold text-gray-800 mb-2">ข้อมูลการจอง</h3>
+                                <p className="text-gray-600"><span className="font-medium">รหัสการจอง:</span> {booking.bookingCode || booking._id}</p>
                                 <p className="text-gray-600"><span className="font-medium">ชื่อ:</span> {booking.customer.name}</p>
                                 <p className="text-gray-600"><span className="font-medium">เบอร์โทร:</span> {booking.customer.phone}</p>
                                 <p className="text-gray-600"><span className="font-medium">อีเมล:</span> {booking.customer.email}</p>

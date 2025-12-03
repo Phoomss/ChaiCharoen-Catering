@@ -29,6 +29,10 @@ const getPackageMenu = () => {
     return http.get('/menu-packages');
 };
 
+const cancelBooking = (id) => {
+    return http.delete(`/customer/booking/${id}`);
+};
+
 const CustomerService = {
     getDashboardSummary,
     getBookings,
@@ -36,7 +40,8 @@ const CustomerService = {
     updateProfile,
     createBooking,
     getBookingById,
-    getPackageMenu
+    getPackageMenu,
+    cancelBooking
 };
 
 export default CustomerService;
