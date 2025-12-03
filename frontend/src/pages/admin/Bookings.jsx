@@ -10,6 +10,8 @@ const Bookings = () => {
   const [error, setError] = useState(null);
   const [statusFilter, setStatusFilter] = useState('All'); // Filter by status
   const [dateRange, setDateRange] = useState({ start: '', end: '' }); // Filter by date range
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   // Load bookings from API when component mounts
   useEffect(() => {
@@ -20,20 +22,8 @@ const Bookings = () => {
     try {
       setLoading(true);
       const response = await bookingService.getAllBookings();
-      console.log('Booking API Response:', response); // Debug log
-      // Handle different possible response structures
-      let bookingData = [];
-      if (response.data && response.data.data) {
-        // Response has nested data property
-        bookingData = response.data.data;
-      } else if (Array.isArray(response.data)) {
-        // Response is directly an array
-        bookingData = response.data;
-      } else {
-        // Fallback
-        bookingData = [];
-      }
-      setBookings(bookingData);
+      console.log('Booking API Response:', response.data.data);
+      setBookings(response.data.data || []);
       setError(null);
     } catch (err) {
       setError('ไม่สามารถโหลดข้อมูลการจองได้');
@@ -64,7 +54,26 @@ const Bookings = () => {
       });
 
       if (result.isConfirmed) {
-        const statusData = { status: newStatus };
+        // Map frontend status values to backend status values
+        let backendStatus;
+        switch(newStatus) {
+          case 'Confirmed':
+            backendStatus = 'deposit-paid';
+            break;
+          case 'Completed':
+            backendStatus = 'full-payment';
+            break;
+          case 'Cancelled':
+            backendStatus = 'cancelled';
+            break;
+          case 'Pending':
+            backendStatus = 'pending-deposit';
+            break;
+          default:
+            backendStatus = newStatus;
+        }
+
+        const statusData = { status: backendStatus };
         await bookingService.updateBookingStatus(bookingId, statusData);
 
         // Refresh bookings list
@@ -127,7 +136,14 @@ const Bookings = () => {
   };
 
   const getStatusColor = (status) => {
-    switch (status) {
+    // Map backend status to frontend status for styling
+    const displayStatus =
+      status === 'deposit-paid' ? 'Confirmed' :
+      status === 'pending-deposit' ? 'Pending' :
+      status === 'full-payment' ? 'Completed' :
+      status === 'cancelled' ? 'Cancelled' : status;
+
+    switch (displayStatus) {
       case 'Confirmed':
         return 'bg-green-100 text-green-800';
       case 'Pending':
@@ -142,7 +158,14 @@ const Bookings = () => {
   };
 
   const getStatusIcon = (status) => {
-    switch (status) {
+    // Map backend status to frontend status for icons
+    const displayStatus =
+      status === 'deposit-paid' ? 'Confirmed' :
+      status === 'pending-deposit' ? 'Pending' :
+      status === 'full-payment' ? 'Completed' :
+      status === 'cancelled' ? 'Cancelled' : status;
+
+    switch (displayStatus) {
       case 'Confirmed':
         return <CheckCircle className="w-4 h-4 text-green-600" />;
       case 'Pending':
@@ -163,28 +186,34 @@ const Bookings = () => {
     setDateRange({ start: '', end: '' });
   };
 
+  // Function to view booking details
+  const viewBookingDetails = (booking) => {
+    setSelectedBooking(booking);
+    setShowModal(true);
+  };
+
   // Filter bookings based on search term, status, and date range
   const filteredBookings = bookings.filter(booking => {
     // Search term filter - ensure properties exist and are strings before calling toLowerCase
     const matchesSearch =
-      (booking.id && typeof booking.id === 'string' && booking.id.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (booking.customer && typeof booking.customer === 'string' && booking.customer.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (booking.email && typeof booking.email === 'string' && booking.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (booking.phone && typeof booking.phone === 'string' && booking.phone.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (booking.location && typeof booking.location === 'string' && booking.location.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (booking.package && typeof booking.package === 'string' && booking.package.toLowerCase().includes(searchTerm.toLowerCase()));
+      (booking._id && typeof booking._id === 'string' && booking._id.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (booking.customer?.name && typeof booking.customer.name === 'string' && booking.customer.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (booking.customer?.email && typeof booking.customer.email === 'string' && booking.customer.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (booking.customer?.phone && typeof booking.customer.phone === 'string' && booking.customer.phone.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (booking.location?.address && typeof booking.location.address === 'string' && booking.location.address.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (booking.package?.package_name && typeof booking.package.package_name === 'string' && booking.package.package_name.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    // Status filter
-    const matchesStatus = statusFilter === 'All' || (booking.status === statusFilter && booking.status);
+    // Status filter - backend uses payment_status field
+    const matchesStatus = statusFilter === 'All' || (booking.payment_status === statusFilter);
 
-    // Date range filter
+    // Date range filter - backend uses event_datetime field
     let matchesDate = true;
     if (dateRange.start || dateRange.end) {
-      // Check if booking.eventDate exists and is valid
-      if (!booking.eventDate) {
+      // Check if booking.event_datetime exists and is valid
+      if (!booking.event_datetime) {
         matchesDate = false;
       } else {
-        const bookingDate = new Date(booking.eventDate);
+        const bookingDate = new Date(booking.event_datetime);
         // Check if the date is valid
         if (isNaN(bookingDate.getTime())) {
           matchesDate = false;
@@ -205,6 +234,12 @@ const Bookings = () => {
 
     return matchesSearch && matchesStatus && matchesDate;
   });
+
+  // Function to close the modal
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedBooking(null);
+  };
 
   if (loading) {
     return (
@@ -263,7 +298,7 @@ const Bookings = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Confirmed</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {bookings.filter(booking => booking.status === 'Confirmed' && booking.status).length}
+                {bookings.filter(booking => booking.payment_status === 'deposit-paid' && booking.payment_status).length}
               </p>
             </div>
           </div>
@@ -277,7 +312,7 @@ const Bookings = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Pending</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {bookings.filter(booking => booking.status === 'Pending' && booking.status).length}
+                {bookings.filter(booking => booking.payment_status === 'pending-deposit' && booking.payment_status).length}
               </p>
             </div>
           </div>
@@ -292,8 +327,8 @@ const Bookings = () => {
               <p className="text-sm font-medium text-gray-600">This Month</p>
               <p className="text-2xl font-semibold text-gray-900">
                 {bookings.filter(booking => {
-                  if (!booking.eventDate) return false;
-                  const bookingDate = new Date(booking.eventDate);
+                  if (!booking.event_datetime) return false;
+                  const bookingDate = new Date(booking.event_datetime);
                   const now = new Date();
                   return bookingDate.getMonth() === now.getMonth() &&
                     bookingDate.getFullYear() === now.getFullYear();
@@ -327,10 +362,10 @@ const Bookings = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="All">All Status</option>
-              <option value="Pending">Pending</option>
-              <option value="Confirmed">Confirmed</option>
-              <option value="Completed">Completed</option>
-              <option value="Cancelled">Cancelled</option>
+              <option value="pending-deposit">Pending</option>
+              <option value="deposit-paid">Confirmed</option>
+              <option value="full-payment">Completed</option>
+              <option value="cancelled">Cancelled</option>
             </select>
           </div>
 
@@ -381,59 +416,77 @@ const Bookings = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredBookings.map((booking) => (
-                <tr key={booking._id || booking.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{booking.id || booking._id}</td>
+              {filteredBookings.map((booking, index) => (
+                <tr key={booking._id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{index + 1}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{booking.customer || 'N/A'}</div>
-                    <div className="text-sm text-gray-600">{booking.email || 'N/A'}</div>
+                    <div className="text-sm font-medium text-gray-900">{booking.customer?.name || booking.customer || 'N/A'}</div>
+                    <div className="text-sm text-gray-600">{booking.customer?.email || 'N/A'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center text-sm text-gray-600">
                       <Calendar className="w-4 h-4 mr-2 text-gray-500" />
-                      {booking.eventDate || 'N/A'} at {booking.eventTime || 'N/A'}
+                      {booking.event_datetime ? new Date(booking.event_datetime).toLocaleDateString() : 'N/A'} at {booking.event_datetime ? new Date(booking.event_datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}
                     </div>
                     <div className="flex items-center text-sm text-gray-600 mt-1">
                       <MapPin className="w-4 h-4 mr-2 text-gray-500" />
-                      {booking.location || 'N/A'}
+                      {booking.location?.address || 'N/A'}
                     </div>
                     <div className="text-sm text-gray-600 mt-1">
-                      <span className="font-medium">{booking.package || 'N/A'}</span>
+                      <span className="font-medium">{booking.package?.package_name || 'N/A'}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {booking.guests || 0} guests<br />
-                    <span className="font-medium">฿{booking.total?.toLocaleString() || 0}</span>
+                    {booking.table_count || 0} tables<br />
+                    <span className="font-medium">฿{booking.total_price?.toString() || 0}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <select
-                      value={booking.status || 'Pending'}
-                      onChange={(e) => updateBookingStatus(booking._id || booking.id, e.target.value)}
-                      className={`text-xs font-semibold rounded-full px-2 py-1 ${getStatusColor(booking.status || 'Pending')} border-0 focus:ring-2 focus:ring-blue-500`}
+                      value={booking.payment_status || 'pending-deposit'}
+                      onChange={(e) => updateBookingStatus(booking._id, e.target.value)}
+                      className={`text-xs font-semibold rounded-full px-2 py-1 ${getStatusColor(booking.payment_status || 'pending-deposit')} border-0 focus:ring-2 focus:ring-blue-500`}
                     >
-                      <option value="Pending">Pending</option>
-                      <option value="Confirmed">Confirmed</option>
-                      <option value="Completed">Completed</option>
-                      <option value="Cancelled">Cancelled</option>
+                      <option value="pending-deposit">Pending</option>
+                      <option value="deposit-paid">Confirmed</option>
+                      <option value="full-payment">Completed</option>
+                      <option value="cancelled">Cancelled</option>
                     </select>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div className="flex items-center space-x-2">
-
+                    <div className="flex items-center space-x-3">
+                      {/* View Details Button */}
                       <button
-                        className="p-1 hover:bg-blue-100 text-blue-600 rounded"
-                        onClick={() => console.log("Edit booking:", booking._id || booking.id)} // <- จะเปลี่ยนเป็น Modal หรือหน้าแก้ไขภายหลังได้
+                        onClick={() => viewBookingDetails(booking)}
+                        className="text-green-600 hover:text-green-800"
                       >
-                        <Edit className="w-4 h-4" />
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                          <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                        </svg>
                       </button>
 
+                      {/* Edit Button */}
                       <button
-                        className="p-1 hover:bg-red-100 text-red-600 rounded"
-                        onClick={() => deleteBooking(booking._id || booking.id)}
+                        onClick={() => {
+                          Swal.fire({
+                            icon: "info",
+                            title: "Edit Booking",
+                            text: "ฟีเจอร์แก้ไขยังไม่เปิดใช้งาน",
+                            confirmButtonColor: "#3b82f6"
+                          });
+                        }}
+                        className="text-blue-600 hover:text-blue-800"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Edit className="w-5 h-5" />
                       </button>
 
+                      {/* Delete Button */}
+                      <button
+                        onClick={() => deleteBooking(booking._id)}
+                        className="text-red-600 hover:text-red-800"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -448,6 +501,191 @@ const Bookings = () => {
           </div>
         )}
       </div>
+
+      {/* Booking Details Modal */}
+      {showModal && selectedBooking && (
+        <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-semibold text-gray-800">Booking Details</h3>
+                <button
+                  onClick={closeModal}
+                  className="text-gray-500 hover:text-gray-700 text-2xl"
+                >
+                  &times;
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                {/* Booking Information */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="text-lg font-semibold text-gray-700 mb-3">Booking Information</h4>
+                  <div className="space-y-2">
+                    <div className="flex">
+                      <span className="font-medium w-32 text-gray-600">Booking ID:</span>
+                      <span className="text-gray-800">{selectedBooking._id}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium w-32 text-gray-600">Booking Date:</span>
+                      <span className="text-gray-800">
+                        {selectedBooking.booking_date ? new Date(selectedBooking.booking_date).toLocaleDateString() : 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium w-32 text-gray-600">Status:</span>
+                      <span className={`text-xs font-semibold rounded-full px-2 py-1 ${getStatusColor(selectedBooking.payment_status || 'pending-deposit')}`}>
+                        {selectedBooking.payment_status === 'pending-deposit' ? 'Pending' :
+                         selectedBooking.payment_status === 'deposit-paid' ? 'Confirmed' :
+                         selectedBooking.payment_status === 'full-payment' ? 'Completed' :
+                         selectedBooking.payment_status === 'cancelled' ? 'Cancelled' : 'Unknown'}
+                      </span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium w-32 text-gray-600">Total Price:</span>
+                      <span className="text-gray-800 font-medium">฿{selectedBooking.total_price?.toString() || 0}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium w-32 text-gray-600">Deposit Required:</span>
+                      <span className="text-gray-800 font-medium">฿{selectedBooking.deposit_required?.toString() || 0}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Customer Information */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="text-lg font-semibold text-gray-700 mb-3">Customer Information</h4>
+                  <div className="space-y-2">
+                    <div className="flex">
+                      <span className="font-medium w-32 text-gray-600">Name:</span>
+                      <span className="text-gray-800">{selectedBooking.customer?.name || 'N/A'}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium w-32 text-gray-600">Email:</span>
+                      <span className="text-gray-800">{selectedBooking.customer?.email || 'N/A'}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium w-32 text-gray-600">Phone:</span>
+                      <span className="text-gray-800">{selectedBooking.customer?.phone || 'N/A'}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                {/* Event Information */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="text-lg font-semibold text-gray-700 mb-3">Event Information</h4>
+                  <div className="space-y-2">
+                    <div className="flex">
+                      <span className="font-medium w-32 text-gray-600">Event Date:</span>
+                      <span className="text-gray-800">
+                        {selectedBooking.event_datetime ? new Date(selectedBooking.event_datetime).toLocaleDateString() : 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium w-32 text-gray-600">Event Time:</span>
+                      <span className="text-gray-800">
+                        {selectedBooking.event_datetime ? new Date(selectedBooking.event_datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium w-32 text-gray-600">Location:</span>
+                      <span className="text-gray-800">{selectedBooking.location?.address || 'N/A'}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium w-32 text-gray-600">Tables:</span>
+                      <span className="text-gray-800">{selectedBooking.table_count || 0} tables</span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium w-32 text-gray-600">Special Request:</span>
+                      <span className="text-gray-800">{selectedBooking.specialRequest || 'N/A'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Package Information */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="text-lg font-semibold text-gray-700 mb-3">Package Information</h4>
+                  <div className="space-y-2">
+                    <div className="flex">
+                      <span className="font-medium w-32 text-gray-600">Package Name:</span>
+                      <span className="text-gray-800">{selectedBooking.package?.package_name || 'N/A'}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium w-32 text-gray-600">Price per Table:</span>
+                      <span className="text-gray-800">฿{selectedBooking.package?.price_per_table?.toString() || 0}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="font-medium w-32 text-gray-600">Menu Sets:</span>
+                      <div className="text-gray-800">
+                        {selectedBooking.menu_sets && selectedBooking.menu_sets.length > 0 ? (
+                          selectedBooking.menu_sets.map((set, index) => (
+                            <div key={index} className="text-sm">{set.menu_name} ({set.quantity})</div>
+                          ))
+                        ) : (
+                          'N/A'
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Information */}
+              <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                <h4 className="text-lg font-semibold text-gray-700 mb-3">Payment Information</h4>
+                <div className="space-y-2">
+                  <div className="flex">
+                    <span className="font-medium w-32 text-gray-600">Payment Status:</span>
+                    <span className={`text-xs font-semibold rounded-full px-2 py-1 ${getStatusColor(selectedBooking.payment_status || 'pending-deposit')}`}>
+                      {selectedBooking.payment_status === 'pending-deposit' ? 'Pending Deposit' :
+                       selectedBooking.payment_status === 'deposit-paid' ? 'Deposit Paid' :
+                       selectedBooking.payment_status === 'full-payment' ? 'Full Payment' :
+                       selectedBooking.payment_status === 'cancelled' ? 'Cancelled' : 'Unknown'}
+                    </span>
+                  </div>
+                  {selectedBooking.payments && selectedBooking.payments.length > 0 && (
+                    <div>
+                      <span className="font-medium text-gray-600 block mb-2">Payment History:</span>
+                      <div className="space-y-2">
+                        {selectedBooking.payments.map((payment, index) => (
+                          <div key={index} className="flex text-sm">
+                            <div className="w-32 text-gray-600">
+                              {new Date(payment.payment_date).toLocaleDateString()}:
+                            </div>
+                            <div className="text-gray-800">
+                              ฿{payment.amount?.toString() || 0} ({payment.payment_type})
+                              {payment.slip_image && (
+                                <div className="mt-1">
+                                  <a href={payment.slip_image} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">
+                                    View Payment Slip
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-gray-200 flex justify-end">
+              <button
+                onClick={closeModal}
+                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
