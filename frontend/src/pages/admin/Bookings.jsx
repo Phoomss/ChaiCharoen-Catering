@@ -42,9 +42,16 @@ const Bookings = () => {
   // Function to update booking status
   const updateBookingStatus = async (bookingId, newStatus) => {
     try {
+      // Map backend status to Thai display
+      const statusThai =
+        newStatus === 'deposit-paid' ? 'ยืนยันแล้ว' :
+        newStatus === 'full-payment' ? 'เสร็จสิ้น' :
+        newStatus === 'cancelled' ? 'ยกเลิก' :
+        'รอดำเนินการ';
+
       const result = await Swal.fire({
         title: 'คุณแน่ใจหรือไม่?',
-        text: `คุณต้องการเปลี่ยนสถานะการจองเป็น ${newStatus} ใช่หรือไม่?`,
+        text: `คุณต้องการเปลี่ยนสถานะการจองเป็น ${statusThai} ใช่หรือไม่?`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
@@ -79,10 +86,17 @@ const Bookings = () => {
         // Refresh bookings list
         await loadBookings();
 
+        // Map backend status to Thai display
+        const statusThai =
+          backendStatus === 'deposit-paid' ? 'ยืนยันแล้ว' :
+          backendStatus === 'full-payment' ? 'เสร็จสิ้น' :
+          backendStatus === 'cancelled' ? 'ยกเลิก' :
+          'รอดำเนินการ';
+
         Swal.fire({
           icon: 'success',
           title: 'สถานะถูกอัปเดตแล้ว!',
-          text: `สถานะการจองได้ถูกอัปเดตเป็น ${newStatus} เรียบร้อยแล้ว`,
+          text: `สถานะการจองได้ถูกอัปเดตเป็น ${statusThai} เรียบร้อยแล้ว`,
           confirmButtonColor: '#22c55e'
         });
       }
@@ -296,7 +310,7 @@ const Bookings = () => {
               <CheckCircle className="w-6 h-6 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Confirmed</p>
+              <p className="text-sm font-medium text-gray-600">ยืนยันแล้ว</p>
               <p className="text-2xl font-semibold text-gray-900">
                 {bookings.filter(booking => booking.payment_status === 'deposit-paid' && booking.payment_status).length}
               </p>
@@ -310,7 +324,7 @@ const Bookings = () => {
               <Clock className="w-6 h-6 text-yellow-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Pending</p>
+              <p className="text-sm font-medium text-gray-600">รอดำเนินการ</p>
               <p className="text-2xl font-semibold text-gray-900">
                 {bookings.filter(booking => booking.payment_status === 'pending-deposit' && booking.payment_status).length}
               </p>
@@ -361,11 +375,11 @@ const Bookings = () => {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value="All">All Status</option>
-              <option value="pending-deposit">Pending</option>
-              <option value="deposit-paid">Confirmed</option>
-              <option value="full-payment">Completed</option>
-              <option value="cancelled">Cancelled</option>
+              <option value="All">ทุกสถานะ</option>
+              <option value="pending-deposit">รอดำเนินการ</option>
+              <option value="deposit-paid">ยืนยันแล้ว</option>
+              <option value="full-payment">เสร็จสิ้น</option>
+              <option value="cancelled">ยกเลิก</option>
             </select>
           </div>
 
@@ -446,10 +460,10 @@ const Bookings = () => {
                       onChange={(e) => updateBookingStatus(booking._id, e.target.value)}
                       className={`text-xs font-semibold rounded-full px-2 py-1 ${getStatusColor(booking.payment_status || 'pending-deposit')} border-0 focus:ring-2 focus:ring-blue-500`}
                     >
-                      <option value="pending-deposit">Pending</option>
-                      <option value="deposit-paid">Confirmed</option>
-                      <option value="full-payment">Completed</option>
-                      <option value="cancelled">Cancelled</option>
+                      <option value="pending-deposit">รอดำเนินการ</option>
+                      <option value="deposit-paid">ยืนยันแล้ว</option>
+                      <option value="full-payment">เสร็จสิ้น</option>
+                      <option value="cancelled">ยกเลิก</option>
                     </select>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -537,10 +551,10 @@ const Bookings = () => {
                     <div className="flex">
                       <span className="font-medium w-32 text-gray-600">Status:</span>
                       <span className={`text-xs font-semibold rounded-full px-2 py-1 ${getStatusColor(selectedBooking.payment_status || 'pending-deposit')}`}>
-                        {selectedBooking.payment_status === 'pending-deposit' ? 'Pending' :
-                         selectedBooking.payment_status === 'deposit-paid' ? 'Confirmed' :
-                         selectedBooking.payment_status === 'full-payment' ? 'Completed' :
-                         selectedBooking.payment_status === 'cancelled' ? 'Cancelled' : 'Unknown'}
+                        {selectedBooking.payment_status === 'pending-deposit' ? 'รอดำเนินการ' :
+                         selectedBooking.payment_status === 'deposit-paid' ? 'ยืนยันแล้ว' :
+                         selectedBooking.payment_status === 'full-payment' ? 'เสร็จสิ้น' :
+                         selectedBooking.payment_status === 'cancelled' ? 'ยกเลิก' : 'ไม่ทราบ'}
                       </span>
                     </div>
                     <div className="flex">
@@ -641,10 +655,10 @@ const Bookings = () => {
                   <div className="flex">
                     <span className="font-medium w-32 text-gray-600">Payment Status:</span>
                     <span className={`text-xs font-semibold rounded-full px-2 py-1 ${getStatusColor(selectedBooking.payment_status || 'pending-deposit')}`}>
-                      {selectedBooking.payment_status === 'pending-deposit' ? 'Pending Deposit' :
-                       selectedBooking.payment_status === 'deposit-paid' ? 'Deposit Paid' :
-                       selectedBooking.payment_status === 'full-payment' ? 'Full Payment' :
-                       selectedBooking.payment_status === 'cancelled' ? 'Cancelled' : 'Unknown'}
+                      {selectedBooking.payment_status === 'pending-deposit' ? 'รอดำเนินการ' :
+                       selectedBooking.payment_status === 'deposit-paid' ? 'ชำระเงินแล้ว' :
+                       selectedBooking.payment_status === 'full-payment' ? 'ชำระเงินครบถ้วน' :
+                       selectedBooking.payment_status === 'cancelled' ? 'ยกเลิก' : 'ไม่ทราบ'}
                     </span>
                   </div>
                   {selectedBooking.payments && selectedBooking.payments.length > 0 && (
