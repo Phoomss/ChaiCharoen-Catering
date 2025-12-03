@@ -274,15 +274,15 @@ const MenuPackages = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Menu Packages</h1>
-          <p className="text-gray-600">Manage catering menu packages for customers</p>
+          <h1 className="text-2xl font-bold text-gray-900">ชุด套餐อาหาร</h1>
+          <p className="text-gray-600">จัดการชุด套餐อาหารสำหรับลูกค้า</p>
         </div>
         <button
           onClick={openCreateModal}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Add New Package
+          เพิ่มชุด套餐ใหม่
         </button>
       </div>
 
@@ -294,7 +294,7 @@ const MenuPackages = () => {
               <Package className="w-6 h-6 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Packages</p>
+              <p className="text-sm font-medium text-gray-600">จำนวนชุด套餐ทั้งหมด</p>
               <p className="text-2xl font-semibold text-gray-900">{menuPackages.length}</p>
             </div>
           </div>
@@ -306,7 +306,7 @@ const MenuPackages = () => {
               <Utensils className="w-6 h-6 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Avg. Price</p>
+              <p className="text-sm font-medium text-gray-600">ราคาเฉลี่ย</p>
               <p className="text-2xl font-semibold text-gray-900">
                 ฿{menuPackages.length > 0 ? Math.round(menuPackages.reduce((sum, pkg) => sum + convertDecimalValue(pkg.price), 0) / menuPackages.length) : 0}
               </p>
@@ -320,7 +320,7 @@ const MenuPackages = () => {
               <Package className="w-6 h-6 text-yellow-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Avg. Items</p>
+              <p className="text-sm font-medium text-gray-600">จำนวนรายการเฉลี่ย</p>
               <p className="text-2xl font-semibold text-gray-900">
                 {menuPackages.length > 0 ? Math.round(menuPackages.reduce((sum, pkg) => sum + (pkg.menus?.length || 0), 0) / menuPackages.length) : 0}
               </p>
@@ -334,7 +334,7 @@ const MenuPackages = () => {
               <Package className="w-6 h-6 text-purple-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Avg. Selection</p>
+              <p className="text-sm font-medium text-gray-600">จำนวนเลือกสูงสุด</p>
               <p className="text-2xl font-semibold text-gray-900">
                 {menuPackages.length > 0 ? Math.round(menuPackages.reduce((sum, pkg) => sum + pkg.maxSelect, 0) / menuPackages.length) : 0}
               </p>
@@ -350,7 +350,7 @@ const MenuPackages = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
               type="text"
-              placeholder="Search packages by name or price..."
+              placeholder="ค้นหาชุด套餐ตามชื่อหรือราคา..."
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -362,19 +362,19 @@ const MenuPackages = () => {
       {/* Menu Packages Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800">Menu Packages</h3>
+          <h3 className="text-lg font-semibold text-gray-800">ชุด套餐อาหาร</h3>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Package Name</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Max Selection</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Extra Price</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Menu Count</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อชุด套餐</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">ราคา</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">เลือกสูงสุด</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">ราคาเพิ่มเติม</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">จำนวนเมนู</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">การจัดการ</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -421,7 +421,7 @@ const MenuPackages = () => {
           convertDecimalValue(pkg.extraMenuPrice).toString().includes(searchTerm)
         ).length === 0 && (
           <div className="text-center py-8 text-gray-500">
-            No menu packages found matching your criteria
+            ไม่พบชุด套餐ที่ตรงกับเงื่อนไข
           </div>
         )}
       </div>
@@ -433,7 +433,7 @@ const MenuPackages = () => {
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">
-                  {currentPackage ? 'Edit Menu Package' : 'Create New Menu Package'}
+                  {currentPackage ? 'แก้ไขชุด套餐อาหาร' : 'สร้างชุด套餐อาหารใหม่'}
                 </h3>
                 <button
                   onClick={() => setShowModal(false)}
@@ -454,7 +454,7 @@ const MenuPackages = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Name *
+                        ชื่อชุด套餐 *
                       </label>
                       <input
                         type="text"
@@ -464,7 +464,7 @@ const MenuPackages = () => {
                         className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                           formErrors.name ? 'border-red-500' : 'border-gray-300'
                         }`}
-                        placeholder="Package name"
+                        placeholder="ชื่อชุด套餐"
                       />
                       {formErrors.name && (
                         <p className="mt-1 text-sm text-red-600">{formErrors.name}</p>
@@ -473,7 +473,7 @@ const MenuPackages = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Price *
+                        ราคา *
                       </label>
                       <input
                         type="number"
@@ -483,7 +483,7 @@ const MenuPackages = () => {
                         className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                           formErrors.price ? 'border-red-500' : 'border-gray-300'
                         }`}
-                        placeholder="Package price"
+                        placeholder="ราคา套餐"
                         min="0"
                       />
                       {formErrors.price && (
@@ -495,7 +495,7 @@ const MenuPackages = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Max Selection
+                        จำนวนเลือกสูงสุด
                       </label>
                       <input
                         type="number"
@@ -505,7 +505,7 @@ const MenuPackages = () => {
                         className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                           formErrors.maxSelect ? 'border-red-500' : 'border-gray-300'
                         }`}
-                        placeholder="Max items customer can select"
+                        placeholder="จำนวนเลือกสูงสุดที่ลูกค้าสามารถเลือกได้"
                         min="1"
                       />
                       {formErrors.maxSelect && (
@@ -515,7 +515,7 @@ const MenuPackages = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Extra Menu Price
+                        ราคาเมนูเพิ่มเติม
                       </label>
                       <input
                         type="number"
@@ -525,7 +525,7 @@ const MenuPackages = () => {
                         className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                           formErrors.extraMenuPrice ? 'border-red-500' : 'border-gray-300'
                         }`}
-                        placeholder="Price per extra menu item"
+                        placeholder="ราคาต่อหนึ่งเมนูเพิ่มเติม"
                         min="0"
                       />
                       {formErrors.extraMenuPrice && (
@@ -536,26 +536,26 @@ const MenuPackages = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Description
+                      คำอธิบาย
                     </label>
                     <textarea
                       name="description"
                       value={formData.description}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Package description"
+                      placeholder="คำอธิบาย套餐"
                       rows="3"
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Included Menu Items
+                      เมนูที่รวมอยู่
                     </label>
                     <div className="border border-gray-300 rounded-lg max-h-60 overflow-y-auto">
                       {menus.length === 0 ? (
                         <div className="p-4 text-center text-gray-500">
-                          No menu items available
+                          ไม่มีรายการเมนู
                         </div>
                       ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2">
@@ -584,7 +584,7 @@ const MenuPackages = () => {
                         </div>
                       )}
                     </div>
-                    <p className="mt-1 text-xs text-gray-500">Click on menu items to select them for this package</p>
+                    <p className="mt-1 text-xs text-gray-500">คลิกที่รายการเมนูเพื่อเลือกสำหรับ套餐นี้</p>
                   </div>
                 </div>
 
@@ -594,14 +594,14 @@ const MenuPackages = () => {
                     onClick={() => setShowModal(false)}
                     className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
                   >
-                    Cancel
+                    ยกเลิก
                   </button>
                   <button
                     type="submit"
                     className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white flex items-center"
                   >
                     <Save className="w-4 h-4 mr-2" />
-                    {currentPackage ? 'Update' : 'Create'}
+                    {currentPackage ? 'อัปเดต' : 'สร้าง'}
                   </button>
                 </div>
               </form>

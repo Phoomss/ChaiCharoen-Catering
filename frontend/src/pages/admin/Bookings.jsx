@@ -286,8 +286,8 @@ const Bookings = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Bookings</h1>
-          <p className="text-gray-600">Manage catering bookings and events</p>
+          <h1 className="text-2xl font-bold text-gray-900">ระบบจัดการการจอง</h1>
+          <p className="text-gray-600">จัดการการจองคิวจัดเลี้ยงและอีเว้นท์</p>
         </div>
       </div>
 
@@ -299,7 +299,7 @@ const Bookings = () => {
               <Calendar className="w-6 h-6 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Bookings</p>
+              <p className="text-sm font-medium text-gray-600">จำนวนการจองทั้งหมด</p>
               <p className="text-2xl font-semibold text-gray-900">{bookings.length}</p>
             </div>
           </div>
@@ -339,7 +339,7 @@ const Bookings = () => {
               <MapPin className="w-6 h-6 text-purple-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">This Month</p>
+              <p className="text-sm font-medium text-gray-600">เดือนนี้</p>
               <p className="text-2xl font-semibold text-gray-900">
                 {bookings.filter(booking => {
                   if (!booking.event_datetime) return false;
@@ -362,7 +362,7 @@ const Bookings = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
               type="text"
-              placeholder="Search bookings by ID, customer name, email, phone, location, or package..."
+              placeholder="ค้นหาการจองด้วย ID, ชื่อลูกค้า, อีเมล, โทรศัพท์, สถานที่ หรือแพ็กเกจ..."
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -390,19 +390,19 @@ const Bookings = () => {
               onClick={clearFilters}
               className="col-span-1 px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-sm font-medium"
             >
-              Clear
+              ล้าง
             </button>
             <div className="col-span-2 grid grid-cols-2 gap-1">
               <input
                 type="date"
-                placeholder="Start Date"
+                placeholder="วันเริ่มต้น"
                 className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 value={dateRange.start}
                 onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
               />
               <input
                 type="date"
-                placeholder="End Date"
+                placeholder="วันสิ้นสุด"
                 className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 value={dateRange.end}
                 onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
@@ -415,19 +415,19 @@ const Bookings = () => {
       {/* Bookings Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800">All Bookings</h3>
+          <h3 className="text-lg font-semibold text-gray-800">รายการการจองทั้งหมด</h3>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Booking ID</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Event Details</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Guests</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">รหัสการจอง</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">ลูกค้า</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">รายละเอียดอีเว้นท์</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">จำนวนโต๊ะ/ผู้เข้าร่วม</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">สถานะ</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">การจัดการ</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -435,27 +435,27 @@ const Bookings = () => {
                 <tr key={booking._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{booking.bookingCode || booking._id}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{booking.customer?.name || booking.customer || 'N/A'}</div>
-                    <div className="text-sm text-gray-600">{booking.customer?.email || 'N/A'}</div>
+                    <div className="text-sm font-medium text-gray-900">{booking.customer?.name || booking.customer || 'ไม่ระบุ'}</div>
+                    <div className="text-sm text-gray-600">{booking.customer?.email || 'ไม่ระบุ'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center text-sm text-gray-600">
                       <Calendar className="w-4 h-4 mr-2 text-gray-500" />
-                      {booking.event_datetime ? new Date(booking.event_datetime).toLocaleDateString() : 'N/A'} at {booking.event_datetime ? new Date(booking.event_datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}
+                      {booking.event_datetime ? new Date(booking.event_datetime).toLocaleDateString() : 'ไม่ระบุ'} เวลา {booking.event_datetime ? new Date(booking.event_datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'ไม่ระบุ'}
                     </div>
                     <div className="flex items-center text-sm text-gray-600 mt-1">
                       <MapPin className="w-4 h-4 mr-2 text-gray-500" />
-                      {booking.location?.address || 'N/A'}
+                      {booking.location?.address || 'ไม่ระบุ'}
                     </div>
                     <div className="text-sm text-gray-600 mt-1">
-                      <span className="font-medium">{booking.package?.package_name || 'N/A'}</span>
+                      <span className="font-medium">{booking.package?.package_name || 'ไม่ระบุ'}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {booking.table_count || 0} tables<br />
-                    <span className="font-medium"> {typeof booking.total_price === 'object'
-                                            ? booking.total_price.$numberDecimal
-                                            : booking.total_price} บาท</span>
+                    {booking.table_count || 0} โต๊ะ<br />
+                    <span className="font-medium"> {(typeof booking.total_price === 'object'
+                                            ? (booking.total_price.$numberDecimal || 0)
+                                            : (booking.total_price || 0))} บาท</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <select
@@ -487,8 +487,8 @@ const Bookings = () => {
                         onClick={() => {
                           Swal.fire({
                             icon: "info",
-                            title: "Edit Booking",
-                            text: "ฟีเจอร์แก้ไขยังไม่เปิดใช้งาน",
+                            title: "แก้ไขการจอง",
+                            text: "ยังไม่เปิดให้ใช้งาน",
                             confirmButtonColor: "#3b82f6"
                           });
                         }}
@@ -514,7 +514,7 @@ const Bookings = () => {
 
         {filteredBookings.length === 0 && (
           <div className="text-center py-8 text-gray-500">
-            No bookings found matching your criteria
+            ไม่พบการจองที่ตรงกับเงื่อนไข
           </div>
         )}
       </div>
@@ -525,7 +525,7 @@ const Bookings = () => {
           <div className="bg-white rounded-xl shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-200">
               <div className="flex justify-between items-center">
-                <h3 className="text-xl font-semibold text-gray-800">Booking Details</h3>
+                <h3 className="text-xl font-semibold text-gray-800">รายละเอียดการจอง</h3>
                 <button
                   onClick={closeModal}
                   className="text-gray-500 hover:text-gray-700 text-2xl"
@@ -539,24 +539,24 @@ const Bookings = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 {/* Booking Information */}
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="text-lg font-semibold text-gray-700 mb-3">Booking Information</h4>
+                  <h4 className="text-lg font-semibold text-gray-700 mb-3">ข้อมูลการจอง</h4>
                   <div className="space-y-2">
                     <div className="flex">
-                      <span className="font-medium w-32 text-gray-600">Booking Code:</span>
-                      <span className="text-gray-800">{selectedBooking.bookingCode || 'N/A'}</span>
+                      <span className="font-medium w-32 text-gray-600">รหัสการจอง:</span>
+                      <span className="text-gray-800">{selectedBooking.bookingCode || 'ไม่ระบุ'}</span>
                     </div>
                     <div className="flex">
-                      <span className="font-medium w-32 text-gray-600">Booking ID:</span>
+                      <span className="font-medium w-32 text-gray-600">ID การจอง:</span>
                       <span className="text-gray-800">{selectedBooking._id}</span>
                     </div>
                     <div className="flex">
-                      <span className="font-medium w-32 text-gray-600">Booking Date:</span>
+                      <span className="font-medium w-32 text-gray-600">วันที่จอง:</span>
                       <span className="text-gray-800">
-                        {selectedBooking.booking_date ? new Date(selectedBooking.booking_date).toLocaleDateString() : 'N/A'}
+                        {selectedBooking.booking_date ? new Date(selectedBooking.booking_date).toLocaleDateString() : 'ไม่ระบุ'}
                       </span>
                     </div>
                     <div className="flex">
-                      <span className="font-medium w-32 text-gray-600">Status:</span>
+                      <span className="font-medium w-32 text-gray-600">สถานะ:</span>
                       <span className={`text-xs font-semibold rounded-full px-2 py-1 ${getStatusColor(selectedBooking.payment_status || 'pending-deposit')}`}>
                         {selectedBooking.payment_status === 'pending-deposit' ? 'รอดำเนินการ' :
                          selectedBooking.payment_status === 'deposit-paid' ? 'ยืนยันแล้ว' :
@@ -565,31 +565,31 @@ const Bookings = () => {
                       </span>
                     </div>
                     <div className="flex">
-                      <span className="font-medium w-32 text-gray-600">Total Price:</span>
+                      <span className="font-medium w-32 text-gray-600">ราคารวม:</span>
                       <span className="text-gray-800 font-medium">{typeof selectedBooking.total_price === 'object' ? selectedBooking.total_price.$numberDecimal : selectedBooking.total_price} บาท</span>
                     </div>
                     <div className="flex">
-                      <span className="font-medium w-32 text-gray-600">Deposit Required:</span>
-                      <span className="text-gray-800 font-medium">{typeof selectedBooking.deposit_required === 'object' ? selectedBooking.deposit_required.$numberDecimal : selectedBooking.booking.deposit_required} บาท</span>
+                      <span className="font-medium w-32 text-gray-600">เงินมัดจำ:</span>
+                      <span className="text-gray-800 font-medium">{typeof selectedBooking.deposit_required === 'object' ? selectedBooking.deposit_required.$numberDecimal : selectedBooking.deposit_required} บาท</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Customer Information */}
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="text-lg font-semibold text-gray-700 mb-3">Customer Information</h4>
+                  <h4 className="text-lg font-semibold text-gray-700 mb-3">ข้อมูลลูกค้า</h4>
                   <div className="space-y-2">
                     <div className="flex">
-                      <span className="font-medium w-32 text-gray-600">Name:</span>
-                      <span className="text-gray-800">{selectedBooking.customer?.name || 'N/A'}</span>
+                      <span className="font-medium w-32 text-gray-600">ชื่อ:</span>
+                      <span className="text-gray-800">{selectedBooking.customer?.name || 'ไม่ระบุ'}</span>
                     </div>
                     <div className="flex">
-                      <span className="font-medium w-32 text-gray-600">Email:</span>
-                      <span className="text-gray-800">{selectedBooking.customer?.email || 'N/A'}</span>
+                      <span className="font-medium w-32 text-gray-600">อีเมล:</span>
+                      <span className="text-gray-800">{selectedBooking.customer?.email || 'ไม่ระบุ'}</span>
                     </div>
                     <div className="flex">
-                      <span className="font-medium w-32 text-gray-600">Phone:</span>
-                      <span className="text-gray-800">{selectedBooking.customer?.phone || 'N/A'}</span>
+                      <span className="font-medium w-32 text-gray-600">เบอร์โทร:</span>
+                      <span className="text-gray-800">{selectedBooking.customer?.phone || 'ไม่ระบุ'}</span>
                     </div>
                   </div>
                 </div>
@@ -598,56 +598,56 @@ const Bookings = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 {/* Event Information */}
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="text-lg font-semibold text-gray-700 mb-3">Event Information</h4>
+                  <h4 className="text-lg font-semibold text-gray-700 mb-3">ข้อมูลอีเว้นท์</h4>
                   <div className="space-y-2">
                     <div className="flex">
-                      <span className="font-medium w-32 text-gray-600">Event Date:</span>
+                      <span className="font-medium w-32 text-gray-600">วันที่จัดงาน:</span>
                       <span className="text-gray-800">
-                        {selectedBooking.event_datetime ? new Date(selectedBooking.event_datetime).toLocaleDateString() : 'N/A'}
+                        {selectedBooking.event_datetime ? new Date(selectedBooking.event_datetime).toLocaleDateString() : 'ไม่ระบุ'}
                       </span>
                     </div>
                     <div className="flex">
-                      <span className="font-medium w-32 text-gray-600">Event Time:</span>
+                      <span className="font-medium w-32 text-gray-600">เวลาจัดงาน:</span>
                       <span className="text-gray-800">
-                        {selectedBooking.event_datetime ? new Date(selectedBooking.event_datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}
+                        {selectedBooking.event_datetime ? new Date(selectedBooking.event_datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'ไม่ระบุ'}
                       </span>
                     </div>
                     <div className="flex">
-                      <span className="font-medium w-32 text-gray-600">Location:</span>
-                      <span className="text-gray-800">{selectedBooking.location?.address || 'N/A'}</span>
+                      <span className="font-medium w-32 text-gray-600">สถานที่:</span>
+                      <span className="text-gray-800">{selectedBooking.location?.address || 'ไม่ระบุ'}</span>
                     </div>
                     <div className="flex">
-                      <span className="font-medium w-32 text-gray-600">Tables:</span>
-                      <span className="text-gray-800">{selectedBooking.table_count || 0} tables</span>
+                      <span className="font-medium w-32 text-gray-600">จำนวนโต๊ะ:</span>
+                      <span className="text-gray-800">{selectedBooking.table_count || 0} โต๊ะ</span>
                     </div>
                     <div className="flex">
-                      <span className="font-medium w-32 text-gray-600">Special Request:</span>
-                      <span className="text-gray-800">{selectedBooking.specialRequest || 'N/A'}</span>
+                      <span className="font-medium w-32 text-gray-600">คำขอพิเศษ:</span>
+                      <span className="text-gray-800">{selectedBooking.specialRequest || 'ไม่ระบุ'}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Package Information */}
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="text-lg font-semibold text-gray-700 mb-3">Package Information</h4>
+                  <h4 className="text-lg font-semibold text-gray-700 mb-3">ข้อมูลแพ็กเกจ</h4>
                   <div className="space-y-2">
                     <div className="flex">
-                      <span className="font-medium w-32 text-gray-600">Package Name:</span>
-                      <span className="text-gray-800">{selectedBooking.package?.package_name || 'N/A'}</span>
+                      <span className="font-medium w-32 text-gray-600">ชื่อแพ็กเกจ:</span>
+                      <span className="text-gray-800">{selectedBooking.package?.package_name || 'ไม่ระบุ'}</span>
                     </div>
                     <div className="flex">
-                      <span className="font-medium w-32 text-gray-600">Price per Table:</span>
-                      <span className="text-gray-800">฿{selectedBooking.package?.price_per_table?.toString() || 0}</span>
+                      <span className="font-medium w-32 text-gray-600">ราคาต่อโต๊ะ:</span>
+                      <span className="text-gray-800">฿{typeof selectedBooking.package?.price_per_table === 'object' ? selectedBooking.package.price_per_table.$numberDecimal : selectedBooking.package?.price_per_table || 0}</span>
                     </div>
                     <div className="flex">
-                      <span className="font-medium w-32 text-gray-600">Menu Sets:</span>
+                      <span className="font-medium w-32 text-gray-600">ชุดอาหาร:</span>
                       <div className="text-gray-800">
                         {selectedBooking.menu_sets && selectedBooking.menu_sets.length > 0 ? (
                           selectedBooking.menu_sets.map((set, index) => (
                             <div key={index} className="text-sm">{set.menu_name} ({set.quantity})</div>
                           ))
                         ) : (
-                          'N/A'
+                          'ไม่ระบุ'
                         )}
                       </div>
                     </div>
@@ -657,10 +657,10 @@ const Bookings = () => {
 
               {/* Payment Information */}
               <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                <h4 className="text-lg font-semibold text-gray-700 mb-3">Payment Information</h4>
+                <h4 className="text-lg font-semibold text-gray-700 mb-3">ข้อมูลการชำระเงิน</h4>
                 <div className="space-y-2">
                   <div className="flex">
-                    <span className="font-medium w-32 text-gray-600">Payment Status:</span>
+                    <span className="font-medium w-32 text-gray-600">สถานะการชำระเงิน:</span>
                     <span className={`text-xs font-semibold rounded-full px-2 py-1 ${getStatusColor(selectedBooking.payment_status || 'pending-deposit')}`}>
                       {selectedBooking.payment_status === 'pending-deposit' ? 'รอดำเนินการ' :
                        selectedBooking.payment_status === 'deposit-paid' ? 'ชำระเงินแล้ว' :
@@ -670,7 +670,7 @@ const Bookings = () => {
                   </div>
                   {selectedBooking.payments && selectedBooking.payments.length > 0 && (
                     <div>
-                      <span className="font-medium text-gray-600 block mb-2">Payment History:</span>
+                      <span className="font-medium text-gray-600 block mb-2">ประวัติการชำระเงิน:</span>
                       <div className="space-y-2">
                         {selectedBooking.payments.map((payment, index) => (
                           <div key={index} className="flex text-sm">
@@ -678,11 +678,11 @@ const Bookings = () => {
                               {new Date(payment.payment_date).toLocaleDateString()}:
                             </div>
                             <div className="text-gray-800">
-                              ฿{payment.amount?.toString() || 0} ({payment.payment_type})
+                              ฿{typeof payment.amount === 'object' ? payment.amount.$numberDecimal : payment.amount || 0} ({payment.payment_type})
                               {payment.slip_image && (
                                 <div className="mt-1">
                                   <a href={payment.slip_image} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">
-                                    View Payment Slip
+                                    ดูหลักฐานการชำระเงิน
                                   </a>
                                 </div>
                               )}
@@ -701,7 +701,7 @@ const Bookings = () => {
                 onClick={closeModal}
                 className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
               >
-                Close
+                ปิด
               </button>
             </div>
           </div>

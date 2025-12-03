@@ -303,15 +303,15 @@ const MenuManagement = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Menu Management</h1>
-          <p className="text-gray-600">Manage your catering menu items and categories</p>
+          <h1 className="text-2xl font-bold text-gray-900">การจัดการเมนู</h1>
+          <p className="text-gray-600">จัดการรายการเมนูและหมวดหมู่สำหรับบริการจัดเลี้ยง</p>
         </div>
         <button
           onClick={openCreateModal}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Add New Item
+          เพิ่มรายการใหม่
         </button>
       </div>
 
@@ -323,7 +323,7 @@ const MenuManagement = () => {
               <Utensils className="w-6 h-6 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Items</p>
+              <p className="text-sm font-medium text-gray-600">จำนวนรายการทั้งหมด</p>
               <p className="text-2xl font-semibold text-gray-900">{menuItems.length}</p>
             </div>
           </div>
@@ -335,7 +335,7 @@ const MenuManagement = () => {
               <Package className="w-6 h-6 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Categories</p>
+              <p className="text-sm font-medium text-gray-600">หมวดหมู่</p>
               <p className="text-2xl font-semibold text-gray-900">{new Set(menuItems.map(item => item.category)).size}</p>
             </div>
           </div>
@@ -347,7 +347,7 @@ const MenuManagement = () => {
               <Utensils className="w-6 h-6 text-yellow-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Available</p>
+              <p className="text-sm font-medium text-gray-600">ใช้งานอยู่</p>
               <p className="text-2xl font-semibold text-gray-900">{menuItems.filter(item => item.active).length}</p>
             </div>
           </div>
@@ -359,7 +359,7 @@ const MenuManagement = () => {
               <Utensils className="w-6 h-6 text-red-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Unavailable</p>
+              <p className="text-sm font-medium text-gray-600">ไม่ใช้งาน</p>
               <p className="text-2xl font-semibold text-gray-900">{menuItems.filter(item => !item.active).length}</p>
             </div>
           </div>
@@ -373,7 +373,7 @@ const MenuManagement = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
               type="text"
-              placeholder="Search menu items by name or code..."
+              placeholder="ค้นหารายการเมนูตามชื่อหรือรหัส..."
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -384,7 +384,7 @@ const MenuManagement = () => {
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
           >
-            <option value="All">All Categories</option>
+            <option value="All">ทุกหมวดหมู่</option>
             {categories.map(cat => (
               <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
             ))}
@@ -394,9 +394,9 @@ const MenuManagement = () => {
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
-            <option value="All">All Status</option>
-            <option value="Available">Available</option>
-            <option value="Not Available">Not Available</option>
+            <option value="All">ทุกสถานะ</option>
+            <option value="Available">ใช้งานอยู่</option>
+            <option value="Not Available">ไม่ใช้งาน</option>
           </select>
         </div>
       </div>
@@ -404,19 +404,19 @@ const MenuManagement = () => {
       {/* Menu Items Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800">Menu Items</h3>
+          <h3 className="text-lg font-semibold text-gray-800">รายการเมนู</h3>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">รหัส</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">รายการ</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">หมวดหมู่</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">ราคา</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">สถานะ</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">การจัดการ</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -483,7 +483,7 @@ const MenuManagement = () => {
 
         {filteredMenuItems.length === 0 && (
           <div className="text-center py-8 text-gray-500">
-            No menu items found matching your criteria
+            ไม่พบรายการเมนูที่ตรงกับเงื่อนไข
           </div>
         )}
       </div>
@@ -495,7 +495,7 @@ const MenuManagement = () => {
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">
-                  {currentItem ? 'Edit Menu Item' : 'Create New Menu Item'}
+                  {currentItem ? 'แก้ไขรายการเมนู' : 'สร้างรายการเมนูใหม่'}
                 </h3>
                 <button
                   onClick={() => setShowModal(false)}
@@ -515,7 +515,7 @@ const MenuManagement = () => {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Code *
+                      รหัส *
                     </label>
                     <input
                       type="text"
@@ -525,7 +525,7 @@ const MenuManagement = () => {
                       className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                         formErrors.code ? 'border-red-500' : 'border-gray-300'
                       }`}
-                      placeholder="Enter item code"
+                      placeholder="ป้อนรหัสรายการ"
                     />
                     {formErrors.code && (
                       <p className="mt-1 text-sm text-red-600">{formErrors.code}</p>
@@ -534,7 +534,7 @@ const MenuManagement = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Name *
+                      ชื่อ *
                     </label>
                     <input
                       type="text"
@@ -544,7 +544,7 @@ const MenuManagement = () => {
                       className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                         formErrors.name ? 'border-red-500' : 'border-gray-300'
                       }`}
-                      placeholder="Enter menu item name"
+                      placeholder="ป้อนชื่อรายการเมนู"
                     />
                     {formErrors.name && (
                       <p className="mt-1 text-sm text-red-600">{formErrors.name}</p>
@@ -553,21 +553,21 @@ const MenuManagement = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Description
+                      คำอธิบาย
                     </label>
                     <textarea
                       name="description"
                       value={formData.description}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter description"
+                      placeholder="ป้อนคำอธิบาย"
                       rows="3"
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Category
+                      หมวดหมู่
                     </label>
                     <select
                       name="category"
@@ -586,7 +586,7 @@ const MenuManagement = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Price
+                        ราคา
                       </label>
                       <input
                         type="number"
@@ -606,7 +606,7 @@ const MenuManagement = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Package Price
+                        ราคา套餐
                       </label>
                       <input
                         type="number"
@@ -627,7 +627,7 @@ const MenuManagement = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Image URL
+                      URL รูปภาพ
                     </label>
                     <input
                       type="text"
@@ -635,22 +635,22 @@ const MenuManagement = () => {
                       value={formData.image}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter image URL"
+                      placeholder="ป้อน URL รูปภาพ"
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Tags (comma separated)
+                      แท็ก (คั่นด้วยเครื่องหมายจุลภาค)
                     </label>
                     <input
                       type="text"
                       value={formData.tags.join(', ')}
                       onChange={handleTagsChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="e.g., popular, spicy, vegetarian"
+                      placeholder="เช่น ยอดนิยม, อาหารเผ็ด, อาหารเจ"
                     />
-                    <p className="mt-1 text-xs text-gray-500">Separate tags with commas</p>
+                    <p className="mt-1 text-xs text-gray-500">คั่นแท็กด้วยเครื่องหมายจุลภาค</p>
                   </div>
                 </div>
 
@@ -660,14 +660,14 @@ const MenuManagement = () => {
                     onClick={() => setShowModal(false)}
                     className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
                   >
-                    Cancel
+                    ยกเลิก
                   </button>
                   <button
                     type="submit"
                     className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white flex items-center"
                   >
                     <Save className="w-4 h-4 mr-2" />
-                    {currentItem ? 'Update' : 'Create'}
+                    {currentItem ? 'อัปเดต' : 'สร้าง'}
                   </button>
                 </div>
               </form>
