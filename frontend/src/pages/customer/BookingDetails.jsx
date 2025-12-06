@@ -1,13 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router';
 import CustomerService from '../../services/CustomerService';
+import reviewService from '../../services/ReviewService';
 import Swal from 'sweetalert2';
+import ReviewForm from '../../components/shared/ReviewForm';
+import ReviewList from '../../components/shared/ReviewList';
+import StarRating from '../../components/shared/StarRating';
 
 const BookingDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [booking, setBooking] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [existingReview, setExistingReview] = useState(null);
+    const [showReviewForm, setShowReviewForm] = useState(false);
+    const [customerInfo, setCustomerInfo] = useState(null);
 
     const cancelBooking = async (bookingId, bookingCode) => {
         const result = await Swal.fire({
@@ -46,12 +53,132 @@ const BookingDetails = () => {
         }
     };
 
+    const handleAddReview = () => {
+        if (booking.payment_status !== 'full-payment' && booking.payment_status !== 'deposit-paid') {
+            Swal.fire({
+                title: 'ไม่สามารถรีวิวได้',
+                text: 'คุณสามารถรีวิวได้เฉพาะเมื่อชำระเงินแล้ว',
+                icon: 'info',
+                confirmButtonColor: '#3085d6'
+            });
+            return;
+        }
+        setShowReviewForm(true);
+    };
+
+    const handleReviewSuccess = () => {
+        setShowReviewForm(false);
+        // Refresh the booking details to get the new review
+        const fetchBookingDetails = async () => {
+            try {
+                const response = await CustomerService.getBookingById(id);
+                setBooking(response.data.data);
+
+                // Get customer info from the booking
+                const customer = {
+                    _id: response.data.data.customer.customerID,
+                    name: response.data.data.customer.name,
+                    phone: response.data.data.customer.phone,
+                    email: response.data.data.customer.email
+                };
+                setCustomerInfo(customer);
+
+                // Log for debugging
+                // console.log('Customer ID from booking:', response.data.data.customer.customerID);
+                // console.log('Type of Customer ID:', typeof response.data.data.customer.customerID);
+
+                // Check if a review already exists for this booking
+                try {
+                    const reviewResponse = await reviewService.getReviewsByBooking(id);
+                    if (reviewResponse.data) {
+                        setExistingReview(reviewResponse.data);
+                    }
+                } catch (error) {
+                    // If no review exists, that's fine
+                    if (error.response?.status !== 404) {
+                        console.error('Error fetching review:', error);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching booking details:', error);
+            }
+        };
+        fetchBookingDetails();
+    };
+
+    const handleCancelReview = () => {
+        setShowReviewForm(false);
+    };
+
+    const handleDeleteReview = async (reviewId) => {
+        const result = await Swal.fire({
+            title: 'คุณแน่ใจหรือไม่?',
+            text: 'คุณต้องการลบความคิดเห็นนี้?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'ใช่, ลบเลย!',
+            cancelButtonText: 'ยกเลิก'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await reviewService.deleteReview(reviewId);
+                Swal.fire({
+                    title: 'ลบแล้ว!',
+                    text: 'รีวิวของคุณถูกลบเรียบร้อยแล้ว',
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6'
+                });
+                // Refresh the booking details to reflect the deleted review
+                setExistingReview(null);
+                handleReviewSuccess(); // This will refresh the booking details
+            } catch (error) {
+                console.error('Error deleting review:', error);
+                Swal.fire({
+                    title: 'เกิดข้อผิดพลาด!',
+                    text: error.response?.data?.message || 'ไม่สามารถลบความคิดเห็นได้',
+                    icon: 'error',
+                    confirmButtonColor: '#d33'
+                });
+            }
+        }
+    };
+
     useEffect(() => {
         const fetchBookingDetails = async () => {
             try {
                 const response = await CustomerService.getBookingById(id);
-                console.log(response.data.data)
+                // console.log(response.data.data)
                 setBooking(response.data.data);
+
+                // Get customer info from the booking
+                const customer = {
+                    _id: response.data.data.customer.customerID,
+                    name: response.data.data.customer.name,
+                    phone: response.data.data.customer.phone,
+                    email: response.data.data.customer.email
+                };
+                setCustomerInfo(customer);
+
+                // Log for debugging
+                // console.log('Customer ID from booking:', response.data.data.customer.customerID);
+                // console.log('Type of Customer ID:', typeof response.data.data.customer.customerID);
+
+                // Check if a review already exists for this booking
+                try {
+                    const reviewResponse = await reviewService.getReviewsByBooking(id);
+                    if (reviewResponse.data) {
+                        setExistingReview(reviewResponse.data);
+                    }
+                } catch (error) {
+                    // If no review exists, that's fine
+                    if (error.response?.status !== 404) {
+                        console.error('Error fetching review:', error);
+                    }
+                }
+
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching booking details:', error);
@@ -335,6 +462,52 @@ const BookingDetails = () => {
                                     </button>
                                 )}
                             </div>
+                        </div>
+
+                        {/* Review section */}
+                        <div className="bg-white rounded-xl shadow-md border border-green-200 p-6">
+                            <h2 className="text-xl font-bold text-green-700 mb-4">รีวิว</h2>
+                            {existingReview ? (
+                                <div>
+                                    <div className="flex items-center mb-3">
+                                        <StarRating rating={existingReview.rating} readOnly size="md" />
+                                        <span className="ml-2 text-gray-600">{existingReview.rating}/5</span>
+                                    </div>
+                                    {existingReview.review_text && (
+                                        <p className="text-gray-700 mb-4">{existingReview.review_text}</p>
+                                    )}
+                                    <div className="flex justify-between">
+                                        <button
+                                            onClick={() => handleDeleteReview(existingReview._id)}
+                                            className="text-red-600 hover:text-red-800 font-medium"
+                                        >
+                                            ลบรีวิว
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : showReviewForm ? (
+                                <ReviewForm
+                                    bookingId={booking._id}
+                                    onSuccess={handleReviewSuccess}
+                                    onCancel={handleCancelReview}
+                                />
+                            ) : (
+                                <div>
+                                    <p className="text-gray-600 mb-3">คุณยังไม่ได้เขียนรีวิวสำหรับการจองนี้</p>
+                                    {(booking.payment_status === 'full-payment' || booking.payment_status === 'deposit-paid') ? (
+                                        <button
+                                            onClick={handleAddReview}
+                                            className="btn w-full bg-green-600 text-white hover:bg-green-700"
+                                        >
+                                            เขียนรีวิว
+                                        </button>
+                                    ) : (
+                                        <p className="text-gray-500 text-sm italic">
+                                            คุณสามารถรีวิวได้หลังจากการชำระเงิน
+                                        </p>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

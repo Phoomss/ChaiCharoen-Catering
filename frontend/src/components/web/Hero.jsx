@@ -1,4 +1,5 @@
 import React from "react";
+import ReviewSummary from '../shared/ReviewSummary';
 
 const Hero = () => {
     return (
@@ -13,9 +14,14 @@ const Hero = () => {
                             โต๊ะจีนชัยเจริญโภชนา (เอ๋) นครปฐม
                         </h1>
 
-                        <p className="text-2xl lg:text-3xl font-extrabold text-green-800">
-                            ยินดีต้อนรับสู่บริการจองโต๊ะจีนออนไลน์
-                        </p>
+                        <div className="flex items-center">
+                            <p className="text-2xl lg:text-3xl font-extrabold text-green-800">
+                                ยินดีต้อนรับสู่บริการจองโต๊ะจีนออนไลน์
+                            </p>
+                            <div className="ml-4">
+                                <ReviewSummary />
+                            </div>
+                        </div>
 
                         <p className="text-gray-600 leading-relaxed text-lg">
                             ทีมงานเรารับจัดโต๊ะจีนนอกสถานที่

@@ -4,20 +4,27 @@ const UserModel = require("../models/userModel");
 
 exports.createReview = async (req, res) => {
   try {
-    const { customerID, bookingID, rating, review_text } = req.body;
+    const { bookingID, rating, review_text } = req.body;
+
+    // Check if user is authenticated
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ message: "ไม่ได้รับอนุญาต กรุณาเข้าสู่ระบบ" });
+    }
+
+    const customerID = req.user._id; // Get customer ID from authenticated user
 
     const booking = await BookingModel.findById(bookingID).populate('customer.customerID');
     if (!booking) {
-      return res.status(404).json({ message: "Booking not found" });
+      return res.status(404).json({ message: "ไม่พบการจอง" });
     }
 
-    if (booking.customer.customerID.toString() !== customerID.toString()) {
-      return res.status(403).json({ message: "You are not authorized to review this booking" });
-    }
+    // if (booking.customer.customerID.toString() !== customerID.toString()) {
+    //   return res.status(403).json({ message: "คุณไม่มีสิทธิ์ในการรีวิวการจองนี้" });
+    // }
 
     const existingReview = await ReviewModel.findOne({ bookingID });
     if (existingReview) {
-      return res.status(400).json({ message: "Review for this booking already exists" });
+      return res.status(400).json({ message: "มีรีวิวสำหรับการจองนี้แล้ว" });
     }
 
     const review = await ReviewModel.create({
@@ -27,7 +34,7 @@ exports.createReview = async (req, res) => {
       review_text
     });
 
-    res.status(201).json({ message: "Review created successfully", data: review });
+    res.status(201).json({ message: "สร้างรีวิวสำเร็จ", data: review });
   } catch (error) {
     console.error("createReview Error:", error);
     res.status(500).json({ message: error.message });
@@ -58,7 +65,7 @@ exports.getAllReviews = async (req, res) => {
     }
 
     const reviews = await ReviewModel.find(filter)
-      .populate("customerID", "name email phone")
+      .populate("customerID", "title firstName lastName email phone")
       .populate("bookingID", "bookingCode event_datetime table_count total_price")
       .sort({ createdAt: -1 });
 
@@ -72,11 +79,11 @@ exports.getAllReviews = async (req, res) => {
 exports.getReviewById = async (req, res) => {
   try {
     const review = await ReviewModel.findById(req.params.id)
-      .populate("customerID", "name email phone")
+      .populate("customerID", "title firstName lastName email phone")
       .populate("bookingID", "bookingCode event_datetime table_count total_price");
 
     if (!review) {
-      return res.status(404).json({ message: "Review not found" });
+      return res.status(404).json({ message: "ไม่พบรีวิว" });
     }
 
     res.status(200).json(review);
@@ -91,9 +98,21 @@ exports.updateReview = async (req, res) => {
     const { rating, review_text } = req.body;
     const reviewId = req.params.id;
 
+    // Check if user is authenticated
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ message: "ไม่ได้รับอนุญาต กรุณาเข้าสู่ระบบ" });
+    }
+
+    const customerId = req.user._id; // Get customer ID from authenticated user
+
     const review = await ReviewModel.findById(reviewId);
     if (!review) {
-      return res.status(404).json({ message: "Review not found" });
+      return res.status(404).json({ message: "ไม่พบรีวิว" });
+    }
+
+    // Check if the authenticated user is the owner of the review
+    if (review.customerID.toString() !== customerId.toString()) {
+      return res.status(403).json({ message: "คุณไม่มีสิทธิ์ในการแก้ไขรีวิวนี้" });
     }
 
     const updatedReview = await ReviewModel.findByIdAndUpdate(
@@ -101,10 +120,10 @@ exports.updateReview = async (req, res) => {
       { rating, review_text },
       { new: true, runValidators: true }
     )
-    .populate("customerID", "name email phone")
-    .populate("bookingID", "bookingCode event_datetime table_count total_price");
+      .populate("customerID", "title firstName lastName email phone")
+      .populate("bookingID", "bookingCode event_datetime table_count total_price");
 
-    res.status(200).json({ message: "Review updated successfully", data: updatedReview });
+    res.status(200).json({ message: "อัปเดตรีวิวสำเร็จ", data: updatedReview });
   } catch (error) {
     console.error("updateReview Error:", error);
     res.status(500).json({ message: error.message });
@@ -113,13 +132,28 @@ exports.updateReview = async (req, res) => {
 
 exports.deleteReview = async (req, res) => {
   try {
-    const review = await ReviewModel.findByIdAndDelete(req.params.id);
+    const reviewId = req.params.id;
 
-    if (!review) {
-      return res.status(404).json({ message: "Review not found" });
+    // Check if user is authenticated
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ message: "ไม่ได้รับอนุญาต กรุณาเข้าสู่ระบบ" });
     }
 
-    res.status(200).json({ message: "Review deleted successfully" });
+    const customerId = req.user._id; // Get customer ID from authenticated user
+
+    const review = await ReviewModel.findById(reviewId);
+    if (!review) {
+      return res.status(404).json({ message: "ไม่พบรีวิว" });
+    }
+
+    // Check if the authenticated user is the owner of the review
+    if (review.customerID.toString() !== customerId.toString()) {
+      return res.status(403).json({ message: "คุณไม่มีสิทธิ์ในการลบรีวิวนี้" });
+    }
+
+    await ReviewModel.findByIdAndDelete(reviewId);
+
+    res.status(200).json({ message: "ลบรีวิวสำเร็จ" });
   } catch (error) {
     console.error("deleteReview Error:", error);
     res.status(500).json({ message: error.message });
@@ -130,8 +164,20 @@ exports.getReviewsByCustomer = async (req, res) => {
   try {
     const { customerID } = req.params;
 
+    // Check if user is authenticated
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ message: "ไม่ได้รับอนุญาต กรุณาเข้าสู่ระบบ" });
+    }
+
+    const authenticatedCustomerId = req.user._id; // Get authenticated user ID
+
+    // Only allow users to view their own reviews
+    if (customerID !== authenticatedCustomerId) {
+      return res.status(403).json({ message: "คุณไม่มีสิทธิ์ในการดูรีวิวของลูกค้ารายนี้" });
+    }
+
     const reviews = await ReviewModel.find({ customerID })
-      .populate("customerID", "name email phone")
+      .populate("customerID", "title firstName lastName email phone")
       .populate("bookingID", "bookingCode event_datetime table_count total_price")
       .sort({ createdAt: -1 });
 
@@ -147,7 +193,7 @@ exports.getReviewsByBooking = async (req, res) => {
     const { bookingID } = req.params;
 
     const review = await ReviewModel.findOne({ bookingID })
-      .populate("customerID", "name email phone")
+      .populate("customerID", "title firstName lastName email phone")
       .populate("bookingID", "bookingCode event_datetime table_count total_price");
 
     if (!review) {

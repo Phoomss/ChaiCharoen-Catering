@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { JWT_SECRET } = require('../utils/constants');
 
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization']; // header names are case-insensitive
@@ -9,7 +10,7 @@ const authenticateToken = (req, res, next) => {
     if (!token) return res.status(401).json({ message: 'Access Denied: Invalid token format' });
 
     try {
-        const verified = jwt.verify(token, process.env.JWT_SECRET);
+        const verified = jwt.verify(token, JWT_SECRET);
         req.user = verified; // Attach payload to request
         next();
     } catch (error) {

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import CustomerService from '../../services/CustomerService';
+import reviewService from '../../services/ReviewService';
 import Swal from 'sweetalert2';
+import ReviewList from '../../components/shared/ReviewList';
 
 const CustomerProfile = () => {
     const [customerData, setCustomerData] = useState({
@@ -15,21 +17,28 @@ const CustomerProfile = () => {
     });
     const [editing, setEditing] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [reviews, setReviews] = useState([]);
+    const [reviewsLoading, setReviewsLoading] = useState(true);
 
     useEffect(() => {
-        const fetchProfile = async () => {
+        const fetchData = async () => {
             try {
-                const response = await CustomerService.getProfile();
+                // Fetch profile
+                const profileResponse = await CustomerService.getProfile();
+                setCustomerData(profileResponse.data.data);
 
-                setCustomerData(response.data.data);
-                setLoading(false);
+                // Fetch customer reviews
+                const reviewsResponse = await reviewService.getReviewsByCustomer(profileResponse.data.data._id);
+                setReviews(reviewsResponse.data.data);
             } catch (error) {
-                console.error('Error fetching profile:', error);
+                console.error('Error fetching data:', error);
+            } finally {
                 setLoading(false);
+                setReviewsLoading(false);
             }
         };
 
-        fetchProfile();
+        fetchData();
     }, []);
 
     return (
@@ -197,6 +206,19 @@ const CustomerProfile = () => {
                             </button>
                         </div>
                     </>
+                )}
+            </div>
+
+            {/* Reviews Section */}
+            <div className="bg-white rounded-lg shadow p-6 border border-green-100 mt-6">
+                <h2 className="text-xl font-bold text-gray-800 mb-4">รีวิวของฉัน</h2>
+                {reviewsLoading ? (
+                    <div className="flex justify-center items-center h-32">
+                        <span className="loading loading-spinner loading-lg text-green-600"></span>
+                        <span className="ml-2">กำลังโหลดรีวิว...</span>
+                    </div>
+                ) : (
+                    <ReviewList reviews={reviews} />
                 )}
             </div>
         </div>
