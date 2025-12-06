@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import CustomerService from '../../services/CustomerService';
 import MenuPackageService from '../../services/MenuPackageService';
 import UserService from '../../services/UserService';
@@ -7,6 +7,7 @@ import Swal from 'sweetalert2';
 
 const CustomerBooking = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [bookingData, setBookingData] = useState({
         customer: {
             name: '',
@@ -37,6 +38,28 @@ const CustomerBooking = () => {
             try {
                 const response = await MenuPackageService.getAllMenuPackages();
                 setMenuPackages(response.data.data);
+
+                // Check if there's a selected package from navigation state
+                const selectedPackageId = location.state?.selectedPackage;
+                if (selectedPackageId) {
+                    const selectedPackage = response.data.data.find(pkg => pkg._id === selectedPackageId);
+                    if (selectedPackage) {
+                        // Set the selected package in booking data
+                        const priceValue = typeof selectedPackage.price === 'object'
+                            ? selectedPackage.price.$numberDecimal
+                            : selectedPackage.price;
+
+                        setBookingData(prev => ({
+                            ...prev,
+                            package: {
+                                packageID: selectedPackage._id,
+                                package_name: selectedPackage.name,
+                                price_per_table: priceValue
+                            }
+                        }));
+                    }
+                }
+
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching menu packages:', error);
@@ -51,8 +74,8 @@ const CustomerBooking = () => {
                 const user = response.data.data;
 
                 setUserInfo(user);
-                setBookingData((preData) => ({
-                    ...preData,
+                setBookingData(prev => ({
+                    ...prev,
                     customer: { // ข้อมูลสำหรับฟอร์ม
                         name: `${user.title || ''}${user.firstName} ${user.lastName}`,
                         phone: user.phone,
@@ -65,7 +88,7 @@ const CustomerBooking = () => {
             }
         }
         fetchUserInfo();
-    }, []);
+    }, [location.state]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;

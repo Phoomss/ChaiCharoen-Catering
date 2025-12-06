@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router';
 import menuService from '../../services/MenuService';
 import menuPackageService from '../../services/MenuPackageService';
 import { formatPriceWithCurrency, convertDecimalValue } from '../../utils/priceUtils';
 
 const Menu = () => {
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState('all');
   const [menuItems, setMenuItems] = useState([]);
   const [menuPackages, setMenuPackages] = useState([]);
@@ -22,9 +24,9 @@ const Menu = () => {
         menuService.getAllMenus(),
         menuPackageService.getAllMenuPackages()
       ]);
-
+      // console.log(packageResponse.data.data)
       setMenuItems(menuResponse.data.data || []);
-      setMenuPackages(packageResponse.data || []);
+      setMenuPackages(packageResponse.data.data || []);
       setError(null);
     } catch (err) {
       setError('ไม่สามารถโหลดข้อมูลเมนูได้ กรุณาลองอีกครั้ง');
@@ -32,6 +34,11 @@ const Menu = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePackageSelect = (packageId) => {
+    // Navigate to booking page with the selected package
+    navigate('/booking', { state: { selectedPackage: packageId } });
   };
 
   // Get unique categories from menu items
@@ -139,7 +146,8 @@ const Menu = () => {
                   <div className="bg-gray-200 border-2 border-dashed rounded-xl w-full h-40 mb-4 flex items-center justify-center">
                     <span className="text-gray-500">Package Image</span>
                   </div>
-                  <h3 className="font-bold text-green-800 text-xl mb-2">{pkg.name} ({formatPriceWithCurrency(pkg.price)})</h3>
+                  <h3 className="font-bold text-green-800 text-xl mb-2">{pkg.name}</h3>
+                  <div className="text-lg font-bold text-green-600 mb-2">{formatPriceWithCurrency(pkg.price)}</div>
                   <div className="mb-3">
                     <p className="text-gray-600 text-sm">
                       <span className="font-medium">เลือกได้:</span> {pkg.maxSelect} อย่าง
@@ -167,8 +175,11 @@ const Menu = () => {
                       )}
                     </div>
                   </div>
-                  <button className="btn bg-green-600 text-white hover:bg-green-700 w-full">
-                    ดูรายละเอียด
+                  <button
+                    className="btn bg-green-600 text-white hover:bg-green-700 w-full"
+                    onClick={() => handlePackageSelect(pkg._id)}
+                  >
+                    จองชุดนี้
                   </button>
                 </div>
               ))}
