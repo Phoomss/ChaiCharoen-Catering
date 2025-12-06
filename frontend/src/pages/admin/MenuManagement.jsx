@@ -496,14 +496,14 @@ const MenuManagement = () => {
                       >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button
+                      {/* <button
                         onClick={() => toggleAvailability(item)}
                         className={`p-1 hover:bg-gray-100 rounded ${
                           item.active ? 'text-red-600' : 'text-green-600'
                         }`}
                       >
                         {item.active ? <Trash2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                      </button>
+                      </button> */}
                       <button
                         onClick={() => deleteMenuItem(item)}
                         className="p-1 hover:bg-gray-100 rounded text-red-600"
@@ -623,7 +623,7 @@ const MenuManagement = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        ราคา
+                        ราคาปกติ
                       </label>
                       <input
                         type="number"
@@ -643,7 +643,7 @@ const MenuManagement = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        ราคา
+                        ราคา套餐 (Package)
                       </label>
                       <input
                         type="number"
