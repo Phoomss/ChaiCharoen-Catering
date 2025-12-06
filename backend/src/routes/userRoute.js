@@ -1,5 +1,6 @@
 const userController = require('../controllers/userController');
 const authenticateToken = require('../middleware/auth');
+const adminAuth = require('../middleware/adminAuth');
 const router = require('express').Router();
 
 // Utility: async wrapper
@@ -18,22 +19,22 @@ router.put('/me', authenticateToken, asyncHandler(userController.updateProfile))
 
 
 /* ===========================
-    ADMIN AREA — Should protect with role check
+    ADMIN AREA — Protected with admin role
 =========================== */
 
 // GET all users
-router.get('/all', asyncHandler(userController.getAllUsers));
+router.get('/all', authenticateToken, adminAuth, asyncHandler(userController.getAllUsers));
 
 // Search users by role
-router.get('/search', asyncHandler(userController.searchUserByRole));
+router.get('/search', authenticateToken, adminAuth, asyncHandler(userController.searchUserByRole));
 
 // Get user by ID
-router.get('/:id', asyncHandler(userController.getUserById));
+router.get('/:id', authenticateToken, adminAuth, asyncHandler(userController.getUserById));
 
 // Update user by ID
-router.put('/:id', asyncHandler(userController.updateUser));
+router.put('/:id', authenticateToken, adminAuth, asyncHandler(userController.updateUser));
 
 // Delete user by ID
-router.delete('/:id', asyncHandler(userController.deleteUser));
+router.delete('/:id', authenticateToken, adminAuth, asyncHandler(userController.deleteUser));
 
 module.exports = router;

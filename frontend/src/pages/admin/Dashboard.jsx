@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Eye, Edit, Trash2, Plus, Users, Calendar, ShoppingBag, DollarSign } from 'lucide-react';
 import StatsCard from '../../components/card/admin/StatusCard';
 import { Link } from 'react-router';
-import axios from 'axios';
+import adminService from '../../services/AdminService';
 
 const Dashboard = () => {
   const [statsData, setStatsData] = useState({
@@ -19,40 +19,35 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        // In a real implementation, you would fetch from your API
-        // For now, using mock data to demonstrate the dashboard
+        const response = await adminService.getDashboardSummary();
+        const data = response.data.data;
 
-        // Mock booking data for demonstration
         setStatsData({
-          totalUsers: 125,
-          totalBookings: 43,
-          totalRevenue: 456780,
-          pendingBookings: 8,
-          completedBookings: 27,
-          monthlyRevenue: [
-            { month: 'ม.ค.', revenue: 120000 },
-            { month: 'ก.พ.', revenue: 150000 },
-            { month: 'มี.ค.', revenue: 110000 },
-            { month: 'เม.ย.', revenue: 130000 },
-            { month: 'พ.ค.', revenue: 170000 },
-            { month: 'มิ.ย.', revenue: 200000 },
-            { month: 'ก.ค.', revenue: 180000 },
-            { month: 'ส.ค.', revenue: 190000 },
-            { month: 'ก.ย.', revenue: 210000 },
-            { month: 'ต.ค.', revenue: 160000 },
-            { month: 'พ.ย.', revenue: 220000 },
-            { month: 'ธ.ค.', revenue: 195000 }
-          ]
+          totalUsers: data.stats.totalUsers,
+          totalBookings: data.stats.totalBookings,
+          totalRevenue: data.stats.totalRevenue,
+          pendingBookings: data.stats.pendingBookings,
+          depositPaidBookings: data.stats.depositPaidBookings,
+          fullPaymentBookings: data.stats.fullPaymentBookings,
+          cancelledBookings: data.stats.cancelledBookings,
+          newUsersThisMonth: data.stats.newUsersThisMonth,
+          newBookingsThisWeek: data.stats.newBookingsThisWeek,
+          successRate: data.stats.successRate,
+          monthlyRevenue: data.monthlyRevenue
         });
 
-        // Mock recent bookings
-        setRecentBookings([
-          { id: '654321', customer: 'สมชาย ใจดี', package: 'ชุดสุ่ยหลง', date: '25 ธ.ค. 2023', tableCount: 20, amount: 50000, status: 'pending-deposit' },
-          { id: '654322', customer: 'สมหญิง สวยใส', package: 'ชุดตงอี้', date: '28 ธ.ค. 2023', tableCount: 15, amount: 45000, status: 'deposit-paid' },
-          { id: '654323', customer: 'นพ รักสงบ', package: 'ชุดพิเศษ', date: '30 ธ.ค. 2023', tableCount: 25, amount: 75000, status: 'full-payment' },
-          { id: '654324', customer: 'พิมพ์ สบายใจ', package: 'ชุดสุ่ยหลง', date: '27 ธ.ค. 2023', tableCount: 18, amount: 54000, status: 'pending-deposit' },
-          { id: '654325', customer: 'ธนาธิป สว่างจิต', package: 'ชุดตงอี้', date: '26 ธ.ค. 2023', tableCount: 30, amount: 90000, status: 'full-payment' },
-        ]);
+        // Format recent bookings from the API response
+        setRecentBookings(data.recentBookings.map(booking => ({
+          id: booking._id,
+          customer: `${booking.customer.name}`,
+          package: booking.package.package_name,
+          date: new Date(booking.event_datetime).toLocaleDateString('th-TH'),
+          tableCount: booking.table_count,
+          amount: typeof booking.total_price === 'object'
+            ? parseFloat(booking.total_price.$numberDecimal)
+            : booking.total_price,
+          status: booking.payment_status
+        })));
 
         setLoading(false);
       } catch (error) {
@@ -100,7 +95,9 @@ const Dashboard = () => {
     },
     {
       title: 'รายได้รวม',
-      value: `฿${statsData.totalRevenue.toLocaleString()}`,
+      value: `฿${typeof statsData.totalRevenue === 'object'
+        ? parseFloat(statsData.totalRevenue.$numberDecimal || 0).toLocaleString()
+        : parseFloat(statsData.totalRevenue || 0).toLocaleString()}`,
       change: '+15%',
       trend: 'up',
       color: 'yellow',
@@ -194,12 +191,61 @@ const Dashboard = () => {
         {/* Booking Status Distribution */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">สถานะการจอง</h3>
-          <div className="flex items-center justify-center h-64">
-            <div className="relative w-48 h-48 rounded-full border-8 border-green-500 flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-gray-800">{statsData.totalBookings}</div>
-                <div className="text-gray-600">การจองทั้งหมด</div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                <span className="text-sm text-gray-600">รอยืนยัน</span>
               </div>
+              <span className="text-sm font-medium">{statsData.pendingBookings}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className="bg-yellow-500 h-2 rounded-full"
+                style={{ width: `${(statsData.pendingBookings / Math.max(statsData.totalBookings, 1)) * 100}%` }}
+              ></div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                <span className="text-sm text-gray-600">จ่ายมัดจำแล้ว</span>
+              </div>
+              <span className="text-sm font-medium">{statsData.depositPaidBookings}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className="bg-blue-500 h-2 rounded-full"
+                style={{ width: `${(statsData.depositPaidBookings / Math.max(statsData.totalBookings, 1)) * 100}%` }}
+              ></div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                <span className="text-sm text-gray-600">ชำระเต็มจำนวน</span>
+              </div>
+              <span className="text-sm font-medium">{statsData.fullPaymentBookings}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className="bg-green-500 h-2 rounded-full"
+                style={{ width: `${(statsData.fullPaymentBookings / Math.max(statsData.totalBookings, 1)) * 100}%` }}
+              ></div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                <span className="text-sm text-gray-600">ยกเลิก</span>
+              </div>
+              <span className="text-sm font-medium">{statsData.cancelledBookings}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className="bg-red-500 h-2 rounded-full"
+                style={{ width: `${(statsData.cancelledBookings / Math.max(statsData.totalBookings, 1)) * 100}%` }}
+              ></div>
             </div>
           </div>
         </div>
@@ -265,20 +311,20 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-2">ลูกค้าใหม่ (เดือนนี้)</h3>
-          <div className="text-3xl font-bold text-green-600">24</div>
-          <div className="text-sm text-gray-600 mt-1">+5 จากเดือนที่แล้ว</div>
+          <div className="text-3xl font-bold text-green-600">{statsData.newUsersThisMonth}</div>
+          <div className="text-sm text-gray-600 mt-1">- จากเดือนที่แล้ว</div>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-2">การจองใหม่ (สัปดาห์นี้)</h3>
-          <div className="text-3xl font-bold text-blue-600">8</div>
-          <div className="text-sm text-gray-600 mt-1">+2 จากสัปดาห์ที่แล้ว</div>
+          <div className="text-3xl font-bold text-blue-600">{statsData.newBookingsThisWeek}</div>
+          <div className="text-sm text-gray-600 mt-1">- จากสัปดาห์ที่แล้ว</div>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-2">อัตราการสำเร็จ</h3>
-          <div className="text-3xl font-bold text-purple-600">78%</div>
-          <div className="text-sm text-gray-600 mt-1">+3% จากเดือนที่แล้ว</div>
+          <div className="text-3xl font-bold text-purple-600">{statsData.successRate}%</div>
+          <div className="text-sm text-gray-600 mt-1">- จากเดือนที่แล้ว</div>
         </div>
       </div>
     </div>
