@@ -18,6 +18,7 @@ app.use(express.urlencoded({ limit: '20mb', extended: true }));
 
 // Serve static files from uploads directory
 app.use('/uploads', express.static('uploads'));
+app.use('/uploads/menu-images', express.static('uploads/menu-images'));
 
 autoCreateAdmin()
 app.use('/api', rootRouter)

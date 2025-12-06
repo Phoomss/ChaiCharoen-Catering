@@ -25,6 +25,7 @@ const MenuManagement = () => {
     image: '',
     tags: []
   });
+  const [imageFile, setImageFile] = useState(null);
 
   const [formErrors, setFormErrors] = useState({});
 
@@ -158,9 +159,27 @@ const MenuManagement = () => {
     }
 
     try {
+      let response;
       if (currentItem) {
         // Update existing item
-        await menuService.updateMenu(currentItem._id, formData);
+        if (imageFile) {
+          // Create form data for image upload
+          const updateFormData = new FormData();
+          updateFormData.append('code', formData.code);
+          updateFormData.append('name', formData.name);
+          updateFormData.append('description', formData.description);
+          updateFormData.append('category', formData.category);
+          updateFormData.append('price', formData.price);
+          updateFormData.append('packagePrice', formData.packagePrice);
+          updateFormData.append('image', imageFile);
+          updateFormData.append('tags', JSON.stringify(formData.tags));
+
+          response = await menuService.updateMenuWithImage(currentItem._id, updateFormData);
+        } else {
+          // Update without image
+          response = await menuService.updateMenu(currentItem._id, formData);
+        }
+
         Swal.fire({
           icon: 'success',
           title: 'อัปเดตเรียบร้อยแล้ว!',
@@ -169,7 +188,24 @@ const MenuManagement = () => {
         });
       } else {
         // Create new item
-        await menuService.createMenu(formData);
+        if (imageFile) {
+          // Create form data for image upload
+          const createFormData = new FormData();
+          createFormData.append('code', formData.code);
+          createFormData.append('name', formData.name);
+          createFormData.append('description', formData.description);
+          createFormData.append('category', formData.category);
+          createFormData.append('price', formData.price);
+          createFormData.append('packagePrice', formData.packagePrice);
+          createFormData.append('image', imageFile);
+          createFormData.append('tags', JSON.stringify(formData.tags));
+
+          response = await menuService.createMenuWithImage(createFormData);
+        } else {
+          // Create without image
+          response = await menuService.createMenu(formData);
+        }
+
         Swal.fire({
           icon: 'success',
           title: 'เพิ่มเรียบร้อยแล้ว!',
@@ -193,6 +229,7 @@ const MenuManagement = () => {
         image: '',
         tags: []
       });
+      setImageFile(null);
     } catch (err) {
       if (err.response?.data?.message) {
         setFormErrors({ general: err.response.data.message });
@@ -606,7 +643,7 @@ const MenuManagement = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        ราคา套餐
+                        ราคา
                       </label>
                       <input
                         type="number"
@@ -627,16 +664,42 @@ const MenuManagement = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      URL รูปภาพ
+                      รูปภาพเมนู
                     </label>
                     <input
-                      type="text"
-                      name="image"
-                      value={formData.image}
-                      onChange={handleInputChange}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        setImageFile(e.target.files[0]);
+                        // Clear the existing image URL if a file is selected
+                        setFormData(prev => ({ ...prev, image: '' }));
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="ป้อน URL รูปภาพ"
                     />
+                    {imageFile && (
+                      <div className="mt-2">
+                        <p className="text-sm text-gray-600">เลือกไฟล์: {imageFile.name}</p>
+                        <div className="mt-2 flex items-center">
+                          <img
+                            src={URL.createObjectURL(imageFile)}
+                            alt="ตัวอย่างรูปภาพ"
+                            className="w-20 h-20 object-cover rounded-md"
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {!imageFile && formData.image && (
+                      <div className="mt-2">
+                        <p className="text-sm text-gray-600">รูปภาพปัจจุบัน:</p>
+                        <div className="mt-2">
+                          <img
+                            src={formData.image}
+                            alt="ตัวอย่างรูปภาพ"
+                            className="w-20 h-20 object-cover rounded-md"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div>
