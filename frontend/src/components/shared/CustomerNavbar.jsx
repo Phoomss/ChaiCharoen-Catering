@@ -85,7 +85,6 @@ const CustomerNavbar = () => {
                         <li><Link to="/customer/dashboard" className={`text-green-700 ${isActive('/customer/dashboard')}`}>แดชบอร์ด</Link></li>
                         <li><Link to="/customer/profile" className={`text-green-700 ${isActive('/customer/profile')}`}>โปรไฟล์ของฉัน</Link></li>
                         <li><Link to="/customer/bookings" className={`text-green-700 ${isActive('/customer/bookings')}`}>การจองของฉัน</Link></li>
-                        <li><Link to="/customer/orders" className={`text-green-700 ${isActive('/customer/orders')}`}>คำสั่งซื้อ</Link></li>
                         <li><button onClick={handleLogout} className="text-green-700">ออกจากระบบ</button></li>
                     </ul>
                 </div>
@@ -102,7 +101,6 @@ const CustomerNavbar = () => {
                     <li><Link to="/customer/dashboard" className={isActive('/customer/dashboard')}>แดชบอร์ด</Link></li>
                     <li><Link to="/customer/profile" className={isActive('/customer/profile')}>โปรไฟล์ของฉัน</Link></li>
                     <li><Link to="/customer/bookings" className={isActive('/customer/bookings')}>การจองของฉัน</Link></li>
-                    <li><Link to="/customer/orders" className={isActive('/customer/orders')}>คำสั่งซื้อ</Link></li>
                 </ul>
             </div>
 

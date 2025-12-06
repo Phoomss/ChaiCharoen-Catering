@@ -1,14 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import CustomerService from '../../services/CustomerService';
+import reviewService from '../../services/ReviewService';
+import UserService from '../../services/UserService';
+import StarRating from '../../components/shared/StarRating';
 
 const CustomerDashboard = () => {
     const [dashboardData, setDashboardData] = useState({
         customer: { name: "กำลังโหลด..." },
-        stats: { totalBookings: 0, totalSpent: 0, upcomingBooking: null },
+        stats: { totalBookings: 0, totalSpent: 0, totalReviews: 0, upcomingBooking: null },
         recentBookings: []
     });
+    const [recentReviews, setRecentReviews] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [reviewsLoading, setReviewsLoading] = useState(true);
 
     useEffect(() => {
         const fetchDashboardData = async () => {
@@ -23,7 +28,36 @@ const CustomerDashboard = () => {
             }
         };
 
+        const fetchRecentReviews = async () => {
+            try {
+                // Get user ID from localStorage or JWT token
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    setReviewsLoading(false);
+                    return;
+                }
+
+                // Get user info to retrieve user ID
+                const userResponse = await UserService.getUserInfo();
+                const userId = userResponse.data.data._id;
+
+                const response = await reviewService.getReviewsByCustomer(userId);
+                // Get the 3 most recent reviews
+                const sortedReviews = response.data.data
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                    .slice(0, 3);
+                setRecentReviews(sortedReviews);
+            } catch (error) {
+                console.error('Error fetching recent reviews:', error);
+                // If there's an error, it's likely because there are no reviews, which is fine
+                setRecentReviews([]);
+            } finally {
+                setReviewsLoading(false);
+            }
+        };
+
         fetchDashboardData();
+        fetchRecentReviews();
     }, []);
 
     const { customer, stats, recentBookings } = dashboardData;
@@ -55,12 +89,12 @@ const CustomerDashboard = () => {
                     <div className="flex items-center">
                         <div className="p-3 rounded-full bg-green-100">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                             </svg>
                         </div>
                         <div className="ml-4">
-                            <h2 className="text-2xl font-bold text-gray-800">0</h2>
-                            <p className="text-gray-600">คำสั่งซื้อ</p>
+                            <h2 className="text-2xl font-bold text-gray-800">{stats.totalReviews || 0}</h2>
+                            <p className="text-gray-600">รีวิวของฉัน</p>
                         </div>
                     </div>
                 </div>
@@ -143,15 +177,41 @@ const CustomerDashboard = () => {
                     </Link>
                 </div>
 
-                {/* Recent Orders */}
+                {/* Recent Reviews */}
                 <div className="bg-white rounded-lg shadow p-6 border border-green-100">
-                    <h2 className="text-xl font-semibold text-gray-800 mb-4">คำสั่งซื้อล่าสุด</h2>
+                    <h2 className="text-xl font-semibold text-gray-800 mb-4">รีวิวล่าสุด</h2>
                     <div className="space-y-4">
-                        <p>ไม่มีคำสั่งซื้อล่าสุด</p>
-                        <p className="text-sm text-gray-500">ระบบคำสั่งซื้อยังไม่ได้ถูกพัฒนา</p>
+                        {reviewsLoading ? (
+                            <p>กำลังโหลดรีวิว...</p>
+                        ) : recentReviews.length > 0 ? (
+                            recentReviews.map((review, index) => (
+                                <div key={index} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                                    <div className="flex justify-between mb-2">
+                                        <h3 className="font-medium text-gray-800">
+                                            {review.bookingID?.package?.package_name || 'การจอง'}
+                                        </h3>
+                                        <div className="flex items-center">
+                                            <StarRating rating={review.rating} readOnly size="sm" />
+                                            <span className="ml-1 text-sm text-gray-600">{review.rating}/5</span>
+                                        </div>
+                                    </div>
+                                    {review.review_text && (
+                                        <p className="text-sm text-gray-600 line-clamp-2">{review.review_text}</p>
+                                    )}
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        {new Date(review.createdAt).toLocaleDateString('th-TH')}
+                                    </p>
+                                </div>
+                            ))
+                        ) : (
+                            <>
+                                <p>คุณยังไม่มีรีวิวในขณะนี้</p>
+                                <p className="text-sm text-gray-500">ให้คะแนนและเขียนรีวิวสำหรับการจองที่ผ่านมา</p>
+                            </>
+                        )}
                     </div>
-                    <Link to="/customer/orders" className="mt-4 text-green-600 hover:underline flex items-center">
-                        ดูคำสั่งซื้อทั้งหมด
+                    <Link to="/customer/bookings" className="mt-4 text-green-600 hover:underline flex items-center">
+                        {recentReviews.length > 0 ? 'ดูรีวิวทั้งหมด' : 'เขียนรีวิว'}
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
@@ -181,12 +241,12 @@ const CustomerDashboard = () => {
                         </svg>
                         <span className="text-gray-700">ดูเมนูอาหาร</span>
                     </Link>
-                    <div className="flex flex-col items-center justify-center p-4 border border-green-200 rounded-lg cursor-not-allowed opacity-50">
+                    <Link to="/customer/bookings" className="flex flex-col items-center justify-center p-4 border border-green-200 rounded-lg hover:bg-green-50 transition">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-green-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
-                        <span className="text-gray-700">แจ้งชำระเงิน</span>
-                    </div>
+                        <span className="text-gray-700">ดูการจองทั้งหมด</span>
+                    </Link>
                 </div>
             </div>
         </div>

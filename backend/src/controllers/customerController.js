@@ -1,5 +1,6 @@
 const bookingModel = require('../models/bookingModel');
 const userModel = require('../models/userModel');
+const ReviewModel = require('../models/reviewModel');
 
 // Get customer dashboard summary
 const getCustomerDashboardSummary = async (req, res) => {
@@ -35,6 +36,9 @@ const getCustomerDashboardSummary = async (req, res) => {
             event_datetime: { $gte: new Date() }
         }).sort({ event_datetime: 1 });
 
+        // Get total review count
+        const reviewCount = await ReviewModel.countDocuments({ customerID: customerId });
+
         res.status(200).json({
             data: {
                 customer: {
@@ -45,6 +49,7 @@ const getCustomerDashboardSummary = async (req, res) => {
                 stats: {
                     totalBookings: bookingCount,
                     totalSpent: totalSpent,
+                    totalReviews: reviewCount,
                     upcomingBooking: upcomingBooking ? {
                         date: upcomingBooking.event_datetime,
                         packageName: upcomingBooking.package.package_name,
