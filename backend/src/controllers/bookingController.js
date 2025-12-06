@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const BookingModel = require("../models/bookingModel");
 const MenuPackageModel = require("../models/menuPackageModel");
+const { sendLineMessage } = require('../middleware/lineMessage');
+const { LINE_USER_ID } = require('../utils/constants');
 
 // สร้าง Booking
 exports.createBooking = async (req, res) => {
@@ -22,14 +24,10 @@ exports.createBooking = async (req, res) => {
       return res.status(404).json({ message: "Menu package not found" });
     }
 
-    // แปลง Decimal128 → Number
     const price = parseFloat(menuPackage.price.toString());
-
-    // คำนวณราคา
     const totalPrice = new mongoose.Types.Decimal128((price * table_count).toString());
     const pricePerTable = new mongoose.Types.Decimal128(price.toString());
 
-    // ถ้าไม่ส่ง deposit_required → default = 30%
     const depositRequired = deposit_required
       ? new mongoose.Types.Decimal128(deposit_required.toString())
       : new mongoose.Types.Decimal128((price * table_count * 0.30).toString());
@@ -37,9 +35,9 @@ exports.createBooking = async (req, res) => {
     // Generate booking code
     const date = new Date();
     const year = date.getFullYear().toString();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const randomNum = Math.floor(1000 + Math.random() * 9000); // 4 digit random number
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const randomNum = Math.floor(1000 + Math.random() * 9000);
     const bookingCode = `BK-${year}${month}${day}${randomNum}`;
 
     const booking = await BookingModel.create({
@@ -65,10 +63,31 @@ exports.createBooking = async (req, res) => {
       bookingCode: bookingCode
     });
 
+    const locationText =
+      typeof location === "string"
+        ? location
+        : `${location.address || ""} ${location.latitude || ""} ${location.longitude || ""}`.trim();
+
+    const message =
+      `📌 รายการจองใหม่!\n\n` +
+      `🔖 Booking Code: ${booking.bookingCode}\n` +
+      `👤 ลูกค้า: ${booking.customer.name}\n` +
+      `📞 เบอร์: ${booking.customer.phone}\n` +
+      `📦 แพ็กเกจ: ${menuPackage.name}\n` +
+      `🍽 จำนวนโต๊ะ: ${table_count}\n` +
+      `📅 วันงาน: ${new Date(event_datetime).toLocaleString("th-TH")}\n` +
+      `💵 รวม: ${price * table_count} บาท\n` +
+      `💰 มัดจำ: ${parseFloat(depositRequired.toString())} บาท\n` +
+      `📍 สถานที่: ${locationText}`;;
+
+    // console.log(message)
+    await sendLineMessage(LINE_USER_ID, message);
+
     res.status(201).json({
       message: "Booking created successfully",
       data: booking
     });
+
   } catch (error) {
     console.error("createBooking Error:", error);
     res.status(500).json({ message: error.message });
@@ -108,7 +127,6 @@ exports.getBookingById = async (req, res) => {
   }
 };
 
-// อัพเดตสถานะ Booking
 exports.updateBookingStatus = async (req, res) => {
   try {
     const { status, amount, slip_image, payment_type } = req.body;
@@ -129,6 +147,19 @@ exports.updateBookingStatus = async (req, res) => {
         payment_type: payment_type || "deposit",
         slip_image: slip_image || null
       });
+    }
+
+    // ---- ส่ง LINE เมื่อยกเลิกการจอง ----
+    if (status === "cancelled" || status === "ยกเลิก") {
+
+      const cancelMessage =
+        `❌ ยกเลิกการจองแล้ว\n\n` +
+        `🔖 Booking Code: ${booking.bookingCode}\n` +
+        `👤 ลูกค้า: ${booking.customer.name}\n` +
+        `📞 เบอร์: ${booking.customer.phone}\n` +
+        `📅 วันงาน: ${new Date(booking.event_datetime).toLocaleString("th-TH")}`;
+
+      await sendLineMessage(LINE_USER_ID, cancelMessage);
     }
 
     await booking.save();
