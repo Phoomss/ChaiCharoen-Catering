@@ -543,10 +543,19 @@ const BookingDetails = () => {
                                                 <div className="mt-2">
                                                     <div className="text-sm text-gray-600">สลิปการชำระเงิน:</div>
                                                     <div className="mt-1">
-                                                        <a
-                                                            href={`${http.defaults.baseURL}${payment.slip_image}`}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
+                                                        <button
+                                                            onClick={() => {
+                                                                // Show image in a modal
+                                                                Swal.fire({
+                                                                    html: `<img src="${http.defaults.baseURL}${payment.slip_image}" alt="Slip Image" style="max-width: 100%; height: auto;" />`,
+                                                                    showCloseButton: true,
+                                                                    showConfirmButton: false,
+                                                                    customClass: {
+                                                                        popup: 'p-0'
+                                                                    },
+                                                                    width: 'auto'
+                                                                });
+                                                            }}
                                                             className="text-blue-600 hover:text-blue-800 text-sm underline flex items-center"
                                                         >
                                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -554,7 +563,7 @@ const BookingDetails = () => {
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                                             </svg>
                                                             ดูสลิปการชำระเงิน
-                                                        </a>
+                                                        </button>
                                                     </div>
                                                 </div>
                                             )}
