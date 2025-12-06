@@ -33,6 +33,10 @@ const cancelBooking = (id) => {
     return http.delete(`/customer/booking/${id}`);
 };
 
+const submitBookingPayment = (id, paymentData) => {
+    return http.post(`/customer/booking/${id}/payment`, paymentData);
+};
+
 const CustomerService = {
     getDashboardSummary,
     getBookings,
@@ -41,7 +45,8 @@ const CustomerService = {
     createBooking,
     getBookingById,
     getPackageMenu,
-    cancelBooking
+    cancelBooking,
+    submitBookingPayment
 };
 
 export default CustomerService;

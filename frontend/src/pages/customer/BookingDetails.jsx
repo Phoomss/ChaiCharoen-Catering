@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import ReviewForm from '../../components/shared/ReviewForm';
 import ReviewList from '../../components/shared/ReviewList';
 import StarRating from '../../components/shared/StarRating';
+import http from '../../services/http-common';
 
 const BookingDetails = () => {
     const { id } = useParams();
@@ -15,6 +16,9 @@ const BookingDetails = () => {
     const [existingReview, setExistingReview] = useState(null);
     const [showReviewForm, setShowReviewForm] = useState(false);
     const [customerInfo, setCustomerInfo] = useState(null);
+    const [paymentType, setPaymentType] = useState('deposit');
+    const [paymentAmount, setPaymentAmount] = useState('');
+    const [selectedFile, setSelectedFile] = useState(null);
 
     const cancelBooking = async (bookingId, bookingCode) => {
         const result = await Swal.fire({
@@ -143,6 +147,107 @@ const BookingDetails = () => {
                     confirmButtonColor: '#d33'
                 });
             }
+        }
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                Swal.fire({
+                    title: 'ประเภทไฟล์ไม่ถูกต้อง!',
+                    text: 'กรุณาเลือกไฟล์รูปภาพเท่านั้น (JPG, PNG, etc.)',
+                    icon: 'error',
+                    confirmButtonColor: '#d33'
+                });
+                return;
+            }
+
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                Swal.fire({
+                    title: 'ไฟล์ใหญ่เกินไป!',
+                    text: 'กรุณาเลือกไฟล์ที่มีขนาดไม่เกิน 5MB',
+                    icon: 'error',
+                    confirmButtonColor: '#d33'
+                });
+                return;
+            }
+
+            setSelectedFile(file);
+        }
+    };
+
+    const submitPayment = async () => {
+        if (!paymentAmount || !selectedFile) {
+            Swal.fire({
+                title: 'กรุณากรอกข้อมูลให้ครบถ้วน!',
+                text: 'กรุณากรอกจำนวนเงินและเลือกไฟล์สลิปการชำระเงิน',
+                icon: 'warning',
+                confirmButtonColor: '#3085d6'
+            });
+            return;
+        }
+
+        try {
+            // Show loading indicator
+            Swal.fire({
+                title: 'กำลังอัปโหลด...',
+                text: 'กรุณารอสักครู่ ระบบกำลังประมวลผลไฟล์ของคุณ',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // In a full implementation, you would typically upload the file first to get a URL
+            // For this implementation, I'll create a FormData and send the file directly with payment data
+            // This approach sends the file along with payment information in a single request
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('amount', parseFloat(paymentAmount));
+            formData.append('payment_type', paymentType);
+
+            // Send the payment data with file to the backend
+            // Note: The backend needs to be updated to handle multipart form data
+            const response = await http.post(`/customer/booking/${id}/payment`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            // Close the loading indicator and show success
+            Swal.close();
+
+            Swal.fire({
+                title: 'แจ้งชำระเงินสำเร็จ!',
+                text: 'ระบบได้รับข้อมูลการชำระเงินของคุณแล้ว ฝ่ายบริการจะตรวจสอบและอัปเดตสถานะการจองให้เร็วที่สุด',
+                icon: 'success',
+                confirmButtonColor: '#3085d6'
+            });
+
+            // Close modal and refresh booking details
+            document.getElementById('paymentModal').close();
+            setPaymentType('deposit');
+            setPaymentAmount('');
+            setSelectedFile(null);
+
+            // Refresh booking details
+            handleReviewSuccess(); // This will refresh the booking details
+        } catch (error) {
+            console.error('Error submitting payment:', error);
+
+            // Close the loading indicator in case of error
+            Swal.close();
+
+            Swal.fire({
+                title: 'เกิดข้อผิดพลาด!',
+                text: error.response?.data?.message || 'ไม่สามารถแจ้งชำระเงินได้ กรุณาลองใหม่อีกครั้ง',
+                icon: 'error',
+                confirmButtonColor: '#d33'
+            });
         }
     };
 
@@ -415,9 +520,9 @@ const BookingDetails = () => {
                                             <div className="flex justify-between">
                                                 <div>
                                                     <div className="font-medium">
-                                                        {payment.payment_type === 'deposit' ? 'มัดจำ' : 
-                                                         payment.payment_type === 'balance' ? 'ยอดคงเหลือ' : 
-                                                         payment.payment_type === 'full-payment' ? 'ชำระเต็มจำนวน' : 
+                                                        {payment.payment_type === 'deposit' ? 'มัดจำ' :
+                                                         payment.payment_type === 'balance' ? 'ยอดคงเหลือ' :
+                                                         payment.payment_type === 'full-payment' ? 'ชำระเต็มจำนวน' :
                                                          payment.payment_type}
                                                     </div>
                                                     <div className="text-sm text-gray-600">
@@ -426,12 +531,33 @@ const BookingDetails = () => {
                                                 </div>
                                                 <div className="text-right">
                                                     <div className="font-medium">
-                                                        {typeof payment.amount === 'object' 
-                                                            ? payment.amount.$numberDecimal 
+                                                        {typeof payment.amount === 'object'
+                                                            ? payment.amount.$numberDecimal
                                                             : payment.amount} บาท
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            {/* Show payment slip if available */}
+                                            {payment.slip_image && (
+                                                <div className="mt-2">
+                                                    <div className="text-sm text-gray-600">สลิปการชำระเงิน:</div>
+                                                    <div className="mt-1">
+                                                        <a
+                                                            href={`${http.defaults.baseURL}${payment.slip_image}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-blue-600 hover:text-blue-800 text-sm underline flex items-center"
+                                                        >
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                            </svg>
+                                                            ดูสลิปการชำระเงิน
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -449,11 +575,18 @@ const BookingDetails = () => {
                                     พิมพ์ใบแจ้งหนี้
                                 </button>
                                 {booking.payment_status === 'pending-deposit' ? (
-                                    <button
-                                        onClick={() => cancelBooking(booking._id, booking.bookingCode)}
-                                        className="btn w-full border border-red-500 text-red-500 hover:bg-red-50">
-                                        ยกเลิกการจอง
-                                    </button>
+                                    <>
+                                        <button
+                                            onClick={() => cancelBooking(booking._id, booking.bookingCode)}
+                                            className="btn w-full border border-red-500 text-red-500 hover:bg-red-50">
+                                            ยกเลิกการจอง
+                                        </button>
+                                        <button
+                                            onClick={() => document.getElementById('paymentModal').showModal()}
+                                            className="btn w-full bg-blue-600 text-white hover:bg-blue-700">
+                                            แจ้งชำระเงิน
+                                        </button>
+                                    </>
                                 ) : (
                                     <button
                                         className="btn w-full border border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed"
@@ -463,6 +596,67 @@ const BookingDetails = () => {
                                 )}
                             </div>
                         </div>
+
+                        {/* Payment Slip Upload Modal */}
+                        <dialog id="paymentModal" className="modal">
+                            <div className="modal-box">
+                                <h3 className="font-bold text-lg text-green-700">แจ้งชำระเงิน</h3>
+                                <form className="py-4 space-y-4">
+                                    <div>
+                                        <label className="label text-green-700 font-medium">ประเภทการชำระเงิน</label>
+                                        <select
+                                            className="select select-bordered w-full bg-white border-green-200"
+                                            value={paymentType}
+                                            onChange={(e) => setPaymentType(e.target.value)}
+                                        >
+                                            <option value="deposit">ชำระมัดจำ</option>
+                                            <option value="balance">ชำระยอดคงเหลือ</option>
+                                            <option value="full-payment">ชำระเต็มจำนวน</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="label text-green-700 font-medium">จำนวนเงิน (บาท)</label>
+                                        <input
+                                            type="number"
+                                            className="input input-bordered w-full bg-white border-green-200"
+                                            value={paymentAmount}
+                                            onChange={(e) => setPaymentAmount(e.target.value)}
+                                            placeholder="ระบุจำนวนเงิน"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="label text-green-700 font-medium">อัปโหลดสลิปการชำระเงิน</label>
+                                        <input
+                                            type="file"
+                                            className="file-input file-input-bordered w-full max-w-xs bg-white border-green-200"
+                                            accept="image/*"
+                                            onChange={handleFileChange}
+                                        />
+                                        {selectedFile && (
+                                            <p className="text-sm text-gray-600 mt-1">เลือกไฟล์: {selectedFile.name}</p>
+                                        )}
+                                    </div>
+                                </form>
+
+                                <div className="modal-action">
+                                    <button
+                                        className="btn bg-green-600 text-white hover:bg-green-700"
+                                        onClick={submitPayment}
+                                        disabled={!paymentAmount || !selectedFile}
+                                    >
+                                        ยืนยันการแจ้งชำระเงิน
+                                    </button>
+                                    <button
+                                        className="btn"
+                                        onClick={() => document.getElementById('paymentModal').close()}
+                                    >
+                                        ปิด
+                                    </button>
+                                </div>
+                            </div>
+                        </dialog>
 
                         {/* Review section */}
                         <div className="bg-white rounded-xl shadow-md border border-green-200 p-6">

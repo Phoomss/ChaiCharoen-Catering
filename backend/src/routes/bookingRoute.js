@@ -14,8 +14,8 @@ router.post("/", authenticateToken, asyncHandler(bookingController.createBooking
 // GET: all bookings (admin only)
 router.get("/", authenticateToken, adminAuth, asyncHandler(bookingController.getAllBookings));
 
-// GET: booking by ID (admin only)
-router.get("/:id", authenticateToken, adminAuth, asyncHandler(bookingController.getBookingById));
+// GET: booking by ID (customer or admin)
+router.get("/:id", authenticateToken, asyncHandler(bookingController.getBookingById));
 
 // PUT: update booking status (admin only)
 router.put("/:id/status", authenticateToken, adminAuth, asyncHandler(bookingController.updateBookingStatus));

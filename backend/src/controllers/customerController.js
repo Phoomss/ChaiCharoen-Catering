@@ -10,7 +10,7 @@ const getCustomerDashboardSummary = async (req, res) => {
         // Get customer profile info
         const customer = await userModel.findById(customerId).select("-password");
         if (!customer) {
-            return res.status(404).json({ message: "Customer not found" });
+            return res.status(404).json({ message: "ไม่พบผู้ใช้งาน" });
         }
 
         // Get customer's booking count
@@ -62,7 +62,7 @@ const getCustomerDashboardSummary = async (req, res) => {
 
     } catch (error) {
         console.error("getCustomerDashboardSummary Error:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "เกิดข้อผิดพลาดของเซิร์ฟเวอร์" });
     }
 };
 
@@ -86,7 +86,7 @@ const getCustomerBookings = async (req, res) => {
 
     } catch (error) {
         console.error("getCustomerBookings Error:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "เกิดข้อผิดพลาดของเซิร์ฟเวอร์" });
     }
 };
 
@@ -97,14 +97,14 @@ const getCustomerProfile = async (req, res) => {
         
         const customer = await userModel.findById(customerId).select("-password");
         if (!customer) {
-            return res.status(404).json({ message: "Customer not found" });
+            return res.status(404).json({ message: "ไม่พบผู้ใช้งาน" });
         }
 
         res.status(200).json({ data: customer });
 
     } catch (error) {
         console.error("getCustomerProfile Error:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "เกิดข้อผิดพลาดของเซิร์ฟเวอร์" });
     }
 };
 
@@ -142,7 +142,7 @@ const updateCustomerProfile = async (req, res) => {
         );
 
         if (!updatedCustomer) {
-            return res.status(404).json({ message: "Customer not found" });
+            return res.status(404).json({ message: "ไม่พบผู้ใช้งาน" });
         }
 
         res.status(200).json({
@@ -152,7 +152,7 @@ const updateCustomerProfile = async (req, res) => {
 
     } catch (error) {
         console.error("updateCustomerProfile Error:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "เกิดข้อผิดพลาดของเซิร์ฟเวอร์" });
     }
 };
 
@@ -169,13 +169,13 @@ const cancelCustomerBooking = async (req, res) => {
         });
 
         if (!booking) {
-            return res.status(404).json({ message: "Booking not found or does not belong to customer" });
+            return res.status(404).json({ message: "ไม่พบการจองหรือการจองไม่ได้อยู่ในชื่อของคุณ" });
         }
 
         // Check if the booking can be cancelled (only allow cancellation if status is pending-deposit)
         if (booking.payment_status !== 'pending-deposit') {
             return res.status(400).json({
-                message: `Cannot cancel booking with status: ${booking.payment_status}. Only pending bookings can be cancelled.`
+                message: `ไม่สามารถยกเลิกการจองที่มีสถานะ: ${booking.payment_status} ได้ สามารถยกเลิกได้เฉพาะการจองที่ยังไม่ได้ชำระเงิน`
             });
         }
 
@@ -186,13 +186,101 @@ const cancelCustomerBooking = async (req, res) => {
         // Optionally, you could add a cancellation record or note here
 
         res.status(200).json({
-            message: "Booking cancelled successfully",
+            message: "ยกเลิกการจองสำเร็จ",
             data: booking
         });
 
     } catch (error) {
         console.error("cancelCustomerBooking Error:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "เกิดข้อผิดพลาดของเซิร์ฟเวอร์" });
+    }
+};
+
+// Submit payment slip for customer's booking
+const submitPaymentForBooking = async (req, res) => {
+    try {
+        const customerId = req.user._id;
+        const { id } = req.params;
+        const { amount, payment_type } = req.body;
+
+        // Find the booking that belongs to the customer
+        const booking = await bookingModel.findOne({
+            _id: id,
+            'customer.customerID': customerId
+        });
+
+        if (!booking) {
+            return res.status(404).json({ message: "ไม่พบการจองหรือการจองไม่ได้อยู่ในชื่อของคุณ" });
+        }
+
+        // Check if booking is in a state where payment can be made
+        if (booking.payment_status === 'cancelled') {
+            return res.status(400).json({ message: "ไม่สามารถแจ้งชำระเงินสำหรับการจองที่ถูกยกเลิกได้" });
+        }
+
+        // Validate required fields
+        if (!amount || !payment_type) {
+            return res.status(400).json({ message: "จำเป็นต้องระบุจำนวนเงินและประเภทการชำระเงิน" });
+        }
+
+        // Handle uploaded file (payment slip)
+        let slip_image = null;
+        if (req.file) {
+            // Store the file path - in a production app, you might want to store the file in cloud storage
+            // For this implementation, we'll use a relative path
+            slip_image = `/uploads/${req.file.filename}`;
+        }
+
+        // Add payment to the payments array
+        booking.payments.push({
+            payment_date: new Date(),
+            amount: new mongoose.Types.Decimal128(amount.toString()),
+            payment_type: payment_type,
+            slip_image: slip_image // This will be the path to the uploaded slip image
+        });
+
+        // If this is a deposit payment and it's the first payment, update status to 'deposit-paid'
+        if (payment_type === 'deposit' && booking.payment_status === 'pending-deposit') {
+            booking.payment_status = 'deposit-paid';
+        }
+        // If this is a full payment, update status to 'full-payment'
+        else if (payment_type === 'full-payment') {
+            booking.payment_status = 'full-payment';
+        }
+        // For balance payments, if total payments cover the full amount, update to 'full-payment'
+        else if (payment_type === 'balance') {
+            // Calculate total payments made
+            let totalPayments = 0;
+            booking.payments.forEach(payment => {
+                totalPayments += parseFloat(payment.amount.toString());
+            });
+
+            const totalRequired = parseFloat(booking.total_price.toString());
+            if (totalPayments >= totalRequired) {
+                booking.payment_status = 'full-payment';
+            }
+        }
+
+        await booking.save();
+
+        res.status(200).json({
+            message: "แจ้งชำระเงินสำเร็จ",
+            data: booking
+        });
+
+    } catch (error) {
+        console.error("submitPaymentForBooking Error:", error);
+
+        // If there's an error and a file was uploaded, delete it
+        if (req.file) {
+            const fs = require('fs');
+            const filePath = req.file.path;
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        }
+
+        res.status(500).json({ message: "เกิดข้อผิดพลาดของเซิร์ฟเวอร์" });
     }
 };
 
@@ -201,5 +289,6 @@ module.exports = {
     getCustomerBookings,
     getCustomerProfile,
     updateCustomerProfile,
-    cancelCustomerBooking
+    cancelCustomerBooking,
+    submitPaymentForBooking
 };

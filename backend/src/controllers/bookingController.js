@@ -120,6 +120,14 @@ exports.getBookingById = async (req, res) => {
       return res.status(404).json({ message: "Booking not found" });
     }
 
+    // Check if the user is the owner of the booking or an admin
+    const isOwner = booking.customer.customerID.toString() === req.user._id.toString();
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ message: "Access denied. You can only access your own bookings." });
+    }
+
     res.status(200).json({ data: booking });
   } catch (error) {
     console.error("getBookingById Error:", error);
