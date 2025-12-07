@@ -23,7 +23,7 @@ const BookingDetails = () => {
     const cancelBooking = async (bookingId, bookingCode) => {
         const result = await Swal.fire({
             title: 'คุณแน่ใจหรือไม่?',
-            text: `คุณต้องการยกเลิกการจอง ${bookingCode || `ID: ${bookingId}`  } ใช่หรือไม่?`,
+            text: `คุณต้องการยกเลิกการจอง ${bookingCode || `ID: ${bookingId}`} ใช่หรือไม่?`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -364,16 +364,15 @@ const BookingDetails = () => {
                             })}</p>
                         </div>
                         <div className="flex items-center">
-                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                booking.payment_status === 'pending-deposit' ? 'bg-yellow-100 text-yellow-800' :
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${booking.payment_status === 'pending-deposit' ? 'bg-yellow-100 text-yellow-800' :
                                 booking.payment_status === 'deposit-paid' ? 'bg-blue-100 text-blue-800' :
-                                booking.payment_status === 'full-payment' ? 'bg-green-100 text-green-800' :
-                                'bg-gray-100 text-gray-800'
-                            }`}>
+                                    booking.payment_status === 'full-payment' ? 'bg-green-100 text-green-800' :
+                                        'bg-gray-100 text-gray-800'
+                                }`}>
                                 {booking.payment_status === 'pending-deposit' ? 'รอยืนยัน' :
-                                 booking.payment_status === 'deposit-paid' ? 'จ่ายมัดจำแล้ว' :
-                                 booking.payment_status === 'full-payment' ? 'ชำระเต็มจำนวน' :
-                                 booking.payment_status}
+                                    booking.payment_status === 'deposit-paid' ? 'จ่ายมัดจำแล้ว' :
+                                        booking.payment_status === 'full-payment' ? 'ชำระเต็มจำนวน' :
+                                            booking.payment_status}
                             </span>
                         </div>
                     </div>
@@ -402,16 +401,16 @@ const BookingDetails = () => {
                                 <div className="flex">
                                     <div className="w-32 text-gray-600">ราคารวม</div>
                                     <div className="flex-1 font-medium">
-                                        {typeof booking.total_price === 'object' 
-                                            ? booking.total_price.$numberDecimal 
+                                        {typeof booking.total_price === 'object'
+                                            ? booking.total_price.$numberDecimal
                                             : booking.total_price} บาท
                                     </div>
                                 </div>
                                 <div className="flex">
                                     <div className="w-32 text-gray-600">มัดจำที่ต้องชำระ</div>
                                     <div className="flex-1 font-medium">
-                                        {typeof booking.deposit_required === 'object' 
-                                            ? booking.deposit_required.$numberDecimal 
+                                        {typeof booking.deposit_required === 'object'
+                                            ? booking.deposit_required.$numberDecimal
                                             : booking.deposit_required} บาท
                                     </div>
                                 </div>
@@ -486,24 +485,23 @@ const BookingDetails = () => {
                                 <div className="flex">
                                     <div className="w-32 text-gray-600">สถานะ</div>
                                     <div className="flex-1 font-medium">
-                                        <span className={`px-2 py-1 rounded text-xs ${
-                                            booking.payment_status === 'pending-deposit' ? 'bg-yellow-100 text-yellow-800' :
+                                        <span className={`px-2 py-1 rounded text-xs ${booking.payment_status === 'pending-deposit' ? 'bg-yellow-100 text-yellow-800' :
                                             booking.payment_status === 'deposit-paid' ? 'bg-blue-100 text-blue-800' :
-                                            booking.payment_status === 'full-payment' ? 'bg-green-100 text-green-800' :
-                                            'bg-gray-100 text-gray-800'
-                                        }`}>
+                                                booking.payment_status === 'full-payment' ? 'bg-green-100 text-green-800' :
+                                                    'bg-gray-100 text-gray-800'
+                                            }`}>
                                             {booking.payment_status === 'pending-deposit' ? 'รอยืนยัน' :
-                                             booking.payment_status === 'deposit-paid' ? 'จ่ายมัดจำแล้ว' :
-                                             booking.payment_status === 'full-payment' ? 'ชำระเต็มจำนวน' :
-                                             booking.payment_status}
+                                                booking.payment_status === 'deposit-paid' ? 'จ่ายมัดจำแล้ว' :
+                                                    booking.payment_status === 'full-payment' ? 'ชำระเต็มจำนวน' :
+                                                        booking.payment_status}
                                         </span>
                                     </div>
                                 </div>
                                 <div className="flex">
                                     <div className="w-32 text-gray-600">ยอดมัดจำ</div>
                                     <div className="flex-1 font-medium">
-                                        {typeof booking.deposit_required === 'object' 
-                                            ? booking.deposit_required.$numberDecimal 
+                                        {typeof booking.deposit_required === 'object'
+                                            ? booking.deposit_required.$numberDecimal
                                             : booking.deposit_required} บาท
                                     </div>
                                 </div>
@@ -521,9 +519,9 @@ const BookingDetails = () => {
                                                 <div>
                                                     <div className="font-medium">
                                                         {payment.payment_type === 'deposit' ? 'มัดจำ' :
-                                                         payment.payment_type === 'balance' ? 'ยอดคงเหลือ' :
-                                                         payment.payment_type === 'full-payment' ? 'ชำระเต็มจำนวน' :
-                                                         payment.payment_type}
+                                                            payment.payment_type === 'balance' ? 'ยอดคงเหลือ' :
+                                                                payment.payment_type === 'full-payment' ? 'ชำระเต็มจำนวน' :
+                                                                    payment.payment_type}
                                                     </div>
                                                     <div className="text-sm text-gray-600">
                                                         {new Date(payment.payment_date).toLocaleDateString('th-TH')}
@@ -545,9 +543,14 @@ const BookingDetails = () => {
                                                     <div className="mt-1">
                                                         <button
                                                             onClick={() => {
-                                                                // Show image in a modal
                                                                 Swal.fire({
-                                                                    html: `<img src="${http.defaults.baseURL}${payment.slip_image}" alt="Slip Image" style="max-width: 100%; height: auto;" />`,
+                                                                    html: `
+                                                                           <img 
+                                                                              src="http://localhost:8080${payment.slip_image}" 
+                                                                              alt="Slip Image" 
+                                                                              style="max-width: 80%; height: auto; border-radius: 8px;"
+                                                                             />
+                                                                           `,
                                                                     showCloseButton: true,
                                                                     showConfirmButton: false,
                                                                     customClass: {
@@ -556,6 +559,7 @@ const BookingDetails = () => {
                                                                     width: 'auto'
                                                                 });
                                                             }}
+
                                                             className="text-blue-600 hover:text-blue-800 text-sm underline flex items-center"
                                                         >
                                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">

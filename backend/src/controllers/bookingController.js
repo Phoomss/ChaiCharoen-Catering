@@ -153,7 +153,7 @@ exports.updateBookingStatus = async (req, res) => {
         payment_date: new Date(),
         amount: new mongoose.Types.Decimal128(amount.toString()),
         payment_type: payment_type || "deposit",
-        slip_image: slip_image || null
+        slip_image: slip_image || null  // This should be the path to the uploaded file
       });
     }
 

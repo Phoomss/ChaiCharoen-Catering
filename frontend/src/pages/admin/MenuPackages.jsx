@@ -576,7 +576,7 @@ const MenuPackages = () => {
                                   readOnly
                                   className="mr-2"
                                 />
-                                <span className="text-sm">{menu.name}</span>
+                                <span className="text-sm">{menu.code} {menu.name}</span>
                               </div>
                               <span className="ml-auto text-xs text-gray-500">{formatPriceWithCurrency(menu.price)}</span>
                             </div>

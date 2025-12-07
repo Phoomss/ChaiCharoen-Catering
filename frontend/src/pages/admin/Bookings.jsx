@@ -22,7 +22,7 @@ const Bookings = () => {
     try {
       setLoading(true);
       const response = await bookingService.getAllBookings();
-      console.log('Booking API Response:', response.data.data);
+      // console.log('Booking API Response:', response.data.data);
       setBookings(response.data.data || []);
       setError(null);
     } catch (err) {
@@ -40,65 +40,135 @@ const Bookings = () => {
   };
 
   // Function to update booking status
-  const updateBookingStatus = async (bookingId, newStatus) => {
+  const updateBookingStatus = async (bookingId, newStatus, amount = null, slipFile = null, paymentType = null) => {
     try {
       // Map backend status to Thai display
       const statusThai =
         newStatus === 'deposit-paid' ? 'ยืนยันแล้ว' :
-        newStatus === 'full-payment' ? 'เสร็จสิ้น' :
-        newStatus === 'cancelled' ? 'ยกเลิก' :
-        'รอดำเนินการ';
+          newStatus === 'full-payment' ? 'เสร็จสิ้น' :
+            newStatus === 'cancelled' ? 'ยกเลิก' :
+              'รอดำเนินการ';
 
-      const result = await Swal.fire({
-        title: 'คุณแน่ใจหรือไม่?',
-        text: `คุณต้องการเปลี่ยนสถานะการจองเป็น ${statusThai} ใช่หรือไม่?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'ใช่, ปรับปรุงเลย!',
-        cancelButtonText: 'ยกเลิก'
-      });
-
-      if (result.isConfirmed) {
-        // Map frontend status values to backend status values
-        let backendStatus;
-        switch(newStatus) {
-          case 'Confirmed':
-            backendStatus = 'deposit-paid';
-            break;
-          case 'Completed':
-            backendStatus = 'full-payment';
-            break;
-          case 'Cancelled':
-            backendStatus = 'cancelled';
-            break;
-          case 'Pending':
-            backendStatus = 'pending-deposit';
-            break;
-          default:
-            backendStatus = newStatus;
-        }
-
-        const statusData = { status: backendStatus };
-        await bookingService.updateBookingStatus(bookingId, statusData);
-
-        // Refresh bookings list
-        await loadBookings();
-
-        // Map backend status to Thai display
-        const statusThai =
-          backendStatus === 'deposit-paid' ? 'ยืนยันแล้ว' :
-          backendStatus === 'full-payment' ? 'เสร็จสิ้น' :
-          backendStatus === 'cancelled' ? 'ยกเลิก' :
-          'รอดำเนินการ';
-
-        Swal.fire({
-          icon: 'success',
-          title: 'สถานะถูกอัปเดตแล้ว!',
-          text: `สถานะการจองได้ถูกอัปเดตเป็น ${statusThai} เรียบร้อยแล้ว`,
-          confirmButtonColor: '#22c55e'
+      // If this is a payment status update and requires a slip upload
+      if ((newStatus === 'deposit-paid' || newStatus === 'full-payment') && slipFile) {
+        const result = await Swal.fire({
+          title: 'อัปโหลดหลักฐานการชำระเงิน',
+          text: `คุณต้องการอัปโหลดหลักฐานการชำระเงินและเปลี่ยนสถานะเป็น ${statusThai} ใช่หรือไม่?`,
+          icon: 'info',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'อัปโหลดและปรับปรุง',
+          cancelButtonText: 'ยกเลิก'
         });
+
+        if (result.isConfirmed) {
+          try {
+            // First upload the payment slip
+            const slipUploadResponse = await bookingService.uploadPaymentSlip(slipFile);
+            const slipPath = slipUploadResponse.data.filePath;
+
+            // Map frontend status values to backend status values
+            let backendStatus;
+            switch (newStatus) {
+              case 'Confirmed':
+                backendStatus = 'deposit-paid';
+                break;
+              case 'Completed':
+                backendStatus = 'full-payment';
+                break;
+              case 'Cancelled':
+                backendStatus = 'cancelled';
+                break;
+              case 'Pending':
+                backendStatus = 'pending-deposit';
+                break;
+              default:
+                backendStatus = newStatus;
+            }
+
+            // Update booking status with slip information
+            const statusData = {
+              status: backendStatus,
+              amount: amount,
+              slip_image: slipPath,
+              payment_type: paymentType || 'deposit'
+            };
+
+            await bookingService.updateBookingStatus(bookingId, statusData);
+
+            // Refresh bookings list
+            await loadBookings();
+
+            Swal.fire({
+              icon: 'success',
+              title: 'สถานะถูกอัปเดตแล้ว!',
+              text: `สถานะการจองได้ถูกอัปเดตเป็น ${statusThai} เรียบร้อยแล้ว`,
+              confirmButtonColor: '#22c55e'
+            });
+          } catch (uploadError) {
+            console.error('Error uploading payment slip or updating booking:', uploadError);
+            Swal.fire({
+              icon: 'error',
+              title: 'การอัปเดตล้มเหลว',
+              text: uploadError.response?.data?.message || 'เกิดข้อผิดพลาดขณะอัปโหลดหลักฐานการชำระเงิน',
+              confirmButtonColor: '#dc2626'
+            });
+          }
+        }
+      } else {
+        // For status changes without slip uploads (like cancellations)
+        const result = await Swal.fire({
+          title: 'คุณแน่ใจหรือไม่?',
+          text: `คุณต้องการเปลี่ยนสถานะการจองเป็น ${statusThai} ใช่หรือไม่?`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'ใช่, ปรับปรุงเลย!',
+          cancelButtonText: 'ยกเลิก'
+        });
+
+        if (result.isConfirmed) {
+          // Map frontend status values to backend status values
+          let backendStatus;
+          switch (newStatus) {
+            case 'Confirmed':
+              backendStatus = 'deposit-paid';
+              break;
+            case 'Completed':
+              backendStatus = 'full-payment';
+              break;
+            case 'Cancelled':
+              backendStatus = 'cancelled';
+              break;
+            case 'Pending':
+              backendStatus = 'pending-deposit';
+              break;
+            default:
+              backendStatus = newStatus;
+          }
+
+          const statusData = { status: backendStatus };
+          await bookingService.updateBookingStatus(bookingId, statusData);
+
+          // Refresh bookings list
+          await loadBookings();
+
+          // Map backend status to Thai display
+          const statusThai =
+            backendStatus === 'deposit-paid' ? 'ยืนยันแล้ว' :
+              backendStatus === 'full-payment' ? 'เสร็จสิ้น' :
+                backendStatus === 'cancelled' ? 'ยกเลิก' :
+                  'รอดำเนินการ';
+
+          Swal.fire({
+            icon: 'success',
+            title: 'สถานะถูกอัปเดตแล้ว!',
+            text: `สถานะการจองได้ถูกอัปเดตเป็น ${statusThai} เรียบร้อยแล้ว`,
+            confirmButtonColor: '#22c55e'
+          });
+        }
       }
     } catch (err) {
       console.error('Error updating booking status:', err);
@@ -153,9 +223,9 @@ const Bookings = () => {
     // Map backend status to frontend status for styling
     const displayStatus =
       status === 'deposit-paid' ? 'Confirmed' :
-      status === 'pending-deposit' ? 'Pending' :
-      status === 'full-payment' ? 'Completed' :
-      status === 'cancelled' ? 'Cancelled' : status;
+        status === 'pending-deposit' ? 'Pending' :
+          status === 'full-payment' ? 'Completed' :
+            status === 'cancelled' ? 'Cancelled' : status;
 
     switch (displayStatus) {
       case 'Confirmed':
@@ -175,9 +245,9 @@ const Bookings = () => {
     // Map backend status to frontend status for icons
     const displayStatus =
       status === 'deposit-paid' ? 'Confirmed' :
-      status === 'pending-deposit' ? 'Pending' :
-      status === 'full-payment' ? 'Completed' :
-      status === 'cancelled' ? 'Cancelled' : status;
+        status === 'pending-deposit' ? 'Pending' :
+          status === 'full-payment' ? 'Completed' :
+            status === 'cancelled' ? 'Cancelled' : status;
 
     switch (displayStatus) {
       case 'Confirmed':
@@ -454,8 +524,8 @@ const Bookings = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     {booking.table_count || 0} โต๊ะ<br />
                     <span className="font-medium"> {(typeof booking.total_price === 'object'
-                                            ? (booking.total_price.$numberDecimal || 0)
-                                            : (booking.total_price || 0))} บาท</span>
+                      ? (booking.total_price.$numberDecimal || 0)
+                      : (booking.total_price || 0))} บาท</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <select
@@ -559,9 +629,9 @@ const Bookings = () => {
                       <span className="font-medium w-32 text-gray-600">สถานะ:</span>
                       <span className={`text-xs font-semibold rounded-full px-2 py-1 ${getStatusColor(selectedBooking.payment_status || 'pending-deposit')}`}>
                         {selectedBooking.payment_status === 'pending-deposit' ? 'รอดำเนินการ' :
-                         selectedBooking.payment_status === 'deposit-paid' ? 'ยืนยันแล้ว' :
-                         selectedBooking.payment_status === 'full-payment' ? 'เสร็จสิ้น' :
-                         selectedBooking.payment_status === 'cancelled' ? 'ยกเลิก' : 'ไม่ทราบ'}
+                          selectedBooking.payment_status === 'deposit-paid' ? 'ยืนยันแล้ว' :
+                            selectedBooking.payment_status === 'full-payment' ? 'เสร็จสิ้น' :
+                              selectedBooking.payment_status === 'cancelled' ? 'ยกเลิก' : 'ไม่ทราบ'}
                       </span>
                     </div>
                     <div className="flex">
@@ -663,9 +733,9 @@ const Bookings = () => {
                     <span className="font-medium w-32 text-gray-600">สถานะการชำระเงิน:</span>
                     <span className={`text-xs font-semibold rounded-full px-2 py-1 ${getStatusColor(selectedBooking.payment_status || 'pending-deposit')}`}>
                       {selectedBooking.payment_status === 'pending-deposit' ? 'รอดำเนินการ' :
-                       selectedBooking.payment_status === 'deposit-paid' ? 'ชำระเงินแล้ว' :
-                       selectedBooking.payment_status === 'full-payment' ? 'ชำระเงินครบถ้วน' :
-                       selectedBooking.payment_status === 'cancelled' ? 'ยกเลิก' : 'ไม่ทราบ'}
+                        selectedBooking.payment_status === 'deposit-paid' ? 'ชำระเงินแล้ว' :
+                          selectedBooking.payment_status === 'full-payment' ? 'ชำระเงินครบถ้วน' :
+                            selectedBooking.payment_status === 'cancelled' ? 'ยกเลิก' : 'ไม่ทราบ'}
                     </span>
                   </div>
                   {selectedBooking.payments && selectedBooking.payments.length > 0 && (
@@ -684,6 +754,12 @@ const Bookings = () => {
                                   <a href={payment.slip_image} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">
                                     ดูหลักฐานการชำระเงิน
                                   </a>
+
+                                  <img
+                                    src={`http://localhost:8080${payment.slip_image}`}
+                                    alt={payment.name}
+                                    className="rounded-md object-cover w-3xl"
+                                  />
                                 </div>
                               )}
                             </div>

@@ -108,7 +108,7 @@ const Menu = () => {
                 <div key={item._id} className="bg-white p-6 rounded-xl shadow-md border border-green-100">
                   {item.image ? (
                     <img
-                      src={item.image}
+                      src={`http://localhost:8080${item.image}`}
                       alt={item.name}
                       className="w-full h-40 object-cover rounded-xl mb-4"
                     />
@@ -119,7 +119,7 @@ const Menu = () => {
                   <p className="text-gray-600 text-sm mb-3">{item.description}</p>
                   <div className="flex justify-between items-center">
                     <span className="text-green-600 font-bold">
-                      ฿{typeof item.price === 'object'? item.price.$numberDecimal : item.price}
+                      ฿{typeof item.price === 'object' ? item.price.$numberDecimal : item.price}
                     </span>
                     <button className="btn btn-sm bg-green-600 text-white hover:bg-green-700">
                       จองโต๊ะ
