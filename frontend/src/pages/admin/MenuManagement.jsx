@@ -41,6 +41,7 @@ const MenuManagement = () => {
     try {
       setLoading(true);
       const response = await menuService.getAllMenus();
+      // console.log(response.data.data)
       setMenuItems(response.data.data || []);
       setError(null);
     } catch (err) {
@@ -464,7 +465,7 @@ const MenuManagement = () => {
                     <div className="flex items-center">
                       {item.image ? (
                         <img
-                          src={item.image}
+                          src={`http://localhost:8080${item.image}`}
                           alt={item.name}
                           className="w-10 h-10 rounded-md object-cover"
                         />
@@ -643,7 +644,7 @@ const MenuManagement = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        ราคา套餐 (Package)
+                        ราคา (Package)
                       </label>
                       <input
                         type="number"
@@ -693,7 +694,7 @@ const MenuManagement = () => {
                         <p className="text-sm text-gray-600">รูปภาพปัจจุบัน:</p>
                         <div className="mt-2">
                           <img
-                            src={formData.image}
+                           src={`http://localhost:8080${formData.image}`}
                             alt="ตัวอย่างรูปภาพ"
                             className="w-20 h-20 object-cover rounded-md"
                           />

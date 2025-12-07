@@ -182,3 +182,33 @@ exports.updateBookingStatus = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// ลบ Booking
+exports.deleteBooking = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // ตรวจสอบว่า booking มีอยู่จริงหรือไม่
+    const booking = await BookingModel.findById(id);
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    // ลบ booking ออกจากฐานข้อมูล
+    const deletedBooking = await BookingModel.findByIdAndDelete(id);
+
+    if (!deletedBooking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    res.status(200).json({
+      message: "Booking deleted successfully",
+      data: deletedBooking
+    });
+
+  } catch (error) {
+    console.error("deleteBooking Error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
