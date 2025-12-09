@@ -66,7 +66,7 @@ exports.createBooking = async (req, res) => {
     const locationText =
       typeof location === "string"
         ? location
-        : `${location.address || ""} ${location.latitude || ""} ${location.longitude || ""}`.trim();
+        : `${location.address || ""} `.trim();
 
     const message =
       `📌 รายการจองใหม่!\n\n` +

@@ -159,6 +159,45 @@ const MapPicker = ({ onLocationSelect, initialAddress = '', initialLat = null, i
           <p className="text-xs text-gray-500 mt-1">
             ละติจูด: {selectedPosition.lat.toFixed(6)}, ลองจิจูด: {selectedPosition.lng.toFixed(6)}
           </p>
+
+          {/* Google Maps and Share Options */}
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${selectedPosition.lat},${selectedPosition.lng}`;
+                window.open(googleMapsUrl, '_blank');
+              }}
+              className="btn btn-sm bg-blue-500 text-white hover:bg-blue-600"
+            >
+              เปิดใน Google Maps
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const coordsText = `${selectedPosition.lat},${selectedPosition.lng}`;
+                navigator.clipboard.writeText(coordsText).then(() => {
+                  // Optional: Show a confirmation message
+                  alert('คัดลอกพิกัดเรียบร้อย: ' + coordsText);
+                });
+              }}
+              className="btn btn-sm bg-green-600 text-white hover:bg-green-700"
+            >
+              คัดลอกพิกัด
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                // Create a Google Maps URL that works in LINE
+                const lineShareUrl = `https://line.me/R/msg/text/?${encodeURIComponent(`ตำแหน่งที่อยู่จัดงาน: ${address} | แผนที่: https://www.google.com/maps/search/?api=1&query=${selectedPosition.lat},${selectedPosition.lng}`)}`;
+                window.open(lineShareUrl, '_blank');
+              }}
+              className="btn btn-sm bg-green-500 text-white hover:bg-green-600 flex items-center"
+            >
+              <span className="mr-1">💬</span>
+              แชร์ไป LINE
+            </button>
+          </div>
         </div>
       )}
     </div>
