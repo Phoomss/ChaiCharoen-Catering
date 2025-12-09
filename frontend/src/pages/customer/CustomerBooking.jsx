@@ -4,6 +4,7 @@ import CustomerService from '../../services/CustomerService';
 import MenuPackageService from '../../services/MenuPackageService';
 import UserService from '../../services/UserService';
 import BookingService from '../../services/BookingService';
+import MapPicker from '../../components/shared/MapPicker';
 import Swal from 'sweetalert2';
 
 const CustomerBooking = () => {
@@ -118,7 +119,9 @@ const CustomerBooking = () => {
             price_per_table: ''
         },
         location: {
-            address: ''
+            address: '',
+            latitude: null,
+            longitude: null
         },
         menu_sets: [],
         notes: ''
@@ -297,6 +300,18 @@ const CustomerBooking = () => {
             return;
         }
 
+        // Check if location is selected
+        if (!bookingData.location.latitude || !bookingData.location.longitude) {
+            Swal.fire({
+                title: 'กรุณาเลือกตำแหน่ง!',
+                text: 'กรุณาเลือกตำแหน่งที่อยู่จัดงานบนแผนที่',
+                icon: 'warning',
+                confirmButtonText: 'ตกลง',
+                confirmButtonColor: '#10b981'
+            });
+            return;
+        }
+
         try {
             // Prepare booking data for submission
             const bookingPayload = {
@@ -311,8 +326,8 @@ const CustomerBooking = () => {
                 table_count: parseInt(bookingData.table_count),
                 location: {
                     address: bookingData.location.address,
-                    latitude: 0, // Will be set via geocoding
-                    longitude: 0
+                    latitude: bookingData.location.latitude,
+                    longitude: bookingData.location.longitude
                 },
                 specialRequest: bookingData.notes,
                 // Calculate deposit required (e.g., 30% of total)
@@ -495,16 +510,24 @@ const CustomerBooking = () => {
 
                         {/* Location */}
                         <div>
-                            <label className="label text-green-700 font-medium">ที่อยู่จัดงาน</label>
-                            <textarea
-                                name="location.address"
-                                value={bookingData.location.address}
-                                onChange={handleInputChange}
-                                rows="3"
-                                placeholder="กรุณากรอกรายละเอียดที่อยู่จัดงาน"
-                                className="textarea textarea-bordered w-full bg-white border-green-200"
-                                required
-                            ></textarea>
+                            <label className="label text-green-700 font-medium">เลือกตำแหน่งที่อยู่จัดงาน</label>
+                            <div className="w-full">
+                                <MapPicker
+                                    initialAddress={bookingData.location.address}
+                                    initialLat={bookingData.location.latitude}
+                                    initialLng={bookingData.location.longitude}
+                                    onLocationSelect={(locationData) => {
+                                        setBookingData(prev => ({
+                                            ...prev,
+                                            location: {
+                                                address: locationData.address,
+                                                latitude: locationData.latitude,
+                                                longitude: locationData.longitude
+                                            }
+                                        }));
+                                    }}
+                                />
+                            </div>
                         </div>
 
                         {/* Additional Notes */}
@@ -564,7 +587,7 @@ const CustomerBooking = () => {
                             </label>
                         </div>
 
-                        {agreed ? (
+                        {agreed && bookingData.location.latitude && bookingData.location.longitude ? (
                             <div>
                                 <button
                                     type="submit"
@@ -583,7 +606,13 @@ const CustomerBooking = () => {
                                     ยืนยันการจอง
                                 </button>
                                 <p className="text-center text-red-500 mt-2 font-medium">
-                                    กรุณาตกลงเงื่อนไขและข้อตกลงก่อนยืนยันการจอง
+                                    {(!agreed && !bookingData.location.latitude && !bookingData.location.longitude)
+                                        ? 'กรุณาตกลงเงื่อนไขและเลือกตำแหน่งที่อยู่จัดงาน'
+                                        : !agreed
+                                            ? 'กรุณาตกลงเงื่อนไขและข้อตกลง'
+                                            : (!bookingData.location.latitude || !bookingData.location.longitude)
+                                                ? 'กรุณาเลือกตำแหน่งที่อยู่จัดงานบนแผนที่'
+                                                : 'กรุณาตกลงเงื่อนไขและข้อตกลงก่อนยืนยันการจอง'}
                                 </p>
                             </div>
                         )}
