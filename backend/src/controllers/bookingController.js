@@ -183,6 +183,36 @@ exports.updateBookingStatus = async (req, res) => {
   }
 };
 
+// ดึง availability ตามวันที่ (สำหรับเช็คว่าวันไหนเต็มบ้าง)
+exports.getDateAvailability = async (req, res) => {
+  try {
+    // ดึง booking ที่ไม่ถูกยกเลิกทั้งหมด
+    const bookings = await BookingModel.find({
+      payment_status: { $ne: 'cancelled' } // ไม่รวม booking ที่ถูกยกเลิก
+    });
+
+    // นับจำนวน booking ต่อวัน
+    const dateCounts = {};
+    bookings.forEach(booking => {
+      const eventDate = new Date(booking.event_datetime);
+      // แปลงเป็นรูปแบบ YYYY-MM-DD เพื่อให้นับตามวันที่ ไม่สนใจเวลา
+      const dateKey = eventDate.toISOString().split('T')[0];
+      if (dateCounts[dateKey]) {
+        dateCounts[dateKey]++;
+      } else {
+        dateCounts[dateKey] = 1;
+      }
+    });
+
+    res.status(200).json({
+      data: dateCounts
+    });
+  } catch (error) {
+    console.error("getDateAvailability Error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // ลบ Booking
 exports.deleteBooking = async (req, res) => {
   try {

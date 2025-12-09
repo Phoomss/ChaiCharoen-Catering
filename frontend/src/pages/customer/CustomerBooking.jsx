@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router';
 import CustomerService from '../../services/CustomerService';
 import MenuPackageService from '../../services/MenuPackageService';
 import UserService from '../../services/UserService';
+import BookingService from '../../services/BookingService';
 import Swal from 'sweetalert2';
 
 const CustomerBooking = () => {
@@ -31,7 +32,9 @@ const CustomerBooking = () => {
     const [menuPackages, setMenuPackages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [agreed, setAgreed] = useState(false);
-    const [userInfo, setUserInfo] = useState({})
+    const [userInfo, setUserInfo] = useState({});
+    const [dateAvailability, setDateAvailability] = useState({});
+    const [maxBookingsPerDay] = useState(2); // Maximum 2 bookings per day
 
     useEffect(() => {
         const fetchMenuPackages = async () => {
@@ -88,6 +91,19 @@ const CustomerBooking = () => {
             }
         }
         fetchUserInfo();
+
+        // Fetch date availability to check which dates are fully booked
+        const fetchDateAvailability = async () => {
+            try {
+                const response = await BookingService.getDateAvailability();
+                setDateAvailability(response.data.data);
+            } catch (error) {
+                console.error('Error fetching date availability:', error);
+                // If there's an error, we can still proceed without the availability data
+                setDateAvailability({});
+            }
+        }
+        fetchDateAvailability();
     }, [location.state]);
 
     const handleInputChange = (e) => {
@@ -149,6 +165,18 @@ const CustomerBooking = () => {
         return 0;
     };
 
+    // Function to check if a date is available (has less than max bookings)
+    const isDateAvailable = (dateString) => {
+        if (!dateString) return true; // If no date selected, assume available
+
+        // Convert the datetime string to just the date part (YYYY-MM-DD)
+        const date = new Date(dateString);
+        const dateKey = date.toISOString().split('T')[0];
+
+        const currentBookings = dateAvailability[dateKey] || 0;
+        return currentBookings < maxBookingsPerDay;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -156,6 +184,18 @@ const CustomerBooking = () => {
             Swal.fire({
                 title: 'กรุณาตกลงเงื่อนไข!',
                 text: 'กรุณาตกลงเงื่อนไขและข้อตกลงก่อนดำเนินการต่อ',
+                icon: 'warning',
+                confirmButtonText: 'ตกลง',
+                confirmButtonColor: '#10b981'
+            });
+            return;
+        }
+
+        // Check if selected date is available
+        if (!isDateAvailable(bookingData.event_datetime)) {
+            Swal.fire({
+                title: 'วันที่ไม่ว่าง!',
+                text: 'วันที่คุณเลือกมีการจองเต็มแล้ว กรุณาเลือกวันอื่น',
                 icon: 'warning',
                 confirmButtonText: 'ตกลง',
                 confirmButtonColor: '#10b981'
@@ -272,9 +312,13 @@ const CustomerBooking = () => {
                                     name="event_datetime"
                                     value={bookingData.event_datetime}
                                     onChange={handleInputChange}
-                                    className="input input-bordered w-full bg-white border-green-200"
+                                    className={`input input-bordered w-full bg-white border-green-200 ${bookingData.event_datetime && !isDateAvailable(bookingData.event_datetime) ? 'border-red-500 bg-red-50' : ''}`}
+                                    min={new Date().toISOString().slice(0, 16)} // Only allow future dates
                                     required
                                 />
+                                {bookingData.event_datetime && !isDateAvailable(bookingData.event_datetime) && (
+                                    <p className="text-red-500 text-sm mt-1">วันที่นี้มีการจองเต็มแล้ว (จองได้สูงสุด {maxBookingsPerDay} ครั้งต่อวัน)</p>
+                                )}
                             </div>
 
                             <div>
@@ -288,6 +332,48 @@ const CustomerBooking = () => {
                                     min="1"
                                     className="input input-bordered w-full bg-white border-green-200"
                                     required
+                                />
+                            </div>
+                        </div>
+
+                        {/* Calendar View for Date Availability */}
+                        <div className="mt-8 bg-white p-6 rounded-lg border border-green-200">
+                            <h3 className="text-lg font-semibold text-green-700 mb-4">ปฏิทินแสดงวันที่สามารถจองได้</h3>
+
+                            {/* Calendar Legend */}
+                            <div className="flex flex-wrap gap-4 mb-4">
+                                <div className="flex items-center">
+                                    <div className="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
+                                    <span className="text-sm">วันที่สามารถจองได้</span>
+                                </div>
+                                <div className="flex items-center">
+                                    <div className="w-4 h-4 bg-yellow-500 rounded-full mr-2"></div>
+                                    <span className="text-sm">จองแล้ว 1 ครั้ง</span>
+                                </div>
+                                <div className="flex items-center">
+                                    <div className="w-4 h-4 bg-red-500 rounded-full mr-2"></div>
+                                    <span className="text-sm">จองเต็ม (2 ครั้ง)</span>
+                                </div>
+                                <div className="flex items-center">
+                                    <div className="w-4 h-4 bg-gray-300 rounded-full mr-2"></div>
+                                    <span className="text-sm">วันที่ผ่านมา</span>
+                                </div>
+                            </div>
+
+                            {/* Calendar Component */}
+                            <div className="calendar-container">
+                                <CalendarView
+                                    dateAvailability={dateAvailability}
+                                    maxBookingsPerDay={maxBookingsPerDay}
+                                    selectedDate={bookingData.event_datetime}
+                                    onDateSelect={(date) => {
+                                        // Convert date to datetime-local format (YYYY-MM-DDTHH:mm)
+                                        const formattedDate = new Date(date).toISOString().slice(0, 16);
+                                        setBookingData(prev => ({
+                                            ...prev,
+                                            event_datetime: formattedDate
+                                        }));
+                                    }}
                                 />
                             </div>
                         </div>
@@ -422,6 +508,99 @@ const CustomerBooking = () => {
             </div>
         </div>
     );
+    // CalendarView Component
+    const CalendarView = ({ dateAvailability, maxBookingsPerDay, selectedDate, onDateSelect }) => {
+        const today = new Date();
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth();
+
+        // Get days in month
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+        // Get first day of month (0 = Sunday, 1 = Monday, etc.)
+        const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+
+        // Create day cells
+        const days = [];
+
+        // Add empty cells for days before the first day of the month
+        for (let i = 0; i < firstDayOfMonth; i++) {
+            days.push(<div key={`empty-${i}`} className="p-2 text-center"></div>);
+        }
+
+        // Add cells for each day of the month
+        for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(currentYear, currentMonth, day);
+            const dateStr = date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+            const bookingCount = dateAvailability[dateStr] || 0;
+
+            let bgColor = 'bg-gray-100'; // Default for past dates
+            let textColor = 'text-gray-400';
+            let isDisabled = true;
+
+            // Check if this date is today or in the future
+            if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate())) {
+                if (bookingCount === 0) {
+                    bgColor = 'bg-green-500 hover:bg-green-600'; // Available
+                    textColor = 'text-white';
+                    isDisabled = false;
+                } else if (bookingCount === 1) {
+                    bgColor = 'bg-yellow-500 hover:bg-yellow-600'; // 1 booking
+                    textColor = 'text-white';
+                    isDisabled = false;
+                } else if (bookingCount >= maxBookingsPerDay) {
+                    bgColor = 'bg-red-500'; // Fully booked
+                    textColor = 'text-white';
+                    isDisabled = true;
+                }
+            }
+
+            // Check if this date is currently selected
+            const isSelected = selectedDate &&
+                new Date(selectedDate).toDateString() === date.toDateString();
+
+            days.push(
+                <button
+                    key={day}
+                    onClick={() => !isDisabled && onDateSelect(date)}
+                    disabled={isDisabled}
+                    className={`
+                        p-2 text-center rounded-full transition-colors
+                        ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                        ${isSelected ? 'ring-2 ring-blue-500' : ''}
+                        ${bgColor} ${textColor}
+                        w-10 h-10 flex items-center justify-center
+                    `}
+                >
+                    {day}
+                </button>
+            );
+        }
+
+        const dayNames = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
+
+        return (
+            <div className="max-w-md mx-auto">
+                <div className="text-center mb-4">
+                    <h4 className="text-lg font-semibold">
+                        {new Date(currentYear, currentMonth).toLocaleDateString('th-TH', { month: 'long', year: 'numeric' })}
+                    </h4>
+                </div>
+
+                <div className="grid grid-cols-7 gap-1 mb-2">
+                    {dayNames.map((dayName, index) => (
+                        <div key={index} className="text-center font-medium text-gray-700 p-1">
+                            {dayName}
+                        </div>
+                    ))}
+                </div>
+
+                <div className="grid grid-cols-7 gap-1">
+                    {days}
+                </div>
+            </div>
+        );
+    };
 };
 
 export default CustomerBooking;

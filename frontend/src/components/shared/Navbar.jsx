@@ -30,6 +30,7 @@ const Navbar = () => {
                     >
                         <li><Link to="/" className={`text-green-700 ${isActive('/')}`}>หน้าแรก</Link></li>
                         <li><Link to="/booking" className={`text-green-700 ${isActive('/booking')}`}>จองโต๊ะจีน</Link></li>
+                        <li><Link to="/calendar" className={`text-green-700 ${isActive('/calendar')}`}>ปฏิทินการจอง</Link></li>
                         <li><Link to="/menu" className={`text-green-700 ${isActive('/menu')}`}>เมนูอาหาร</Link></li>
                         <li><Link to="/contact" className={`text-green-700 ${isActive('/contact')}`}>ติดต่อร้าน</Link></li>
                         <li><a className="text-green-700">เข้าสู่ระบบ</a></li>
@@ -47,6 +48,7 @@ const Navbar = () => {
                 <ul className="menu menu-horizontal px-1 text-green-700">
                     <li><Link to="/" className={isActive('/')}>หน้าแรก</Link></li>
                     <li><Link to="/booking" className={isActive('/booking')}>จองโต๊ะจีน</Link></li>
+                    <li><Link to="/calendar" className={isActive('/calendar')}>ปฏิทินการจอง</Link></li>
                     <li>
                         <details>
                             <summary>ข้อมูลร้าน</summary>

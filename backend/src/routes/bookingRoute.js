@@ -14,6 +14,9 @@ router.post("/", authenticateToken, asyncHandler(bookingController.createBooking
 // GET: all bookings (admin only)
 router.get("/", authenticateToken, adminAuth, asyncHandler(bookingController.getAllBookings));
 
+// GET: date availability (available to public)
+router.get("/availability", asyncHandler(bookingController.getDateAvailability));
+
 // GET: booking by ID (customer or admin)
 router.get("/:id", authenticateToken, asyncHandler(bookingController.getBookingById));
 

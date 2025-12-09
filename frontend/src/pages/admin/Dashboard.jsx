@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Eye, Edit, Trash2, Plus, Users, Calendar, ShoppingBag, DollarSign } from 'lucide-react';
-import StatsCard from '../../components/card/admin/StatusCard';
 import { Link } from 'react-router';
 import adminService from '../../services/AdminService';
 
@@ -38,7 +37,7 @@ const Dashboard = () => {
 
         // Format recent bookings from the API response
         setRecentBookings(data.recentBookings.map(booking => ({
-          id: booking._id,
+          id: booking.bookingCode,
           customer: `${booking.customer.name}`,
           package: booking.package.package_name,
           date: new Date(booking.event_datetime).toLocaleDateString('th-TH'),
@@ -279,7 +278,7 @@ const Dashboard = () => {
             <tbody className="divide-y divide-gray-200">
               {recentBookings.map((booking) => (
                 <tr key={booking.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{booking.id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{booking.bookingCode}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{booking.customer}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{booking.package}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{booking.date}</td>

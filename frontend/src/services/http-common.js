@@ -17,4 +17,11 @@ instance.interceptors.request.use(function (config) {
     return config;
 });
 
+// Create a separate instance for public requests (without auth token)
+const publicInstance = axios.create(defaultOptions);
+
+// Default export for backward compatibility
 export default instance;
+
+// Named export for public instance
+export { publicInstance };

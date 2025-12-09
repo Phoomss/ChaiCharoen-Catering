@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router'
 import Home from './pages/web/Home'
 import Menu from './pages/web/Menu'
 import Booking from './pages/web/Booking'
+import Calendar from './pages/web/Calendar'
 import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
 import WebLayout from './components/layouts/WebLayout'
@@ -38,6 +39,7 @@ const App = () => {
           <Route path='/' element={<Home />} />
           <Route path='/contact' element={<Contact />} />
           <Route path='/menu' element={<Menu />} />
+          <Route path='/calendar' element={<Calendar />} />
           <Route path='/booking' element={<Booking />} />
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register />} />

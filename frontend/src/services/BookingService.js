@@ -1,4 +1,5 @@
 import http from './http-common';
+import { publicInstance } from './http-common';
 
 const BOOKING_API_URL = '/bookings';
 const PAYMENT_SLIP_API_URL = '/payment-slips';
@@ -49,13 +50,19 @@ const uploadPaymentSlip = (file) => {
     });
 };
 
+// Function to get date availability
+const getDateAvailability = () => {
+    return publicInstance.get(`${BOOKING_API_URL}/availability`);
+};
+
 const bookingService = {
     createBooking,
     getAllBookings,
     getBookingById,
     updateBookingStatus,
     deleteBooking,
-    uploadPaymentSlip
+    uploadPaymentSlip,
+    getDateAvailability
 };
 
 export default bookingService;
