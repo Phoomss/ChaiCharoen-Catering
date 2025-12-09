@@ -7,6 +7,100 @@ import BookingService from '../../services/BookingService';
 import Swal from 'sweetalert2';
 
 const CustomerBooking = () => {
+    // CalendarView Component
+    const CalendarView = ({ dateAvailability, maxBookingsPerDay, selectedDate, onDateSelect }) => {
+        const today = new Date();
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth();
+
+        // Get days in month
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+        // Get first day of month (0 = Sunday, 1 = Monday, etc.)
+        const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+
+        // Create day cells
+        const days = [];
+
+        // Add empty cells for days before the first day of the month
+        for (let i = 0; i < firstDayOfMonth; i++) {
+            days.push(<div key={`empty-${i}`} className="p-2 text-center"></div>);
+        }
+
+        // Add cells for each day of the month
+        for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(currentYear, currentMonth, day);
+            const dateStr = date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+            const bookingCount = dateAvailability[dateStr] || 0;
+
+            let bgColor = 'bg-gray-100'; // Default for past dates
+            let textColor = 'text-gray-400';
+            let isDisabled = true;
+
+            // Check if this date is today or in the future
+            if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate())) {
+                if (bookingCount === 0) {
+                    bgColor = 'bg-green-500 hover:bg-green-600'; // Available
+                    textColor = 'text-white';
+                    isDisabled = false;
+                } else if (bookingCount === 1) {
+                    bgColor = 'bg-yellow-500 hover:bg-yellow-600'; // 1 booking
+                    textColor = 'text-white';
+                    isDisabled = false;
+                } else if (bookingCount >= maxBookingsPerDay) {
+                    bgColor = 'bg-red-500'; // Fully booked
+                    textColor = 'text-white';
+                    isDisabled = true;
+                }
+            }
+
+            // Check if this date is currently selected
+            const isSelected = selectedDate &&
+                new Date(selectedDate).toDateString() === date.toDateString();
+
+            days.push(
+                <button
+                    key={day}
+                    onClick={() => !isDisabled && onDateSelect(date)}
+                    disabled={isDisabled}
+                    className={`
+                        p-2 text-center rounded-full transition-colors
+                        ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                        ${isSelected ? 'ring-2 ring-blue-500' : ''}
+                        ${bgColor} ${textColor}
+                        w-10 h-10 flex items-center justify-center
+                    `}
+                >
+                    {day}
+                </button>
+            );
+        }
+
+        const dayNames = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
+
+        return (
+            <div className="max-w-md mx-auto">
+                <div className="text-center mb-4">
+                    <h4 className="text-lg font-semibold">
+                        {new Date(currentYear, currentMonth).toLocaleDateString('th-TH', { month: 'long', year: 'numeric' })}
+                    </h4>
+                </div>
+
+                <div className="grid grid-cols-7 gap-1 mb-2">
+                    {dayNames.map((dayName, index) => (
+                        <div key={index} className="text-center font-medium text-gray-700 p-1">
+                            {dayName}
+                        </div>
+                    ))}
+                </div>
+
+                <div className="grid grid-cols-7 gap-1">
+                    {days}
+                </div>
+            </div>
+        );
+    };
+
     const navigate = useNavigate();
     const location = useLocation();
     const [bookingData, setBookingData] = useState({
@@ -508,99 +602,6 @@ const CustomerBooking = () => {
             </div>
         </div>
     );
-    // CalendarView Component
-    const CalendarView = ({ dateAvailability, maxBookingsPerDay, selectedDate, onDateSelect }) => {
-        const today = new Date();
-        const currentYear = today.getFullYear();
-        const currentMonth = today.getMonth();
-
-        // Get days in month
-        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-
-        // Get first day of month (0 = Sunday, 1 = Monday, etc.)
-        const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
-
-        // Create day cells
-        const days = [];
-
-        // Add empty cells for days before the first day of the month
-        for (let i = 0; i < firstDayOfMonth; i++) {
-            days.push(<div key={`empty-${i}`} className="p-2 text-center"></div>);
-        }
-
-        // Add cells for each day of the month
-        for (let day = 1; day <= daysInMonth; day++) {
-            const date = new Date(currentYear, currentMonth, day);
-            const dateStr = date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-            const bookingCount = dateAvailability[dateStr] || 0;
-
-            let bgColor = 'bg-gray-100'; // Default for past dates
-            let textColor = 'text-gray-400';
-            let isDisabled = true;
-
-            // Check if this date is today or in the future
-            if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate())) {
-                if (bookingCount === 0) {
-                    bgColor = 'bg-green-500 hover:bg-green-600'; // Available
-                    textColor = 'text-white';
-                    isDisabled = false;
-                } else if (bookingCount === 1) {
-                    bgColor = 'bg-yellow-500 hover:bg-yellow-600'; // 1 booking
-                    textColor = 'text-white';
-                    isDisabled = false;
-                } else if (bookingCount >= maxBookingsPerDay) {
-                    bgColor = 'bg-red-500'; // Fully booked
-                    textColor = 'text-white';
-                    isDisabled = true;
-                }
-            }
-
-            // Check if this date is currently selected
-            const isSelected = selectedDate &&
-                new Date(selectedDate).toDateString() === date.toDateString();
-
-            days.push(
-                <button
-                    key={day}
-                    onClick={() => !isDisabled && onDateSelect(date)}
-                    disabled={isDisabled}
-                    className={`
-                        p-2 text-center rounded-full transition-colors
-                        ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                        ${isSelected ? 'ring-2 ring-blue-500' : ''}
-                        ${bgColor} ${textColor}
-                        w-10 h-10 flex items-center justify-center
-                    `}
-                >
-                    {day}
-                </button>
-            );
-        }
-
-        const dayNames = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
-
-        return (
-            <div className="max-w-md mx-auto">
-                <div className="text-center mb-4">
-                    <h4 className="text-lg font-semibold">
-                        {new Date(currentYear, currentMonth).toLocaleDateString('th-TH', { month: 'long', year: 'numeric' })}
-                    </h4>
-                </div>
-
-                <div className="grid grid-cols-7 gap-1 mb-2">
-                    {dayNames.map((dayName, index) => (
-                        <div key={index} className="text-center font-medium text-gray-700 p-1">
-                            {dayName}
-                        </div>
-                    ))}
-                </div>
-
-                <div className="grid grid-cols-7 gap-1">
-                    {days}
-                </div>
-            </div>
-        );
-    };
 };
 
 export default CustomerBooking;
