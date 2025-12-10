@@ -35,10 +35,6 @@ const searchUserByRole = async (req, res) => {
 
         const users = await userModel.find({ role }).select("-password");
 
-        if (!users.length) {
-            return res.status(404).json({ message: "ไม่พบผู้ใช้ที่มีบทบาทนี้" });
-        }
-
         res.status(200).json({ data: users });
 
     } catch (error) {
@@ -123,6 +119,72 @@ const updateProfile = async (req, res) => {
     }
 };
 
+const createUser = async (req, res) => {
+    try {
+        const { title, firstName, lastName, username, email, password, phone, role } = req.body;
+
+        // Check if required fields are provided
+        if (!title || !firstName || !lastName || !username || !email || !password || !phone) {
+            return res.status(400).json({ message: "กรุณากรอกข้อมูลให้ครบทุกช่อง" });
+        }
+
+        // Validate role (only allow admin to create users with specific roles)
+        const allowedRoles = ['admin', 'customer', 'chef'];
+        if (role && !allowedRoles.includes(role)) {
+            return res.status(400).json({ message: "บทบาทไม่ถูกต้อง" });
+        }
+
+        // Check if user already exists
+        const existingUser = await userModel.findOne({
+            $or: [
+                { username },
+                { email },
+                { phone }
+            ]
+        });
+
+        if (existingUser) {
+            return res.status(400).json({
+                message: existingUser.username === username
+                    ? "Username นี้ถูกใช้งานแล้ว"
+                    : existingUser.email === email
+                        ? "อีเมลนี้ถูกใช้งานแล้ว"
+                        : "เบอร์โทรนี้ถูกใช้งานแล้ว"
+            });
+        }
+
+        // Hash the password
+        const hashedPassword = await hashPassword(password);
+
+        // Create the new user
+        const newUser = new userModel({
+            title,
+            firstName,
+            lastName,
+            username,
+            email,
+            password: hashedPassword,
+            phone,
+            role: role || 'customer' // Default to customer if no role specified
+        });
+
+        const savedUser = await newUser.save();
+
+        // Return user info without password
+        const userResponse = { ...savedUser.toObject() };
+        delete userResponse.password;
+
+        res.status(201).json({
+            message: "สร้างผู้ใช้สำเร็จ",
+            data: userResponse
+        });
+
+    } catch (error) {
+        console.error("createUser Error:", error);
+        res.status(500).json({ message: "เกิดข้อผิดพลาดของเซิร์ฟเวอร์" });
+    }
+};
+
 const updateUser = async (req, res) => {
     try {
         const userId = req.params.id;
@@ -180,6 +242,28 @@ const updateUser = async (req, res) => {
 };
 
 
+const toggleUserStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await userModel.findById(id);
+
+        if (!user) return res.status(404).json({ message: "ไม่พบผู้ใช้" });
+
+        // Toggle the isActive status
+        user.isActive = !user.isActive;
+        await user.save();
+
+        res.status(200).json({
+            message: user.isActive ? "เปิดใช้งานผู้ใช้สำเร็จ" : "ปิดใช้งานผู้ใช้สำเร็จ",
+            data: user
+        });
+
+    } catch (error) {
+        console.error("toggleUserStatus Error:", error);
+        res.status(500).json({ message: "เกิดข้อผิดพลาดของเซิร์ฟเวอร์" });
+    }
+};
+
 const deleteUser = async (req, res) => {
     try {
         const { id } = req.params;
@@ -201,6 +285,8 @@ module.exports = {
     searchUserByRole,
     getUserById,
     updateProfile,
+    createUser,
     updateUser,
+    toggleUserStatus,
     deleteUser,
 };

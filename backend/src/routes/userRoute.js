@@ -28,11 +28,17 @@ router.get('/all', authenticateToken, adminAuth, asyncHandler(userController.get
 // Search users by role
 router.get('/search', authenticateToken, adminAuth, asyncHandler(userController.searchUserByRole));
 
+// Create user (admin only)
+router.post('/', authenticateToken, adminAuth, asyncHandler(userController.createUser));
+
 // Get user by ID
 router.get('/:id', authenticateToken, adminAuth, asyncHandler(userController.getUserById));
 
 // Update user by ID
 router.put('/:id', authenticateToken, adminAuth, asyncHandler(userController.updateUser));
+
+// Toggle user status (activate/deactivate)
+router.patch('/:id/toggle-status', authenticateToken, adminAuth, asyncHandler(userController.toggleUserStatus));
 
 // Delete user by ID
 router.delete('/:id', authenticateToken, adminAuth, asyncHandler(userController.deleteUser));

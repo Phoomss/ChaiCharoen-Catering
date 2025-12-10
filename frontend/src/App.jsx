@@ -12,7 +12,7 @@ import Contact from './pages/web/Contact'
 
 import AdminLayout from './components/layouts/AdminLayout'
 import Dashboard from './pages/admin/Dashboard'
-import Users from './pages/admin/Users'
+import UserManagement from './pages/admin/Users'
 import Orders from './pages/admin/Orders'
 import Analytics from './pages/admin/Analytics'
 import MenuManagement from './pages/admin/MenuManagement'
@@ -51,7 +51,7 @@ const App = () => {
           <Route path="/admin/categories" element={<Categories />} />
           <Route path="/admin/bookings" element={<Bookings />} />
           <Route path="/admin/orders" element={<Orders />} />
-          <Route path="/admin/customers" element={<Users />} />
+          <Route path="/admin/customers" element={<UserManagement />} />
           <Route path="/admin/chefs" element={<Chefs />} />
           <Route path="/admin/locations" element={<Locations />} />
           <Route path="/admin/reports" element={<Reports />} />

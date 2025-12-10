@@ -51,6 +51,10 @@ const userSchema = new mongoose.Schema(
             enum: ROLE_STATUS,
             default: "customer",
             required: true
+        },
+        isActive: {
+            type: Boolean,
+            default: true
         }
     },
     {

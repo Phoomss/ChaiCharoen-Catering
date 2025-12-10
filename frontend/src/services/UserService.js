@@ -28,6 +28,14 @@ const updateUser = (id, userData) => {
     return http.put(`${API_URL}/${id}`, userData);
 };
 
+const toggleUserStatus = (id) => {
+    return http.patch(`${API_URL}/${id}/toggle-status`);
+};
+
+const createUser = (userData) => {
+    return http.post(`${API_URL}`, userData);
+};
+
 const deleteUser = (id) => {
     return http.delete(`${API_URL}/${id}`);
 };
@@ -39,6 +47,7 @@ const userService = {
     searchUserByRole,
     getUserById,
     updateUser,
+    toggleUserStatus,
     deleteUser
 };
 
