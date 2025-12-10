@@ -33,6 +33,7 @@ exports.getAdminDashboardSummary = async (req, res) => {
 
         // Get recent bookings (last 5)
         const recentBookings = await BookingModel.find()
+            .select('bookingCode customer event_datetime table_count total_price payment_status createdAt')
             .populate("customer.customerID", "name email phone")
             .populate("package.packageID")
             .sort({ createdAt: -1 })

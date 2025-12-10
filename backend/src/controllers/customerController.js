@@ -21,7 +21,7 @@ const getCustomerDashboardSummary = async (req, res) => {
         const recentBookings = await bookingModel.find({ 'customer.customerID': customerId })
             .sort({ createdAt: -1 })
             .limit(5)
-            .select('package.package_name event_datetime table_count payment_status total_price');
+            .select('bookingCode package.package_name event_datetime table_count payment_status total_price');
 
         // Calculate total spending
         const totalSpending = await bookingModel.aggregate([

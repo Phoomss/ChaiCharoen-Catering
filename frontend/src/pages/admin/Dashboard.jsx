@@ -20,7 +20,7 @@ const Dashboard = () => {
       try {
         const response = await adminService.getDashboardSummary();
         const data = response.data.data;
-
+        // console.log(data)
         setStatsData({
           totalUsers: data.stats.totalUsers,
           totalBookings: data.stats.totalBookings,
@@ -37,7 +37,8 @@ const Dashboard = () => {
 
         // Format recent bookings from the API response
         setRecentBookings(data.recentBookings.map(booking => ({
-          id: booking.bookingCode,
+          id: booking._id,
+          bookingCode: booking.bookingCode,
           customer: `${booking.customer.name}`,
           package: booking.package.package_name,
           date: new Date(booking.event_datetime).toLocaleDateString('th-TH'),

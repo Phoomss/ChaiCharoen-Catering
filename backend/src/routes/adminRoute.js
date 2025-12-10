@@ -10,9 +10,7 @@ const asyncHandler = fn => (req, res, next) =>
 // Import admin controllers
 const adminController = require("../controllers/adminController");
 
-/* ===========================
-    ADMIN DASHBOARD — Admin only
-=========================== */
+// ADMIN DASHBOARD — Admin only
 
 // GET: admin dashboard summary
 router.get('/dashboard', authenticateToken, adminAuth, asyncHandler(adminController.getAdminDashboardSummary));
