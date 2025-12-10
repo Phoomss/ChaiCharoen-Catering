@@ -18,6 +18,7 @@ import Categories from './pages/admin/Categories'
 import Bookings from './pages/admin/Bookings'
 import Chefs from './pages/admin/Chefs'
 import MenuPackages from './pages/admin/MenuPackages'
+import MyProfile from './pages/admin/MyProfile'
 
 import CustomerLayout from './components/layouts/CustomerLayout'
 import CustomerDashboard from './pages/customer/CustomerDashboard'
@@ -49,6 +50,7 @@ const App = () => {
           <Route path="/admin/customers" element={<UserManagement />} />
           <Route path="/admin/chefs" element={<Chefs />} />
           <Route path="/admin/menu-packages" element={<MenuPackages />} />
+          <Route path="/admin/profile" element={<MyProfile />} />
         </Route>
 
         <Route element={<CustomerLayout />}>
