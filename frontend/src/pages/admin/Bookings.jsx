@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, User, MapPin, Phone, Mail, Edit, Trash2, Search, CheckCircle, Clock, XCircle, Filter, MoreVertical } from 'lucide-react';
 import Swal from 'sweetalert2';
 import bookingService from './../../services/BookingService';
+import MapDisplay from './../../components/shared/MapDisplay';
 
 const Bookings = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -517,6 +518,11 @@ const Bookings = () => {
                       <MapPin className="w-4 h-4 mr-2 text-gray-500" />
                       {booking.location?.address || 'ไม่ระบุ'}
                     </div>
+                    {booking.location?.latitude && booking.location?.longitude && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        พิกัด: {booking.location.latitude.toFixed(4)}, {booking.location.longitude.toFixed(4)}
+                      </div>
+                    )}
                     <div className="text-sm text-gray-600 mt-1">
                       <span className="font-medium">{booking.package?.package_name || 'ไม่ระบุ'}</span>
                     </div>
@@ -551,6 +557,16 @@ const Bookings = () => {
                           <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
                         </svg>
                       </button>
+
+                      {/* View Map Button */}
+                      {booking.location?.latitude && booking.location?.longitude && (
+                        <button
+                          onClick={() => viewBookingDetails(booking)}
+                          className="text-blue-600 hover:text-blue-800"
+                        >
+                          <MapPin className="w-5 h-5" />
+                        </button>
+                      )}
 
                       {/* Edit Button */}
                       <button
@@ -695,6 +711,18 @@ const Bookings = () => {
                       <span className="text-gray-800">{selectedBooking.specialRequest || 'ไม่ระบุ'}</span>
                     </div>
                   </div>
+
+                  {/* Location Map */}
+                  {selectedBooking.location?.latitude && selectedBooking.location?.longitude && (
+                    <div className="mt-4">
+                      <h4 className="text-lg font-semibold text-gray-700 mb-3">แผนที่สถานที่จัดงาน</h4>
+                      <MapDisplay
+                        latitude={selectedBooking.location.latitude}
+                        longitude={selectedBooking.location.longitude}
+                        address={selectedBooking.location.address}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* Package Information */}
