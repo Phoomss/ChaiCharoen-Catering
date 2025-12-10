@@ -11,12 +11,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     { path: '/admin/menu-packages', icon: Package, label: 'Menu Packages' },
     { path: '/admin/categories', icon: Package, label: 'Categories' },
     { path: '/admin/bookings', icon: Calendar, label: 'Bookings' },
-    { path: '/admin/orders', icon: ShoppingCart, label: 'Orders' },
     { path: '/admin/customers', icon: Users2, label: 'Customers' },
     { path: '/admin/chefs', icon: ChefHat, label: 'Chefs & Staff' },
-    { path: '/admin/locations', icon: MapPinned, label: 'Locations' },
-    { path: '/admin/reports', icon: FileText, label: 'Reports' },
-    { path: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
   ];
 
   const logout = async () => {

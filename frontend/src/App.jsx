@@ -13,13 +13,9 @@ import Contact from './pages/web/Contact'
 import AdminLayout from './components/layouts/AdminLayout'
 import Dashboard from './pages/admin/Dashboard'
 import UserManagement from './pages/admin/Users'
-import Orders from './pages/admin/Orders'
-import Analytics from './pages/admin/Analytics'
 import MenuManagement from './pages/admin/MenuManagement'
 import Categories from './pages/admin/Categories'
 import Bookings from './pages/admin/Bookings'
-import Locations from './pages/admin/Locations'
-import Reports from './pages/admin/Reports'
 import Chefs from './pages/admin/Chefs'
 import MenuPackages from './pages/admin/MenuPackages'
 
@@ -50,12 +46,8 @@ const App = () => {
           <Route path="/admin/menu" element={<MenuManagement />} />
           <Route path="/admin/categories" element={<Categories />} />
           <Route path="/admin/bookings" element={<Bookings />} />
-          <Route path="/admin/orders" element={<Orders />} />
           <Route path="/admin/customers" element={<UserManagement />} />
           <Route path="/admin/chefs" element={<Chefs />} />
-          <Route path="/admin/locations" element={<Locations />} />
-          <Route path="/admin/reports" element={<Reports />} />
-          <Route path="/admin/analytics" element={<Analytics />} />
           <Route path="/admin/menu-packages" element={<MenuPackages />} />
         </Route>
 
