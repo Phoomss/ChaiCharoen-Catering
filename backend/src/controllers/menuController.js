@@ -6,7 +6,7 @@ exports.createMenu = async (req, res) => {
 
     const exists = await menuModel.findOne({ code: code.toUpperCase() });
     if (exists) {
-      return res.status(400).json({ message: "Menu code already exists" });
+      return res.status(400).json({ message: "รหัสเมนูนี้มีอยู่แล้ว" });
     }
 
     const menu = await menuModel.create({
@@ -20,7 +20,7 @@ exports.createMenu = async (req, res) => {
       tags,
     });
 
-    res.status(201).json({ message: "Menu created successfully", data: menu });
+    res.status(201).json({ message: "สร้างเมนูสำเร็จ", data: menu });
   } catch (error) {
     console.error("createMenu Error:", error);
     res.status(500).json({ message: error.message });
@@ -42,7 +42,7 @@ exports.createMenuWithImage = async (req, res) => {
           fs.unlinkSync(req.file.path);
         }
       }
-      return res.status(400).json({ message: "Menu code already exists" });
+      return res.status(400).json({ message: "รหัสเมนูนี้มีอยู่แล้ว" });
     }
 
     // Handle uploaded image
@@ -62,7 +62,7 @@ exports.createMenuWithImage = async (req, res) => {
       tags,
     });
 
-    res.status(201).json({ message: "Menu created successfully", data: menu });
+    res.status(201).json({ message: "สร้างเมนูสำเร็จ", data: menu });
   } catch (error) {
     console.error("createMenuWithImage Error:", error);
 
@@ -115,7 +115,7 @@ exports.getMenuById = async (req, res) => {
   try {
     const menu = await menuModel.findById(req.params.id);
 
-    if (!menu) return res.status(404).json({ message: "Menu not found" });
+    if (!menu) return res.status(404).json({ message: "ไม่พบเมนู" });
 
     res.status(200).json({ data: menu });
   } catch (error) {
@@ -134,11 +134,11 @@ exports.updateMenu = async (req, res) => {
     });
 
     if (!updatedMenu) {
-      return res.status(404).json({ message: "Menu not found" });
+      return res.status(404).json({ message: "ไม่พบเมนู" });
     }
 
     res.status(200).json({
-      message: "Menu updated successfully",
+      message: "อัปเดตเมนูสำเร็จ",
       data: updatedMenu,
     });
   } catch (error) {
@@ -161,7 +161,7 @@ exports.updateMenuWithImage = async (req, res) => {
           fs.unlinkSync(req.file.path);
         }
       }
-      return res.status(404).json({ message: "Menu not found" });
+      return res.status(404).json({ message: "ไม่พบเมนู" });
     }
 
     // Extract body data excluding the image
@@ -198,7 +198,7 @@ exports.updateMenuWithImage = async (req, res) => {
     });
 
     res.status(200).json({
-      message: "Menu updated successfully",
+      message: "อัปเดตเมนูสำเร็จ",
       data: updatedMenu,
     });
   } catch (error) {
@@ -223,7 +223,7 @@ exports.deleteMenu = async (req, res) => {
 
     const menuToDelete = await menuModel.findById(id);
     if (!menuToDelete) {
-      return res.status(404).json({ message: "Menu not found" });
+      return res.status(404).json({ message: "ไม่พบเมนู" });
     }
 
     // Delete the image file if it exists
@@ -237,7 +237,7 @@ exports.deleteMenu = async (req, res) => {
 
     const deleted = await menuModel.findByIdAndDelete(id);
 
-    res.status(200).json({ message: "Menu deleted successfully", data: deleted });
+    res.status(200).json({ message: "ลบเมนูสำเร็จ", data: deleted });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -249,13 +249,13 @@ exports.toggleActive = async (req, res) => {
     const id = req.params.id;
 
     const menu = await menuModel.findById(id);
-    if (!menu) return res.status(404).json({ message: "Menu not found" });
+    if (!menu) return res.status(404).json({ message: "ไม่พบเมนู" });
 
     menu.active = !menu.active;
     await menu.save();
 
     res.status(200).json({
-      message: `Menu is now ${menu.active ? "active" : "inactive"}`,
+      message: `เมนูตอนนี้ ${menu.active ? "ใช้งานอยู่" : "ไม่ใช้งาน"}`,
       data: menu,
     });
   } catch (error) {

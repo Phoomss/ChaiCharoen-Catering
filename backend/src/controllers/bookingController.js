@@ -21,7 +21,7 @@ exports.createBooking = async (req, res) => {
     // ตรวจสอบ Package
     const menuPackage = await MenuPackageModel.findById(packageId);
     if (!menuPackage) {
-      return res.status(404).json({ message: "Menu package not found" });
+      return res.status(404).json({ message: "ไม่พบแพ็กเกจเมนู" });
     }
 
     const price = parseFloat(menuPackage.price.toString());
@@ -84,7 +84,7 @@ exports.createBooking = async (req, res) => {
     await sendLineMessage(LINE_USER_ID, message);
 
     res.status(201).json({
-      message: "Booking created successfully",
+      message: "สร้างการจองสำเร็จ",
       data: booking
     });
 
@@ -117,7 +117,7 @@ exports.getBookingById = async (req, res) => {
       .populate("package.packageID");
 
     if (!booking) {
-      return res.status(404).json({ message: "Booking not found" });
+      return res.status(404).json({ message: "ไม่พบการจอง" });
     }
 
     // // Check if the user is the owner of the booking or an admin
@@ -141,7 +141,7 @@ exports.updateBookingStatus = async (req, res) => {
     const booking = await BookingModel.findById(req.params.id);
 
     if (!booking) {
-      return res.status(404).json({ message: "Booking not found" });
+      return res.status(404).json({ message: "ไม่พบการจอง" });
     }
 
     // อัปเดตสถานะหลัก
@@ -173,7 +173,7 @@ exports.updateBookingStatus = async (req, res) => {
     await booking.save();
 
     res.status(200).json({
-      message: "Booking status updated successfully",
+      message: "อัปเดตสถานะการจองสำเร็จ",
       data: booking
     });
 
@@ -222,18 +222,18 @@ exports.deleteBooking = async (req, res) => {
     const booking = await BookingModel.findById(id);
 
     if (!booking) {
-      return res.status(404).json({ message: "Booking not found" });
+      return res.status(404).json({ message: "ไม่พบการจอง" });
     }
 
     // ลบ booking ออกจากฐานข้อมูล
     const deletedBooking = await BookingModel.findByIdAndDelete(id);
 
     if (!deletedBooking) {
-      return res.status(404).json({ message: "Booking not found" });
+      return res.status(404).json({ message: "ไม่พบการจอง" });
     }
 
     res.status(200).json({
-      message: "Booking deleted successfully",
+      message: "ลบการจองสำเร็จ",
       data: deletedBooking
     });
 

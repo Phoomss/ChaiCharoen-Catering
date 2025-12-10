@@ -55,7 +55,7 @@ const register = async (req, res) => {
         });
     } catch (error) {
         console.error("Register Error:", error);
-        res.status(500).json({ message: "Internal Server Error" });
+        res.status(500).json({ message: "เกิดข้อผิดพลาดของเซิร์ฟเวอร์" });
     }
 };
 
@@ -110,7 +110,7 @@ const login = async (req, res) => {
         });
     } catch (error) {
         console.error("Login Error:", error);
-        res.status(500).json({ message: "Internal Server Error" });
+        res.status(500).json({ message: "เกิดข้อผิดพลาดของเซิร์ฟเวอร์" });
     }
 };
 

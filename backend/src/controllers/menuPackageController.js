@@ -6,11 +6,11 @@ exports.createMenuPackage = async (req, res) => {
     const { name, price, menus, maxSelect, extraMenuPrice, description } = req.body;
 
     if (!name) {
-      return res.status(400).json({ message: "Package name is required" });
+      return res.status(400).json({ message: "ต้องระบุชื่อแพ็กเกจ" });
     }
 
     if (!price) {
-      return res.status(400).json({ message: "Package price is required" });
+      return res.status(400).json({ message: "ต้องระบุราคาแพ็กเกจ" });
     }
 
     // ตรวจสอบว่า name หรือ price ซ้ำไหม
@@ -18,11 +18,11 @@ exports.createMenuPackage = async (req, res) => {
     const existsByPrice = await menuPackageModel.findOne({ price });
 
     if (existsByName) {
-      return res.status(400).json({ message: "Package name already exists" });
+      return res.status(400).json({ message: "ชื่อแพ็กเกจนี้มีอยู่แล้ว" });
     }
 
     if (existsByPrice) {
-      return res.status(400).json({ message: "Package price already exists" });
+      return res.status(400).json({ message: "ราคานี้มีอยู่แล้ว" });
     }
 
     // สร้าง package
@@ -35,7 +35,7 @@ exports.createMenuPackage = async (req, res) => {
       description
     });
 
-    res.status(201).json({ message: "MenuPackage created successfully", data: menuPackage });
+    res.status(201).json({ message: "สร้างแพ็กเกจเมนูสำเร็จ", data: menuPackage });
   } catch (error) {
     console.error("createMenuPackage Error:", error);
     res.status(500).json({ message: error.message });
@@ -100,7 +100,7 @@ exports.getMenuPackageById = async (req, res) => {
     const { id } = req.params;
     const menuPackage = await menuPackageModel.findById(id).populate("menus");
     if (!menuPackage) {
-      return res.status(404).json({ message: "MenuPackage not found" });
+      return res.status(404).json({ message: "ไม่พบแพ็กเกจเมนู" });
     }
     res.status(200).json({ data: menuPackage });
   } catch (error) {
@@ -124,7 +124,7 @@ exports.updateMenuPackage = async (req, res) => {
       });
 
       if (existingPackage) {
-        return res.status(400).json({ message: "Package name already exists" });
+        return res.status(400).json({ message: "ชื่อแพ็กเกจนี้มีอยู่แล้ว" });
       }
     }
 
@@ -136,16 +136,16 @@ exports.updateMenuPackage = async (req, res) => {
       });
 
       if (existingPackage) {
-        return res.status(400).json({ message: "Package price already exists" });
+        return res.status(400).json({ message: "ราคานี้มีอยู่แล้ว" });
       }
     }
 
     const menuPackage = await menuPackageModel.findByIdAndUpdate(id, updateData, { new: true });
     if (!menuPackage) {
-      return res.status(404).json({ message: "MenuPackage not found" });
+      return res.status(404).json({ message: "ไม่พบแพ็กเกจเมนู" });
     }
 
-    res.status(200).json({ message: "MenuPackage updated", data: menuPackage });
+    res.status(200).json({ message: "อัปเดตแพ็กเกจเมนูสำเร็จ", data: menuPackage });
   } catch (error) {
     console.error("updateMenuPackage Error:", error);
     res.status(500).json({ message: error.message });
@@ -158,9 +158,9 @@ exports.deleteMenuPackage = async (req, res) => {
     const { id } = req.params;
     const menuPackage = await menuPackageModel.findByIdAndDelete(id);
     if (!menuPackage) {
-      return res.status(404).json({ message: "MenuPackage not found" });
+      return res.status(404).json({ message: "ไม่พบแพ็กเกจเมนู" });
     }
-    res.status(200).json({ message: "MenuPackage deleted successfully" });
+    res.status(200).json({ message: "ลบแพ็กเกจเมนูสำเร็จ" });
   } catch (error) {
     console.error("deleteMenuPackage Error:", error);
     res.status(500).json({ message: error.message });

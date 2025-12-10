@@ -197,7 +197,7 @@ exports.getReviewsByBooking = async (req, res) => {
       .populate("bookingID", "bookingCode event_datetime table_count total_price");
 
     if (!review) {
-      return res.status(404).json({ message: "No review found for this booking" });
+      return res.status(404).json({ message: "ไม่พบรีวิวสำหรับการจองนี้" });
     }
 
     res.status(200).json(review);

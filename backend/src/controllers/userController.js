@@ -4,13 +4,13 @@ const userModel = require('../models/userModel');
 const getUserInfo = async (req, res) => {
     try {
         const user = await userModel.findById(req.user._id).select("-password");
-        if (!user) return res.status(404).json({ message: "User not found" });
+        if (!user) return res.status(404).json({ message: "ไม่พบผู้ใช้" });
 
         res.status(200).json({ data: user });
 
     } catch (error) {
         console.error("getUserInfo Error:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "เกิดข้อผิดพลาดของเซิร์ฟเวอร์" });
     }
 };
 
@@ -21,7 +21,7 @@ const getAllUsers = async (req, res) => {
 
     } catch (error) {
         console.error("getAllUsers Error:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "เกิดข้อผิดพลาดของเซิร์ฟเวอร์" });
     }
 };
 
@@ -30,20 +30,20 @@ const searchUserByRole = async (req, res) => {
         const { role } = req.query;
 
         if (!role) {
-            return res.status(400).json({ message: "Role is required" });
+            return res.status(400).json({ message: "ต้องระบุบทบาท" });
         }
 
         const users = await userModel.find({ role }).select("-password");
 
         if (!users.length) {
-            return res.status(404).json({ message: "No users found with this role" });
+            return res.status(404).json({ message: "ไม่พบผู้ใช้ที่มีบทบาทนี้" });
         }
 
         res.status(200).json({ data: users });
 
     } catch (error) {
         console.error("searchUserByRole Error:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "เกิดข้อผิดพลาดของเซิร์ฟเวอร์" });
     }
 };
 
@@ -52,13 +52,13 @@ const getUserById = async (req, res) => {
         const { id } = req.params;
 
         const user = await userModel.findById(id).select("-password");
-        if (!user) return res.status(404).json({ message: "User not found" });
+        if (!user) return res.status(404).json({ message: "ไม่พบผู้ใช้" });
 
         res.status(200).json({ data: user });
 
     } catch (error) {
         console.error("getUserById Error:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "เกิดข้อผิดพลาดของเซิร์ฟเวอร์" });
     }
 };
 
@@ -166,16 +166,16 @@ const updateUser = async (req, res) => {
             { new: true, select: "-password" }
         );
 
-        if (!user) return res.status(404).json({ message: "User not found" });
+        if (!user) return res.status(404).json({ message: "ไม่พบผู้ใช้" });
 
         res.status(200).json({
-            message: "User updated successfully",
+            message: "อัปเดตผู้ใช้สำเร็จ",
             data: user
         });
 
     } catch (error) {
         console.error("updateUser Error:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "เกิดข้อผิดพลาดของเซิร์ฟเวอร์" });
     }
 };
 
@@ -185,13 +185,13 @@ const deleteUser = async (req, res) => {
         const { id } = req.params;
 
         const user = await userModel.findByIdAndDelete(id);
-        if (!user) return res.status(404).json({ message: "User not found" });
+        if (!user) return res.status(404).json({ message: "ไม่พบผู้ใช้" });
 
-        res.status(200).json({ message: "User deleted successfully", data: user });
+        res.status(200).json({ message: "ลบผู้ใช้สำเร็จ", data: user });
 
     } catch (error) {
         console.error("deleteUser Error:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "เกิดข้อผิดพลาดของเซิร์ฟเวอร์" });
     }
 };
 
