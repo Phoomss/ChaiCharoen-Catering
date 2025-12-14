@@ -408,8 +408,8 @@ const CustomerBooking = () => {
 
             const response = await CustomerService.createBooking(bookingPayload);
 
-            // Navigate to confirmation page
-            navigate(`/customer/booking-confirmation/${response.data.data._id}`);
+            // Navigate directly to payment page after successful booking
+            navigate(`/customer/booking/${response.data.data._id}`);
         } catch (error) {
             console.error('Error creating booking:', error);
             Swal.fire({

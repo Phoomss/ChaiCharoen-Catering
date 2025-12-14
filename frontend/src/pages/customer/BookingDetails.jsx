@@ -150,6 +150,19 @@ const BookingDetails = () => {
         }
     };
 
+    const handlePaymentTypeChange = (type) => {
+        setPaymentType(type);
+        // If deposit is selected, automatically set the required deposit amount
+        if (type === 'deposit' && booking.deposit_required) {
+            const depositAmount = typeof booking.deposit_required === 'object'
+                ? parseFloat(booking.deposit_required.$numberDecimal)
+                : parseFloat(booking.deposit_required);
+            setPaymentAmount(depositAmount);
+        } else {
+            setPaymentAmount(''); // Clear the amount for other payment types
+        }
+    };
+
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -614,13 +627,25 @@ const BookingDetails = () => {
                         <dialog id="paymentModal" className="modal">
                             <div className="modal-box">
                                 <h3 className="font-bold text-lg text-green-700">แจ้งชำระเงิน</h3>
+
+                                {/* Bank Account Information */}
+                                <div className="bg-green-50 p-4 rounded-lg border border-green-200 mb-4">
+                                    <h4 className="font-semibold text-green-800 mb-2">ข้อมูลบัญชีธนาคารสำหรับการชำระเงิน</h4>
+                                    <div className="space-y-1 text-sm">
+                                        <p><span className="font-medium">ธนาคาร:</span> ธนาคารกสิกรไทย จำกัด (มหาชน)</p>
+                                        <p><span className="font-medium">ชื่อบัญชี:</span> บริษัท ชัยเจริญ แคเตอริ่ง จำกัด</p>
+                                        <p><span className="font-medium">เลขที่บัญชี:</span> 012-3456789</p>
+                                        <p><span className="font-medium">ประเภทบัญชี:</span> ออมทรัพย์</p>
+                                    </div>
+                                </div>
+
                                 <form className="py-4 space-y-4">
                                     <div>
                                         <label className="label text-green-700 font-medium">ประเภทการชำระเงิน</label>
                                         <select
                                             className="select select-bordered w-full bg-white border-green-200"
                                             value={paymentType}
-                                            onChange={(e) => setPaymentType(e.target.value)}
+                                            onChange={(e) => handlePaymentTypeChange(e.target.value)}
                                         >
                                             <option value="deposit">ชำระมัดจำ</option>
                                             <option value="balance">ชำระยอดคงเหลือ</option>
@@ -632,11 +657,24 @@ const BookingDetails = () => {
                                         <label className="label text-green-700 font-medium">จำนวนเงิน (บาท)</label>
                                         <input
                                             type="number"
-                                            className="input input-bordered w-full bg-white border-green-200"
+                                            className={`input ${paymentType === 'deposit' ? 'input-disabled' : 'input-bordered'} w-full bg-white border-green-200`}
                                             value={paymentAmount}
-                                            onChange={(e) => setPaymentAmount(e.target.value)}
-                                            placeholder="ระบุจำนวนเงิน"
+                                            onChange={(e) => {
+                                                // Only allow manual input if not deposit type
+                                                if (paymentType !== 'deposit') {
+                                                    setPaymentAmount(e.target.value);
+                                                }
+                                            }}
+                                            placeholder={paymentType === 'deposit' ? "จำนวนมัดจำที่ต้องชำระ" : "ระบุจำนวนเงิน"}
+                                            disabled={paymentType === 'deposit'}
                                         />
+                                        {paymentType === 'deposit' && booking.deposit_required && (
+                                            <p className="text-sm text-green-700 mt-1 font-medium">
+                                                จำนวนมัดจำที่ต้องชำระ: {typeof booking.deposit_required === 'object'
+                                                    ? parseFloat(booking.deposit_required.$numberDecimal).toLocaleString()
+                                                    : parseFloat(booking.deposit_required).toLocaleString()} บาท
+                                            </p>
+                                        )}
                                     </div>
 
                                     <div>
