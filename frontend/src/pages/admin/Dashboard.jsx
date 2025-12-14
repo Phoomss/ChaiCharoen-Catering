@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Eye, Edit, Trash2, Plus, Users, Calendar, ShoppingBag, DollarSign } from 'lucide-react';
 import { Link } from 'react-router';
 import adminService from '../../services/AdminService';
+import bookingService from '../../services/BookingService';
+import BookingDetailsModal from './../../components/admin/BookingDetailsModal';
 
 const Dashboard = () => {
   const [statsData, setStatsData] = useState({
@@ -14,6 +16,8 @@ const Dashboard = () => {
   });
   const [recentBookings, setRecentBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -75,6 +79,35 @@ const Dashboard = () => {
     }
   };
 
+  // Function to view booking details in modal
+  const viewBookingDetails = async (booking) => {
+    try {
+      // If the booking object already has many properties, assume it's detailed from another source
+      // Otherwise, fetch the full booking details from backend using the booking ID
+      if (booking._id && Object.keys(booking).length > 8) { // If booking has many properties, assume it's detailed
+        setSelectedBooking(booking);
+        setShowModal(true);
+      } else {
+        // Fetch the full booking details from backend using either the id or _id field
+        const bookingId = booking.id || booking._id;
+        const response = await bookingService.getBookingById(bookingId);
+        setSelectedBooking(response.data.data);
+        setShowModal(true);
+      }
+    } catch (error) {
+      console.error('Error fetching booking details:', error);
+      // Fallback to display the limited booking info from the dashboard
+      setSelectedBooking(booking);
+      setShowModal(true);
+    }
+  };
+
+  // Function to close the modal
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedBooking(null);
+  };
+
   // Stats cards for catering business
   const statsCards = [
     {
@@ -122,6 +155,7 @@ const Dashboard = () => {
   }
 
   return (
+    <div>
     <div className="space-y-6">
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
@@ -292,9 +326,13 @@ const Dashboard = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <div className="flex items-center space-x-2">
-                      <Link to={`/admin/bookings/${booking.id}`} className="p-1 hover:bg-gray-100 rounded text-blue-600">
+                      <button
+                        onClick={() => viewBookingDetails(booking)}
+                        className="p-1 hover:bg-gray-100 rounded text-blue-600"
+                        type="button"
+                      >
                         <Eye className="w-4 h-4" />
-                      </Link>
+                      </button>
                       <Link to={`/admin/bookings/${booking.id}/edit`} className="p-1 hover:bg-gray-100 rounded text-yellow-600">
                         <Edit className="w-4 h-4" />
                       </Link>
@@ -328,7 +366,17 @@ const Dashboard = () => {
         </div>
       </div>
     </div>
-  );
+
+    {/* Booking Details Modal */}
+    {showModal && (
+      <BookingDetailsModal
+        isOpen={showModal}
+        onClose={closeModal}
+        booking={selectedBooking}
+      />
+    )}
+  </div>
+);
 };
 
 export default Dashboard;
