@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import CustomerService from '../../services/CustomerService';
 import MenuPackageService from '../../services/MenuPackageService';
+import MenuService from '../../services/MenuService';
 import UserService from '../../services/UserService';
 import BookingService from '../../services/BookingService';
 import MapPicker from '../../components/shared/MapPicker';
@@ -132,6 +133,10 @@ const CustomerBooking = () => {
     const [userInfo, setUserInfo] = useState({});
     const [dateAvailability, setDateAvailability] = useState({});
     const [maxBookingsPerDay] = useState(2); // Maximum 2 bookings per day
+    const [allMenus, setAllMenus] = useState([]);
+    const [selectedMenuSets, setSelectedMenuSets] = useState([]);
+    const [showMenuSelection, setShowMenuSelection] = useState(false);
+    const [packageMenus, setPackageMenus] = useState([]);
 
     useEffect(() => {
         const fetchMenuPackages = async () => {
@@ -167,6 +172,18 @@ const CustomerBooking = () => {
             }
         }
         fetchMenuPackages();
+
+        const fetchAllMenus = async () => {
+            try {
+                const menuResponse = await MenuService.getAllMenus();
+                if (menuResponse.data && menuResponse.data.data) {
+                    setAllMenus(menuResponse.data.data.filter(menu => menu.active)); // Only active menus
+                }
+            } catch (error) {
+                console.error('Error fetching menus:', error);
+            }
+        };
+        fetchAllMenus();
 
         const fetchUserInfo = async () => {
             try {
@@ -250,16 +267,58 @@ const CustomerBooking = () => {
                     price_per_table: priceValue
                 }
             }));
+
+            // Reset menu selections when package changes
+            setSelectedMenuSets([]);
+            setShowMenuSelection(true);
         }
     };
 
-    const calculateTotalPrice = () => {
-        if (bookingData.package.price_per_table && bookingData.table_count) {
-            const price = parseFloat(bookingData.package.price_per_table);
-            const count = parseInt(bookingData.table_count);
-            return price * count;
+    // Function to add menu to selection
+    const addToSelectedMenu = (menu) => {
+        if (selectedMenuSets.length >= 10) {
+            Swal.fire({
+                title: 'ไม่สามารถเลือกได้!',
+                text: 'สามารถเลือกได้สูงสุด 10 อย่างเท่านั้น',
+                icon: 'warning',
+                confirmButtonColor: '#3085d6'
+            });
+            return;
         }
-        return 0;
+
+        // Check if menu is already selected
+        if (!selectedMenuSets.some(m => m.menu_name === menu.name)) {
+            setSelectedMenuSets(prev => [...prev, {
+                menu_name: menu.name,
+                quantity: 1
+            }]);
+        }
+    };
+
+    // Function to remove menu from selection
+    const removeSelectedMenu = (index) => {
+        setSelectedMenuSets(prev => prev.filter((_, i) => i !== index));
+    };
+
+    // Function to calculate total price with additional menu costs
+    const calculateTotalPriceWithMenuAdditions = () => {
+        let basePrice = 0;
+        if (bookingData.package.price_per_table && bookingData.table_count) {
+            basePrice = parseFloat(bookingData.package.price_per_table) * parseInt(bookingData.table_count);
+        }
+
+        // Calculate additional cost for menus beyond the included 8
+        let additionalCost = 0;
+        if (selectedMenuSets.length > 8) {
+            const extraMenus = selectedMenuSets.length - 8;
+            additionalCost = extraMenus * 200 * bookingData.table_count; // 200 THB per extra menu per table
+        }
+
+        return basePrice + additionalCost;
+    };
+
+    const calculateTotalPrice = () => {
+        return calculateTotalPriceWithMenuAdditions();
     };
 
     // Function to check if a date is available (has less than max bookings)
@@ -276,6 +335,18 @@ const CustomerBooking = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Validate menu selection - at least 8 menus must be selected
+        if (showMenuSelection && selectedMenuSets.length < 8) {
+            Swal.fire({
+                title: 'กรุณาเลือกเมนูให้ครบ!',
+                text: `ต้องเลือกอย่างน้อย 8 อย่าง (คุณเลือก ${selectedMenuSets.length} อย่าง)`,
+                icon: 'warning',
+                confirmButtonText: 'ตกลง',
+                confirmButtonColor: '#10b981'
+            });
+            return;
+        }
 
         if (!agreed) {
             Swal.fire({
@@ -329,6 +400,7 @@ const CustomerBooking = () => {
                     latitude: bookingData.location.latitude,
                     longitude: bookingData.location.longitude
                 },
+                menu_sets: selectedMenuSets, // Include selected menu sets
                 specialRequest: bookingData.notes,
                 // Calculate deposit required (e.g., 30% of total)
                 deposit_required: calculateTotalPrice() * 0.3
@@ -508,6 +580,83 @@ const CustomerBooking = () => {
                             </select>
                         </div>
 
+                        {/* Menu Selection Interface - Appears after package selection */}
+                        {showMenuSelection && bookingData.package.packageID && (
+                            <div className="bg-white p-6 rounded-lg border border-green-200 mt-6">
+                                <h3 className="text-lg font-semibold text-green-700 mb-4">เลือกรายการอาหาร ({selectedMenuSets.length}/10)</h3>
+
+                                <div className="mb-4">
+                                    <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                                        <p className="text-blue-800">
+                                            <strong>แพ็กเกจ:</strong> {bookingData.package.package_name} |
+                                            <strong> ราคาต่อโต๊ะ:</strong> {bookingData.package.price_per_table} บาท |
+                                            <strong> จำนวนโต๊ะ:</strong> {bookingData.table_count} โต๊ะ
+                                        </p>
+                                        <p className="text-blue-800 mt-1">
+                                            สามารถเลือก <strong>8 อย่าง</strong> ได้ฟรี | สามารถเพิ่มได้สูงสุด <strong>อีก 2 อย่าง</strong> (รวมทั้งหมด 10 อย่าง)
+                                        </p>
+                                        <p className="text-blue-800 mt-1">
+                                            <strong>ค่าอาหารเพิ่มเติม:</strong> 200 บาท/อย่าง/โต๊ะ
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="mb-4">
+                                    <label className="label text-green-700 font-medium">เมนูที่เลือกแล้ว ({selectedMenuSets.length} อย่าง)</label>
+                                    <div className="flex flex-wrap gap-2 mb-4 min-h-12 p-2 bg-gray-50 rounded border">
+                                        {selectedMenuSets.map((menu, index) => (
+                                            <div key={index} className="flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                                                {menu.menu_name}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeSelectedMenu(index)}
+                                                    className="ml-2 text-red-600 hover:text-red-800"
+                                                >
+                                                    ×
+                                                </button>
+                                            </div>
+                                        ))}
+                                        {selectedMenuSets.length === 0 && (
+                                            <span className="text-gray-500 text-sm">ยังไม่ได้เลือกเมนู</span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="label text-green-700 font-medium">เลือกรายการอาหาร</label>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto p-2 border rounded">
+                                        {allMenus.map(menu => {
+                                            const isSelected = selectedMenuSets.some(selected => selected.menu_name === menu.name);
+                                            return (
+                                                <div
+                                                    key={menu._id}
+                                                    className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                                                        isSelected
+                                                            ? 'bg-green-100 border-green-500'
+                                                            : selectedMenuSets.length >= 10 && !isSelected
+                                                                ? 'bg-gray-100 opacity-50 cursor-not-allowed'
+                                                                : 'bg-white hover:bg-gray-50 border-gray-200'
+                                                    }`}
+                                                    onClick={() => !isSelected && selectedMenuSets.length < 10 && addToSelectedMenu(menu)}
+                                                >
+                                                    <div className="flex justify-between items-start">
+                                                        <div>
+                                                            <h4 className="font-medium text-gray-800">{menu.name}</h4>
+                                                            <p className="text-sm text-gray-600">{menu.description}</p>
+                                                            <span className="text-xs text-gray-500">{menu.category}</span>
+                                                        </div>
+                                                        <span className="badge badge-outline">{typeof (menu.packagePrice || menu.price) === 'object'
+                                                            ? (menu.packagePrice || menu.price).$numberDecimal
+                                                            : (menu.packagePrice || menu.price)} บาท</span>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Location */}
                         <div>
                             <label className="label text-green-700 font-medium">เลือกตำแหน่งที่อยู่จัดงาน</label>
@@ -569,6 +718,14 @@ const CustomerBooking = () => {
                                             {calculateTotalPrice().toLocaleString()} บาท
                                         </p>
                                     </div>
+                                    {selectedMenuSets.length > 8 && (
+                                        <div className="col-span-2 mt-2">
+                                            <p className="text-sm text-gray-600">
+                                                * ประกอบด้วยเมนูเพิ่มเติม {selectedMenuSets.length - 8} อย่าง
+                                                @ 200 บาท/อย่าง/โต๊ะ = {(selectedMenuSets.length - 8) * 200 * bookingData.table_count} บาท
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )}
