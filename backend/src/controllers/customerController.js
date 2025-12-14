@@ -291,8 +291,7 @@ module.exports = {
     getCustomerProfile,
     updateCustomerProfile,
     cancelCustomerBooking,
-    submitPaymentForBooking,
-    updateBookingMenuSets
+    submitPaymentForBooking
 };
 
 // Update customer's booking menu sets
@@ -368,4 +367,14 @@ const updateBookingMenuSets = async (req, res) => {
         console.error("updateBookingMenuSets Error:", error);
         res.status(500).json({ message: "เกิดข้อผิดพลาดของเซิร์ฟเวอร์" });
     }
+};
+
+module.exports = {
+    getCustomerDashboardSummary,
+    getCustomerBookings,
+    getCustomerProfile,
+    updateCustomerProfile,
+    cancelCustomerBooking,
+    submitPaymentForBooking,
+    updateBookingMenuSets
 };
