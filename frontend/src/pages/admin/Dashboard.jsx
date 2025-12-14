@@ -333,9 +333,9 @@ const Dashboard = () => {
                       >
                         <Eye className="w-4 h-4" />
                       </button>
-                      <Link to={`/admin/bookings/${booking.id}/edit`} className="p-1 hover:bg-gray-100 rounded text-yellow-600">
+                      {/* <Link to={`/admin/bookings/${booking.id}/edit`} className="p-1 hover:bg-gray-100 rounded text-yellow-600">
                         <Edit className="w-4 h-4" />
-                      </Link>
+                      </Link> */}
                     </div>
                   </td>
                 </tr>

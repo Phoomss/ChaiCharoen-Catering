@@ -113,7 +113,8 @@ exports.getAllBookings = async (req, res) => {
   try {
     const bookings = await BookingModel.find()
       .populate("customer.customerID", "name email phone")
-      .populate("package.packageID");
+      .populate("package.packageID")
+      .sort({ createdAt: -1 }); // เรียงลำดับจากใหม่ไปเก่า (ล่าสุดขึ้นก่อน)
 
     res.status(200).json({ data: bookings });
   } catch (error) {

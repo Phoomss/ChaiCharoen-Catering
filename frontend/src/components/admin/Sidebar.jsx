@@ -9,7 +9,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     { path: '/admin/dashboard', icon: Home, label: 'Dashboard' },
     { path: '/admin/menu', icon: Menu, label: 'Menu Management' },
     { path: '/admin/menu-packages', icon: Package, label: 'Menu Packages' },
-    { path: '/admin/categories', icon: Package, label: 'Categories' },
+    // { path: '/admin/categories', icon: Package, label: 'Categories' },
     { path: '/admin/bookings', icon: Calendar, label: 'Bookings' },
     { path: '/admin/customers', icon: Users2, label: 'Customers' },
     { path: '/admin/chefs', icon: ChefHat, label: 'Chefs & Staff' },

@@ -558,7 +558,7 @@ const Bookings = () => {
                         </svg>
                       </button>
 
-                      {/* View Map Button */}
+                      {/* View Map Button
                       {booking.location?.latitude && booking.location?.longitude && (
                         <button
                           onClick={() => viewBookingDetails(booking)}
@@ -569,7 +569,7 @@ const Bookings = () => {
                       )}
 
                       {/* Edit Button */}
-                      <button
+                      {/* <button
                         onClick={() => {
                           Swal.fire({
                             icon: "info",
@@ -581,7 +581,7 @@ const Bookings = () => {
                         className="text-blue-600 hover:text-blue-800"
                       >
                         <Edit className="w-5 h-5" />
-                      </button>
+                      </button> */} 
 
                       {/* Delete Button */}
                       <button
