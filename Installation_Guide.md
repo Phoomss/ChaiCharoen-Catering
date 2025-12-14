@@ -109,13 +109,6 @@ LINE_CHANNEL_SECRET=your_line_channel_secret
 - `MONGO_URL`: URL สำหรับเชื่อมต่อกับ MongoDB (สามารถใช้ MongoDB Atlas ได้)
 - `LINE_CHANNEL_ACCESS_TOKEN`, `LINE_USER_ID`, `LINE_CHANNEL_SECRET`: ค่าที่ใช้สำหรับการเชื่อมต่อกับ LINE API (ตัวเลือก)
 
-### 2. การตั้งค่า Frontend
-โดยปกติ Frontend จะไม่ต้องการไฟล์ `.env` เฉพาะเจาะจง แต่หากต้องการเปลี่ยนค่า default คุณสามารถสร้างไฟล์ `.env` ในโฟลเดอร์ `frontend` ได้:
-
-```env
-VITE_API_URL=http://localhost:8080/api
-```
-
 ## การเริ่มต้นใช้งาน
 
 ### เริ่มต้น Backend
