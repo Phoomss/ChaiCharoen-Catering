@@ -53,6 +53,9 @@ router.put('/profile', authenticateToken, asyncHandler(customerController.update
 // DELETE: cancel customer booking
 router.delete('/booking/:id', authenticateToken, asyncHandler(customerController.cancelCustomerBooking));
 
+// PUT: update customer booking menu sets
+router.put('/booking/:id/menu-sets', authenticateToken, asyncHandler(customerController.updateBookingMenuSets));
+
 // POST: submit payment for customer booking
 router.post('/booking/:id/payment', authenticateToken, upload.single('file'), asyncHandler(customerController.submitPaymentForBooking));
 

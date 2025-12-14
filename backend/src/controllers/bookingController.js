@@ -25,12 +25,25 @@ exports.createBooking = async (req, res) => {
     }
 
     const price = parseFloat(menuPackage.price.toString());
-    const totalPrice = new mongoose.Types.Decimal128((price * table_count).toString());
+    let totalPrice = price * table_count; // Base price
+
+    // Calculate additional cost for menus beyond the included 8
+    if (menu_sets && menu_sets.length > 0) {
+        const includedMenus = menuPackage.maxSelect || 8; // Default to 8 if not specified
+        if (menu_sets.length > includedMenus) {
+            const extraMenus = menu_sets.length - includedMenus;
+            const extraMenuPrice = parseFloat(menuPackage.extraMenuPrice || 200); // Default to 200 if not specified
+            const extraCost = extraMenus * extraMenuPrice * table_count; // 200 THB per extra menu per table
+            totalPrice += extraCost;
+        }
+    }
+
     const pricePerTable = new mongoose.Types.Decimal128(price.toString());
+    const totalPriceDecimal = new mongoose.Types.Decimal128(totalPrice.toString());
 
     const depositRequired = deposit_required
       ? new mongoose.Types.Decimal128(deposit_required.toString())
-      : new mongoose.Types.Decimal128((price * table_count * 0.30).toString());
+      : new mongoose.Types.Decimal128((totalPrice * 0.30).toString());
 
     // Generate booking code
     const date = new Date();
@@ -58,7 +71,7 @@ exports.createBooking = async (req, res) => {
       menu_sets: menu_sets || [],
       specialRequest: specialRequest || "",
       deposit_required: depositRequired,
-      total_price: totalPrice,
+      total_price: totalPriceDecimal,
       booking_date: new Date(),
       bookingCode: bookingCode
     });
@@ -76,7 +89,7 @@ exports.createBooking = async (req, res) => {
       `📦 แพ็กเกจ: ${menuPackage.name}\n` +
       `🍽 จำนวนโต๊ะ: ${table_count}\n` +
       `📅 วันงาน: ${new Date(event_datetime).toLocaleString("th-TH")}\n` +
-      `💵 รวม: ${price * table_count} บาท\n` +
+      `💵 รวม: ${totalPrice.toLocaleString()} บาท\n` +
       `💰 มัดจำ: ${parseFloat(depositRequired.toString())} บาท\n` +
       `📍 สถานที่: ${locationText}`;;
 
@@ -209,6 +222,65 @@ exports.getDateAvailability = async (req, res) => {
     });
   } catch (error) {
     console.error("getDateAvailability Error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// อัปเดตรายการอาหารของ booking
+exports.updateBookingMenuSets = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { menu_sets } = req.body;
+
+    // ตรวจสอบ booking
+    const booking = await BookingModel.findById(id);
+    if (!booking) {
+      return res.status(404).json({ message: "ไม่พบการจอง" });
+    }
+
+    // ตรวจสอบ menu package เพื่อเข้าถึงข้อมูล maxSelect และ extraMenuPrice
+    const menuPackage = await MenuPackageModel.findById(booking.package.packageID);
+    if (!menuPackage) {
+      return res.status(404).json({ message: "ไม่พบข้อมูลแพ็กเกจเมนู" });
+    }
+
+    // ตรวจสอบจำนวนเมนูที่เลือก
+    const totalSelected = Array.isArray(menu_sets) ? menu_sets.length : 0;
+    const maxSelect = menuPackage.maxSelect || 8;
+    const extraMenuPrice = parseFloat(menuPackage.extraMenuPrice || 200);
+
+    // ตรวจสอบว่าเลือกเกินจำนวนที่อนุญาตไหม
+    if (totalSelected > maxSelect + 2) { // ไม่เกิน maxSelect + 2 ตามข้อกำหนด
+      return res.status(400).json({
+        message: `สามารถเลือกเมนูได้สูงสุด ${maxSelect + 2} อย่าง (แพ็กเกจปกติ ${maxSelect} อย่าง + เพิ่มได้อีก 2 อย่าง)`
+      });
+    }
+
+    // อัปเดต menu_sets ใน booking
+    booking.menu_sets = menu_sets || [];
+
+    // คำนวณราคารวมใหม่ถ้ามีการเพิ่มเมนูเกินที่แพ็กเกจให้
+    // ถ้าเลือกเกิน maxSelect ให้คิดเพิ่ม extraMenuPrice ต่อเมนู คูณตามจำนวนโต๊ะ
+    let totalPrice = parseFloat(booking.package.price_per_table.toString()) * booking.table_count;
+
+    if (totalSelected > maxSelect) {
+      const extraMenus = totalSelected - maxSelect;
+      const extraCost = extraMenus * extraMenuPrice * booking.table_count;
+      totalPrice += extraCost;
+    }
+
+    // คำนวณราคารวมใหม่ (ราคาต่อโต๊ะ + ค่าเมนูเพิ่มเติม) * จำนวนโต๊ะ
+    booking.total_price = new mongoose.Types.Decimal128(totalPrice.toString());
+
+    await booking.save();
+
+    res.status(200).json({
+      message: "อัปเดตรายการอาหารสำเร็จ",
+      data: booking
+    });
+
+  } catch (error) {
+    console.error("updateBookingMenuSets Error:", error);
     res.status(500).json({ message: error.message });
   }
 };

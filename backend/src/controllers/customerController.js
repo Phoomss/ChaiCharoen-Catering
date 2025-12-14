@@ -291,5 +291,81 @@ module.exports = {
     getCustomerProfile,
     updateCustomerProfile,
     cancelCustomerBooking,
-    submitPaymentForBooking
+    submitPaymentForBooking,
+    updateBookingMenuSets
+};
+
+// Update customer's booking menu sets
+const updateBookingMenuSets = async (req, res) => {
+    try {
+        const customerId = req.user._id;
+        const { id } = req.params;
+        const { menu_sets } = req.body;
+
+        // Find the booking that belongs to the customer
+        const booking = await bookingModel.findOne({
+            _id: id,
+            'customer.customerID': customerId
+        });
+
+        if (!booking) {
+            return res.status(404).json({ message: "ไม่พบการจองหรือการจองไม่ได้อยู่ในชื่อของคุณ" });
+        }
+
+        // Check if booking can be modified (only allow modifications if status is pending-deposit or deposit-paid)
+        if (booking.payment_status === 'full-payment' || booking.payment_status === 'cancelled') {
+            return res.status(400).json({
+                message: `ไม่สามารถแก้ไขรายละเอียดเมนูที่มีสถานะ: ${booking.payment_status} ได้ สามารถแก้ไขได้เฉพาะการจองที่ยังไม่ชำระเต็มจำนวน`
+            });
+        }
+
+        // Get menu package to check limits
+        const MenuPackageModel = require('../models/menuPackageModel');
+        const menuPackage = await MenuPackageModel.findById(booking.package.packageID);
+        if (!menuPackage) {
+            return res.status(404).json({ message: "ไม่พบข้อมูลแพ็กเกจเมนู" });
+        }
+
+        // Validate menu sets array
+        if (!Array.isArray(menu_sets)) {
+            return res.status(400).json({ message: "รูปแบบข้อมูลเมนูไม่ถูกต้อง" });
+        }
+
+        // Check menu limits
+        const totalSelected = menu_sets.length;
+        const maxSelect = menuPackage.maxSelect || 8;
+        const extraMenuPrice = parseFloat(menuPackage.extraMenuPrice || 200);
+
+        if (totalSelected > maxSelect + 2) { // ไม่เกิน maxSelect + 2 ตามข้อกำหนด
+            return res.status(400).json({
+                message: `สามารถเลือกเมนูได้สูงสุด ${maxSelect + 2} อย่าง (แพ็กเกจปกติ ${maxSelect} อย่าง + เพิ่มได้อีก 2 อย่าง)`
+            });
+        }
+
+        // Update menu sets
+        booking.menu_sets = menu_sets;
+
+        // Calculate additional cost if any
+        let totalPrice = parseFloat(booking.package.price_per_table.toString()) * booking.table_count;
+
+        if (totalSelected > maxSelect) {
+            const extraMenus = totalSelected - maxSelect;
+            const extraCost = extraMenus * extraMenuPrice * booking.table_count;
+            totalPrice += extraCost;
+        }
+
+        // Recalculate total price
+        booking.total_price = new mongoose.Types.Decimal128(totalPrice.toString());
+
+        await booking.save();
+
+        res.status(200).json({
+            message: "อัปเดตรายการอาหารสำเร็จ",
+            data: booking
+        });
+
+    } catch (error) {
+        console.error("updateBookingMenuSets Error:", error);
+        res.status(500).json({ message: "เกิดข้อผิดพลาดของเซิร์ฟเวอร์" });
+    }
 };

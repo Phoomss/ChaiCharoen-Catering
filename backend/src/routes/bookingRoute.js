@@ -23,6 +23,9 @@ router.get("/:id", authenticateToken, asyncHandler(bookingController.getBookingB
 // PUT: update booking status (admin only)
 router.put("/:id/status", authenticateToken, adminAuth, asyncHandler(bookingController.updateBookingStatus));
 
+// PUT: update booking menu sets (admin only)
+router.put("/:id/menu-sets", authenticateToken, adminAuth, asyncHandler(bookingController.updateBookingMenuSets));
+
 // DELETE: delete booking (admin only)
 router.delete("/:id", authenticateToken, adminAuth, asyncHandler(bookingController.deleteBooking));
 

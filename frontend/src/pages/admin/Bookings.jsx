@@ -632,10 +632,6 @@ const Bookings = () => {
                       <span className="text-gray-800">{selectedBooking.bookingCode || 'ไม่ระบุ'}</span>
                     </div>
                     <div className="flex">
-                      <span className="font-medium w-32 text-gray-600">ID การจอง:</span>
-                      <span className="text-gray-800">{selectedBooking._id}</span>
-                    </div>
-                    <div className="flex">
                       <span className="font-medium w-32 text-gray-600">วันที่จอง:</span>
                       <span className="text-gray-800">
                         {selectedBooking.booking_date ? new Date(selectedBooking.booking_date).toLocaleDateString() : 'ไม่ระบุ'}
