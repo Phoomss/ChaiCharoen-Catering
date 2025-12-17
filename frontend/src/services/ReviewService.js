@@ -1,4 +1,5 @@
 import http from './http-common';
+import { publicInstance } from './http-common';
 
 const API_URL = '/reviews';
 
@@ -7,11 +8,11 @@ const createReview = (reviewData) => {
 };
 
 const getAllReviews = (params) => {
-    return http.get(`${API_URL}`, params);
+    return publicInstance.get(`${API_URL}`, { params });
 };
 
 const getReviewById = (id) => {
-    return http.get(`${API_URL}/${id}`);
+    return publicInstance.get(`${API_URL}/${id}`);
 };
 
 const updateReview = (id, reviewData) => {
@@ -27,11 +28,11 @@ const getReviewsByCustomer = (customerID) => {
 };
 
 const getReviewsByBooking = (bookingID) => {
-    return http.get(`${API_URL}/booking/${bookingID}`);
+    return publicInstance.get(`${API_URL}/booking/${bookingID}`);
 };
 
 const getAverageRating = () => {
-    return http.get(`${API_URL}/average-rating`);
+    return publicInstance.get(`${API_URL}/average-rating`);
 };
 
 const reviewService = {

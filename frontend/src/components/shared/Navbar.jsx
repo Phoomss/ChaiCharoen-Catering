@@ -32,6 +32,14 @@ const Navbar = () => {
                         <li><Link to="/booking" className={`text-green-700 ${isActive('/booking')}`}>จองโต๊ะจีน</Link></li>
                         <li><Link to="/calendar" className={`text-green-700 ${isActive('/calendar')}`}>ปฏิทินการจอง</Link></li>
                         <li><Link to="/menu" className={`text-green-700 ${isActive('/menu')}`}>เมนูอาหาร</Link></li>
+                        <li>
+                          <details>
+                              <summary>ข้อมูลร้าน</summary>
+                              <ul className="p-2 bg-green-50 border border-green-200 rounded-box">
+                                  <li><Link to="/customer-reviews" className={`text-green-700 ${isActive('/customer-reviews')}`}>รีวิวลูกค้า</Link></li>
+                              </ul>
+                          </details>
+                        </li>
                         <li><Link to="/contact" className={`text-green-700 ${isActive('/contact')}`}>ติดต่อร้าน</Link></li>
                         <li><a className="text-green-700">เข้าสู่ระบบ</a></li>
                     </ul>
@@ -54,7 +62,7 @@ const Navbar = () => {
                             <summary>ข้อมูลร้าน</summary>
                             <ul className="p-2 bg-green-50 border border-green-200 rounded-box">
                                 <li><Link to="/menu" className={isActive('/menu')}>เมนูอาหาร</Link></li>
-                                <li><a className="text-green-700">รีวิวลูกค้า</a></li>
+                                <li><Link to="/customer-reviews" className={`${isActive('/customer-reviews')} text-green-700`}>รีวิวลูกค้า</Link></li>
                             </ul>
                         </details>
                     </li>

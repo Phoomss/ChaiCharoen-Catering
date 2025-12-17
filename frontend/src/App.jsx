@@ -9,6 +9,7 @@ import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
 import WebLayout from './components/layouts/WebLayout'
 import Contact from './pages/web/Contact'
+import CustomerReviews from './pages/web/CustomerReviews'
 
 import AdminLayout from './components/layouts/AdminLayout'
 import Dashboard from './pages/admin/Dashboard'
@@ -38,6 +39,7 @@ const App = () => {
           <Route path='/menu' element={<Menu />} />
           <Route path='/calendar' element={<Calendar />} />
           <Route path='/booking' element={<Booking />} />
+          <Route path='/customer-reviews' element={<CustomerReviews />} />
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register />} />
         </Route>
