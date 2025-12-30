@@ -6,6 +6,9 @@ const Calendar = () => {
   const [maxBookingsPerDay] = useState(2); // Maximum 2 bookings per day
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const today = new Date();
+  const [viewYear, setViewYear] = useState(today.getFullYear());
+  const [viewMonth, setViewMonth] = useState(today.getMonth());
 
   useEffect(() => {
     const fetchDateAvailability = async () => {
@@ -23,16 +26,14 @@ const Calendar = () => {
   }, []);
 
   // CalendarView Component
-  const CalendarView = ({ dateAvailability, maxBookingsPerDay }) => {
+  const CalendarView = ({ dateAvailability, maxBookingsPerDay, viewYear, viewMonth, setViewYear, setViewMonth }) => {
     const today = new Date();
-    const currentYear = today.getFullYear();
-    const currentMonth = today.getMonth();
-    
+
     // Get days in month
-    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-    
+    const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
     // Get first day of month (0 = Sunday, 1 = Monday, etc.)
-    const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+    const firstDayOfMonth = new Date(viewYear, viewMonth, 1).getDay();
     
     // Create day cells
     const days = [];
@@ -44,16 +45,17 @@ const Calendar = () => {
     
     // Add cells for each day of the month
     for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(currentYear, currentMonth, day);
-      const dateStr = date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+      const date = new Date(viewYear, viewMonth, day);
+      const dateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`; // Format: YYYY-MM-DD
       const bookingCount = dateAvailability[dateStr] || 0;
-      
+
       let bgColor = 'bg-gray-100'; // Default for past dates
       let textColor = 'text-gray-400';
       let isDisabled = true;
-      
+
       // Check if this date is today or in the future
-      if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate())) {
+      const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      if (date >= todayDate) {
         if (bookingCount === 0) {
           bgColor = 'bg-green-500'; // Available
           textColor = 'text-white';
@@ -68,7 +70,7 @@ const Calendar = () => {
           isDisabled = true;
         }
       }
-      
+
       days.push(
         <div
           key={day}
@@ -87,17 +89,53 @@ const Calendar = () => {
         </div>
       );
     }
-    
+
     const dayNames = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
-    
+
     return (
       <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-6">
+        <div className="flex justify-between items-center mb-6">
+          <button
+            onClick={() => {
+              // Reset to current month
+              const currentMonth = new Date();
+              setViewYear(currentMonth.getFullYear());
+              setViewMonth(currentMonth.getMonth());
+            }}
+            className="px-3 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 text-sm"
+            title="กลับไปเดือนปัจจุบัน"
+          >
+            ปัจจุบัน
+          </button>
+          <button
+            onClick={() => {
+              const prevMonth = new Date(viewYear, viewMonth - 1, 1);
+              setViewYear(prevMonth.getFullYear());
+              setViewMonth(prevMonth.getMonth());
+            }}
+            className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
           <h3 className="text-2xl font-bold text-green-700">
-            {new Date(currentYear, currentMonth).toLocaleDateString('th-TH', { month: 'long', year: 'numeric' })}
+            {new Date(viewYear, viewMonth).toLocaleDateString('th-TH', { month: 'long', year: 'numeric' })}
           </h3>
+          <button
+            onClick={() => {
+              const nextMonth = new Date(viewYear, viewMonth + 1, 1);
+              setViewYear(nextMonth.getFullYear());
+              setViewMonth(nextMonth.getMonth());
+            }}
+            className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
-        
+
         <div className="grid grid-cols-7 gap-2 mb-4">
           {dayNames.map((dayName, index) => (
             <div key={index} className="text-center font-medium text-gray-700 p-2">
@@ -105,7 +143,7 @@ const Calendar = () => {
             </div>
           ))}
         </div>
-        
+
         <div className="grid grid-cols-7 gap-2">
           {days}
         </div>
@@ -167,9 +205,13 @@ const Calendar = () => {
 
         {/* Calendar Component */}
         <div className="bg-white p-6 rounded-xl shadow-md border border-green-200">
-          <CalendarView 
-            dateAvailability={dateAvailability} 
+          <CalendarView
+            dateAvailability={dateAvailability}
             maxBookingsPerDay={maxBookingsPerDay}
+            viewYear={viewYear}
+            viewMonth={viewMonth}
+            setViewYear={setViewYear}
+            setViewMonth={setViewMonth}
           />
         </div>
 

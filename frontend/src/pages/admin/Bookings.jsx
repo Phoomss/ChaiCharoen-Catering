@@ -13,10 +13,19 @@ const Bookings = () => {
   const [dateRange, setDateRange] = useState({ start: '', end: '' }); // Filter by date range
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [viewedBookings, setViewedBookings] = useState(new Set());
 
   // Load bookings from API when component mounts
   useEffect(() => {
     loadBookings();
+  }, []);
+
+  // Load viewed bookings from localStorage on mount
+  useEffect(() => {
+    const storedViewedBookings = localStorage.getItem('viewedBookings');
+    if (storedViewedBookings) {
+      setViewedBookings(new Set(JSON.parse(storedViewedBookings)));
+    }
   }, []);
 
   const loadBookings = async () => {
@@ -52,6 +61,36 @@ const Bookings = () => {
 
       // If this is a payment status update and requires a slip upload
       if ((newStatus === 'deposit-paid' || newStatus === 'full-payment') && slipFile) {
+        // Check if payment amount matches required deposit for deposit payments
+        if (newStatus === 'deposit-paid' && amount !== null) {
+          // Get the booking data to check required deposit amount
+          const bookingResponse = await bookingService.getBookingById(bookingId);
+          const booking = bookingResponse.data.data;
+
+          const requiredAmount = typeof booking.deposit_required === 'object'
+            ? parseFloat(booking.deposit_required.$numberDecimal)
+            : parseFloat(booking.deposit_required || 0);
+          const paymentAmount = parseFloat(amount || 0);
+
+          // Show warning if payment amount is less than required deposit
+          if (paymentAmount < requiredAmount) {
+            const confirmResult = await Swal.fire({
+              title: 'ตรวจสอบยอดชำระ',
+              text: `ยอดชำระเงิน (฿${paymentAmount}) น้อยกว่าจำนวนเงินมัดจำที่ต้องชำระ (฿${requiredAmount}) คุณแน่ใจหรือไม่ที่จะดำเนินการต่อ?`,
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: 'ดำเนินการต่อ',
+              cancelButtonText: 'ยกเลิก'
+            });
+
+            if (!confirmResult.isConfirmed) {
+              return; // Cancel the payment update
+            }
+          }
+        }
+
         const result = await Swal.fire({
           title: 'อัปโหลดหลักฐานการชำระเงิน',
           text: `คุณต้องการอัปโหลดหลักฐานการชำระเงินและเปลี่ยนสถานะเป็น ${statusThai} ใช่หรือไม่?`,
@@ -220,7 +259,7 @@ const Bookings = () => {
     }
   };
 
-  const getStatusColor = (status) => {
+  const getStatusInfo = (status) => {
     // Map backend status to frontend status for styling
     const displayStatus =
       status === 'deposit-paid' ? 'Confirmed' :
@@ -230,38 +269,48 @@ const Bookings = () => {
 
     switch (displayStatus) {
       case 'Confirmed':
-        return 'bg-green-100 text-green-800';
+        return {
+          color: 'bg-green-100 text-green-800',
+          text: 'จ่ายมัดจำแล้ว',
+          icon: <CheckCircle className="w-4 h-4 text-green-600" />
+        };
       case 'Pending':
-        return 'bg-yellow-100 text-yellow-800';
+        return {
+          color: 'bg-yellow-100 text-yellow-800',
+          text: 'รอดำเนินการ',
+          icon: <Clock className="w-4 h-4 text-yellow-600" />
+        };
       case 'Completed':
-        return 'bg-blue-100 text-blue-800';
+        return {
+          color: 'bg-blue-100 text-blue-800',
+          text: 'ชำระเต็มจำนวน',
+          icon: <CheckCircle className="w-4 h-4 text-blue-600" />
+        };
       case 'Cancelled':
-        return 'bg-red-100 text-red-800';
+        return {
+          color: 'bg-red-100 text-red-800',
+          text: 'ยกเลิก',
+          icon: <XCircle className="w-4 h-4 text-red-600" />
+        };
       default:
-        return 'bg-gray-100 text-gray-800';
+        return {
+          color: 'bg-gray-100 text-gray-800',
+          text: status,
+          icon: <Clock className="w-4 h-4 text-gray-600" />
+        };
     }
   };
 
-  const getStatusIcon = (status) => {
-    // Map backend status to frontend status for icons
-    const displayStatus =
-      status === 'deposit-paid' ? 'Confirmed' :
-        status === 'pending-deposit' ? 'Pending' :
-          status === 'full-payment' ? 'Completed' :
-            status === 'cancelled' ? 'Cancelled' : status;
+  const getStatusColor = (status) => {
+    return getStatusInfo(status).color;
+  };
 
-    switch (displayStatus) {
-      case 'Confirmed':
-        return <CheckCircle className="w-4 h-4 text-green-600" />;
-      case 'Pending':
-        return <Clock className="w-4 h-4 text-yellow-600" />;
-      case 'Completed':
-        return <CheckCircle className="w-4 h-4 text-blue-600" />;
-      case 'Cancelled':
-        return <XCircle className="w-4 h-4 text-red-600" />;
-      default:
-        return <Clock className="w-4 h-4 text-gray-600" />;
-    }
+  const getStatusText = (status) => {
+    return getStatusInfo(status).text;
+  };
+
+  const getStatusIcon = (status) => {
+    return getStatusInfo(status).icon;
   };
 
   // Function to clear all filters
@@ -273,6 +322,11 @@ const Bookings = () => {
 
   // Function to view booking details
   const viewBookingDetails = (booking) => {
+    // Mark booking as viewed
+    const newViewedBookings = new Set([...viewedBookings, booking._id]);
+    setViewedBookings(newViewedBookings);
+    localStorage.setItem('viewedBookings', JSON.stringify([...newViewedBookings]));
+
     setSelectedBooking(booking);
     setShowModal(true);
   };
@@ -382,7 +436,7 @@ const Bookings = () => {
               <CheckCircle className="w-6 h-6 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">ยืนยันแล้ว</p>
+              <p className="text-sm font-medium text-gray-600">จ่ายมัดจำแล้ว</p>
               <p className="text-2xl font-semibold text-gray-900">
                 {bookings.filter(booking => booking.payment_status === 'deposit-paid' && booking.payment_status).length}
               </p>
@@ -449,8 +503,8 @@ const Bookings = () => {
             >
               <option value="All">ทุกสถานะ</option>
               <option value="pending-deposit">รอดำเนินการ</option>
-              <option value="deposit-paid">ยืนยันแล้ว</option>
-              <option value="full-payment">เสร็จสิ้น</option>
+              <option value="deposit-paid">จ่ายมัดจำแล้ว</option>
+              <option value="full-payment">ชำระเต็มจำนวน</option>
               <option value="cancelled">ยกเลิก</option>
             </select>
           </div>
@@ -503,7 +557,10 @@ const Bookings = () => {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {filteredBookings.map((booking, index) => (
-                <tr key={booking._id} className="hover:bg-gray-50">
+                <tr
+                  key={booking._id}
+                  className={`hover:bg-gray-50 ${viewedBookings.has(booking._id) ? 'bg-gray-50' : 'bg-green-50'}`}
+                >
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{booking.bookingCode || booking._id}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{booking.customer?.name || booking.customer || 'ไม่ระบุ'}</div>
@@ -540,8 +597,8 @@ const Bookings = () => {
                       className={`text-xs font-semibold rounded-full px-2 py-1 ${getStatusColor(booking.payment_status || 'pending-deposit')} border-0 focus:ring-2 focus:ring-blue-500`}
                     >
                       <option value="pending-deposit">รอดำเนินการ</option>
-                      <option value="deposit-paid">ยืนยันแล้ว</option>
-                      <option value="full-payment">เสร็จสิ้น</option>
+                      <option value="deposit-paid">จ่ายมัดจำแล้ว</option>
+                      <option value="full-payment">ชำระเต็มจำนวน</option>
                       <option value="cancelled">ยกเลิก</option>
                     </select>
                   </td>
@@ -757,8 +814,8 @@ const Bookings = () => {
                     <span className="font-medium w-32 text-gray-600">สถานะการชำระเงิน:</span>
                     <span className={`text-xs font-semibold rounded-full px-2 py-1 ${getStatusColor(selectedBooking.payment_status || 'pending-deposit')}`}>
                       {selectedBooking.payment_status === 'pending-deposit' ? 'รอดำเนินการ' :
-                        selectedBooking.payment_status === 'deposit-paid' ? 'ชำระเงินแล้ว' :
-                          selectedBooking.payment_status === 'full-payment' ? 'ชำระเงินครบถ้วน' :
+                        selectedBooking.payment_status === 'deposit-paid' ? 'จ่ายมัดจำแล้ว' :
+                          selectedBooking.payment_status === 'full-payment' ? 'ชำระเต็มจำนวน' :
                             selectedBooking.payment_status === 'cancelled' ? 'ยกเลิก' : 'ไม่ทราบ'}
                     </span>
                   </div>
@@ -766,29 +823,47 @@ const Bookings = () => {
                     <div>
                       <span className="font-medium text-gray-600 block mb-2">ประวัติการชำระเงิน:</span>
                       <div className="space-y-2">
-                        {selectedBooking.payments.map((payment, index) => (
-                          <div key={index} className="flex text-sm">
-                            <div className="w-32 text-gray-600">
-                              {new Date(payment.payment_date).toLocaleDateString()}:
-                            </div>
-                            <div className="text-gray-800">
-                              ฿{typeof payment.amount === 'object' ? payment.amount.$numberDecimal : payment.amount || 0} ({payment.payment_type})
-                              {payment.slip_image && (
-                                <div className="mt-1">
-                                  <a href={payment.slip_image} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">
-                                    ดูหลักฐานการชำระเงิน
-                                  </a>
+                        {selectedBooking.payments.map((payment, index) => {
+                          // Check if payment amount matches required deposit
+                          const requiredAmount = typeof selectedBooking.deposit_required === 'object'
+                            ? parseFloat(selectedBooking.deposit_required.$numberDecimal)
+                            : parseFloat(selectedBooking.deposit_required || 0);
+                          const paymentAmount = typeof payment.amount === 'object'
+                            ? parseFloat(payment.amount.$numberDecimal)
+                            : parseFloat(payment.amount || 0);
+                          const isAmountCorrect = payment.payment_type === 'deposit'
+                            ? paymentAmount >= requiredAmount
+                            : true; // For non-deposit payments, we don't verify amount
 
-                                  <img
-                                    src={`http://localhost:8080${payment.slip_image}`}
-                                    alt={payment.name}
-                                    className="rounded-md object-cover w-3xl"
-                                  />
-                                </div>
-                              )}
+                          return (
+                            <div key={index} className="flex text-sm">
+                              <div className="w-32 text-gray-600">
+                                {new Date(payment.payment_date).toLocaleDateString()}:
+                              </div>
+                              <div className={`${!isAmountCorrect ? 'text-red-600' : 'text-gray-800'} ${payment.payment_type === 'deposit' && !isAmountCorrect ? 'bg-red-50 p-1 rounded' : ''}`}>
+                                ฿{typeof payment.amount === 'object' ? payment.amount.$numberDecimal : payment.amount || 0} ({payment.payment_type})
+                                {payment.payment_type === 'deposit' && !isAmountCorrect && (
+                                  <div className="text-xs text-red-600 mt-1">
+                                    * แจ้งเตือน: ชำระ ฿{paymentAmount} แต่ต้องชำระ ฿{requiredAmount}
+                                  </div>
+                                )}
+                                {payment.slip_image && (
+                                  <div className="mt-1">
+                                    <a href={payment.slip_image} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">
+                                      ดูหลักฐานการชำระเงิน
+                                    </a>
+
+                                    <img
+                                      src={`http://localhost:8080${payment.slip_image}`}
+                                      alt={payment.name}
+                                      className="rounded-md object-cover w-3xl"
+                                    />
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}

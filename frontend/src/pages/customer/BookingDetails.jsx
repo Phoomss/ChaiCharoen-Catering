@@ -608,7 +608,17 @@ const BookingDetails = () => {
                                             ยกเลิกการจอง
                                         </button>
                                         <button
-                                            onClick={() => document.getElementById('paymentModal').showModal()}
+                                            onClick={() => {
+                                                // Set the default payment type to 'deposit' and set the deposit amount
+                                                setPaymentType('deposit');
+                                                if (booking.deposit_required) {
+                                                    const depositAmount = typeof booking.deposit_required === 'object'
+                                                        ? parseFloat(booking.deposit_required.$numberDecimal)
+                                                        : parseFloat(booking.deposit_required);
+                                                    setPaymentAmount(depositAmount);
+                                                }
+                                                document.getElementById('paymentModal').showModal();
+                                            }}
                                             className="btn w-full bg-blue-600 text-white hover:bg-blue-700">
                                             แจ้งชำระเงิน
                                         </button>
@@ -639,7 +649,7 @@ const BookingDetails = () => {
                                     </div>
                                 </div>
 
-                                <form className="py-4 space-y-4">
+                                <form className="py-4 space-y-4" onSubmit={(e) => { e.preventDefault(); submitPayment(); }}>
                                     <div>
                                         <label className="label text-green-700 font-medium">ประเภทการชำระเงิน</label>
                                         <select
@@ -700,6 +710,7 @@ const BookingDetails = () => {
                                         className="btn bg-green-600 text-white hover:bg-green-700"
                                         onClick={submitPayment}
                                         disabled={!paymentAmount || !selectedFile}
+                                        type='submit'
                                     >
                                         ยืนยันการแจ้งชำระเงิน
                                     </button>

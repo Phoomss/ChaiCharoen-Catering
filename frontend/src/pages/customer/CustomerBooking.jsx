@@ -10,16 +10,14 @@ import Swal from 'sweetalert2';
 
 const CustomerBooking = () => {
     // CalendarView Component
-    const CalendarView = ({ dateAvailability, maxBookingsPerDay, selectedDate, onDateSelect }) => {
+    const CalendarView = ({ dateAvailability, maxBookingsPerDay, selectedDate, onDateSelect, viewYear, viewMonth, setViewYear, setViewMonth }) => {
         const today = new Date();
-        const currentYear = today.getFullYear();
-        const currentMonth = today.getMonth();
 
         // Get days in month
-        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
 
         // Get first day of month (0 = Sunday, 1 = Monday, etc.)
-        const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+        const firstDayOfMonth = new Date(viewYear, viewMonth, 1).getDay();
 
         // Create day cells
         const days = [];
@@ -31,8 +29,8 @@ const CustomerBooking = () => {
 
         // Add cells for each day of the month
         for (let day = 1; day <= daysInMonth; day++) {
-            const date = new Date(currentYear, currentMonth, day);
-            const dateStr = date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+            const date = new Date(viewYear, viewMonth, day);
+            const dateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`; // Format: YYYY-MM-DD
             const bookingCount = dateAvailability[dateStr] || 0;
 
             let bgColor = 'bg-gray-100'; // Default for past dates
@@ -82,10 +80,46 @@ const CustomerBooking = () => {
 
         return (
             <div className="max-w-md mx-auto">
-                <div className="text-center mb-4">
+                <div className="flex justify-between items-center mb-4">
+                    <button
+                        onClick={() => {
+                            // Reset to current month
+                            const currentMonth = new Date();
+                            setViewYear(currentMonth.getFullYear());
+                            setViewMonth(currentMonth.getMonth());
+                        }}
+                        className="px-3 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 text-sm"
+                        title="กลับไปเดือนปัจจุบัน"
+                    >
+                        ปัจจุบัน
+                    </button>
+                    <button
+                        onClick={() => {
+                            const prevMonth = new Date(viewYear, viewMonth - 1, 1);
+                            setViewYear(prevMonth.getFullYear());
+                            setViewMonth(prevMonth.getMonth());
+                        }}
+                        className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
                     <h4 className="text-lg font-semibold">
-                        {new Date(currentYear, currentMonth).toLocaleDateString('th-TH', { month: 'long', year: 'numeric' })}
+                        {new Date(viewYear, viewMonth).toLocaleDateString('th-TH', { month: 'long', year: 'numeric' })}
                     </h4>
+                    <button
+                        onClick={() => {
+                            const nextMonth = new Date(viewYear, viewMonth + 1, 1);
+                            setViewYear(nextMonth.getFullYear());
+                            setViewMonth(nextMonth.getMonth());
+                        }}
+                        className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
                 </div>
 
                 <div className="grid grid-cols-7 gap-1 mb-2">
@@ -105,6 +139,9 @@ const CustomerBooking = () => {
 
     const navigate = useNavigate();
     const location = useLocation();
+    const today = new Date();
+    const [viewYear, setViewYear] = useState(today.getFullYear());
+    const [viewMonth, setViewMonth] = useState(today.getMonth());
     const [bookingData, setBookingData] = useState({
         customer: {
             name: '',
@@ -327,7 +364,7 @@ const CustomerBooking = () => {
 
         // Convert the datetime string to just the date part (YYYY-MM-DD)
         const date = new Date(dateString);
-        const dateKey = date.toISOString().split('T')[0];
+        const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
         const currentBookings = dateAvailability[dateKey] || 0;
         return currentBookings < maxBookingsPerDay;
@@ -555,6 +592,10 @@ const CustomerBooking = () => {
                                             event_datetime: formattedDate
                                         }));
                                     }}
+                                    viewYear={viewYear}
+                                    viewMonth={viewMonth}
+                                    setViewYear={setViewYear}
+                                    setViewMonth={setViewMonth}
                                 />
                             </div>
                         </div>

@@ -208,9 +208,13 @@ exports.getDateAvailability = async (req, res) => {
     // นับจำนวน booking ต่อวัน
     const dateCounts = {};
     bookings.forEach(booking => {
-      const eventDate = new Date(booking.event_datetime);
-      // แปลงเป็นรูปแบบ YYYY-MM-DD เพื่อให้นับตามวันที่ ไม่สนใจเวลา
-      const dateKey = eventDate.toISOString().split('T')[0];
+      // แปลงวันที่และเวลาเป็นวันที่ตามเขตเวลาท้องถิ่นของประเทศไทย (UTC+7)
+      const eventDateTime = new Date(booking.event_datetime);
+
+      // ใช้ toLocaleDateString เพื่อแปลงเป็นวันที่ตามเขตเวลาที่ระบุ
+      // ซึ่งจะแปลงเวลา UTC เป็นเวลาท้องถิ่นของประเทศไทย
+      const dateKey = eventDateTime.toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
+
       if (dateCounts[dateKey]) {
         dateCounts[dateKey]++;
       } else {

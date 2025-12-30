@@ -17,7 +17,7 @@ import UserManagement from './pages/admin/Users'
 import MenuManagement from './pages/admin/MenuManagement'
 import Categories from './pages/admin/Categories'
 import Bookings from './pages/admin/Bookings'
-import Chefs from './pages/admin/Chefs'
+import UserPermissionManagement from './pages/admin/UserPermissionManagement';
 import MenuPackages from './pages/admin/MenuPackages'
 import MyProfile from './pages/admin/MyProfile'
 
@@ -50,7 +50,7 @@ const App = () => {
           <Route path="/admin/categories" element={<Categories />} />
           <Route path="/admin/bookings" element={<Bookings />} />
           <Route path="/admin/customers" element={<UserManagement />} />
-          <Route path="/admin/chefs" element={<Chefs />} />
+          <Route path="/admin/chefs" element={<UserPermissionManagement />} />
           <Route path="/admin/menu-packages" element={<MenuPackages />} />
           <Route path="/admin/profile" element={<MyProfile />} />
         </Route>

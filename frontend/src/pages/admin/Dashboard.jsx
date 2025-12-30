@@ -15,9 +15,14 @@ const Dashboard = () => {
     monthlyRevenue: []
   });
   const [recentBookings, setRecentBookings] = useState([]);
+  const [dateAvailability, setDateAvailability] = useState({});
+  const [maxBookingsPerDay] = useState(2); // Maximum 2 bookings per day
   const [loading, setLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [viewMonth, setViewMonth] = useState(new Date().getMonth());
+  const [viewYear, setViewYear] = useState(new Date().getFullYear());
+  const today = new Date();
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -60,7 +65,16 @@ const Dashboard = () => {
       }
     };
 
-    fetchDashboardData();
+    const fetchDateAvailability = async () => {
+      try {
+        const response = await bookingService.getDateAvailability();
+        setDateAvailability(response.data.data);
+      } catch (error) {
+        console.error('Error fetching date availability:', error);
+      }
+    };
+
+    Promise.all([fetchDashboardData(), fetchDateAvailability()]);
   }, []);
 
   // Map status to appropriate display text and color
@@ -160,7 +174,7 @@ const Dashboard = () => {
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">แดชบอร์ดแอดมิน</h1>
+          <h1 className="text-2xl font-bold text-gray-800">แดชบอร์ดผู้ดูแลระบบ</h1>
           <p className="text-gray-600">ภาพรวมสถานะธุรกิจโต๊ะจีน ชัยเจริญโภชนา</p>
         </div>
         <div className="mt-4 md:mt-0">
@@ -203,83 +217,167 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Monthly Revenue Chart */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">รายได้รายเดือน (ปีนี้)</h3>
-          <div className="h-64 flex items-end space-x-2">
-            {statsData.monthlyRevenue.map((month, index) => (
-              <div key={index} className="flex flex-col items-center flex-1">
-                <div className="text-xs text-gray-600 mb-1">{month.month}</div>
-                <div
-                  className="w-full bg-gradient-to-t from-green-500 to-green-400 rounded-t-lg"
-                  style={{ height: `${(month.revenue / 250000) * 100}%` }}
-                ></div>
-                <div className="text-xs mt-1">฿{(month.revenue/1000).toFixed(0)}K</div>
-              </div>
-            ))}
+      {/* Calendar View Section */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-800">ปฏิทินการจองโต๊ะจีน</h3>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => {
+                // Reset to current month
+                const currentMonth = new Date();
+                setViewMonth(currentMonth.getMonth());
+                setViewYear(currentMonth.getFullYear());
+              }}
+              className="px-3 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 text-sm"
+              title="กลับไปเดือนปัจจุบัน"
+            >
+              ปัจจุบัน
+            </button>
+            <button
+              onClick={() => {
+                const prevMonth = new Date(viewYear, viewMonth - 1, 1);
+                setViewMonth(prevMonth.getMonth());
+                setViewYear(prevMonth.getFullYear());
+              }}
+              className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <span className="text-lg font-medium text-gray-700">
+              {new Date(viewYear, viewMonth).toLocaleDateString('th-TH', { month: 'long', year: 'numeric' })}
+            </span>
+            <button
+              onClick={() => {
+                const nextMonth = new Date(viewYear, viewMonth + 1, 1);
+                setViewMonth(nextMonth.getMonth());
+                setViewYear(nextMonth.getFullYear());
+              }}
+              className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
           </div>
         </div>
 
-        {/* Booking Status Distribution */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">สถานะการจอง</h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
-                <span className="text-sm text-gray-600">รอยืนยัน</span>
+        <div className="bg-gray-50 rounded-lg p-4">
+          <div className="grid grid-cols-7 gap-1 mb-2">
+            {['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'].map((day, index) => (
+              <div key={index} className="text-center text-xs font-medium text-gray-500 py-2">
+                {day}
               </div>
-              <span className="text-sm font-medium">{statsData.pendingBookings}</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-yellow-500 h-2 rounded-full"
-                style={{ width: `${(statsData.pendingBookings / Math.max(statsData.totalBookings, 1)) * 100}%` }}
-              ></div>
-            </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-7 gap-1">
+            {(() => {
+              const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+              const firstDayOfMonth = new Date(viewYear, viewMonth, 1).getDay();
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                <span className="text-sm text-gray-600">จ่ายมัดจำแล้ว</span>
-              </div>
-              <span className="text-sm font-medium">{statsData.depositPaidBookings}</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-blue-500 h-2 rounded-full"
-                style={{ width: `${(statsData.depositPaidBookings / Math.max(statsData.totalBookings, 1)) * 100}%` }}
-              ></div>
-            </div>
+              const days = [];
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                <span className="text-sm text-gray-600">ชำระเต็มจำนวน</span>
-              </div>
-              <span className="text-sm font-medium">{statsData.fullPaymentBookings}</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-green-500 h-2 rounded-full"
-                style={{ width: `${(statsData.fullPaymentBookings / Math.max(statsData.totalBookings, 1)) * 100}%` }}
-              ></div>
-            </div>
+              // Add empty cells for days before the first day of the month
+              for (let i = 0; i < firstDayOfMonth; i++) {
+                days.push(<div key={`empty-${i}`} className="p-2 text-center text-gray-300 text-sm"></div>);
+              }
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-                <span className="text-sm text-gray-600">ยกเลิก</span>
+              // Add cells for each day of the month
+              for (let day = 1; day <= daysInMonth; day++) {
+                // Create date in Thailand timezone for consistency with backend
+                const date = new Date(viewYear, viewMonth, day);
+                const dateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const bookingCount = dateAvailability[dateStr] || 0;
+
+                let bgColor = 'bg-gray-100'; // Default for past dates
+                let textColor = 'text-gray-400';
+                let isDisabled = true;
+                let statusText = 'ยังไม่มีการจอง';
+
+                // Check if this date is today or in the future
+                // Create today's date in the same format for comparison
+                const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                const currentDate = new Date(viewYear, viewMonth, day);
+
+                if (currentDate >= todayDate) {
+                  if (bookingCount === 0) {
+                    bgColor = 'bg-green-500'; // Available
+                    textColor = 'text-white';
+                    isDisabled = false;
+                    statusText = 'ยังไม่มีการจอง';
+                  } else if (bookingCount === 1) {
+                    bgColor = 'bg-yellow-500'; // 1 booking
+                    textColor = 'text-white';
+                    isDisabled = false;
+                    statusText = 'จองแล้ว';
+                  } else if (bookingCount >= maxBookingsPerDay) {
+                    bgColor = 'bg-red-500'; // Fully booked
+                    textColor = 'text-white';
+                    isDisabled = true;
+                    statusText = 'จองเต็ม';
+                  }
+                } else {
+                  // Past date
+                  statusText = 'วันที่ผ่านมา';
+                }
+
+                const isToday = day === today.getDate() && viewMonth === today.getMonth() && viewYear === today.getFullYear();
+
+                days.push(
+                  <div
+                    key={day}
+                    className={`
+                      p-2 text-center rounded-lg transition-colors
+                      ${isDisabled ? 'opacity-50' : 'cursor-pointer hover:opacity-75'}
+                      ${bgColor} ${textColor}
+                      flex flex-col items-center justify-center
+                      min-h-20
+                      ${isToday ? 'ring-2 ring-blue-500' : ''}
+                    `}
+                    title={statusText}
+                  >
+                    <div className="text-lg font-bold">{day}</div>
+                    <div className="text-xs mt-1">
+                      {bookingCount > 0 ? `${bookingCount} งาน` : 'ว่าง'}
+                    </div>
+                    <div className="text-xs mt-1">
+                      {statusText}
+                    </div>
+                  </div>
+                );
+              }
+
+              return days;
+            })()}
+          </div>
+
+          {/* Calendar Legend */}
+          <div className="flex flex-wrap justify-center gap-6 mb-4 p-4 bg-green-50 rounded-lg border border-green-200">
+            <div className="flex items-center">
+              <div className="w-6 h-6 bg-green-500 rounded mr-2 flex items-center justify-center">
+                <span className="text-xs text-white">0</span>
               </div>
-              <span className="text-sm font-medium">{statsData.cancelledBookings}</span>
+              <span>ยังไม่มีการจอง</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-red-500 h-2 rounded-full"
-                style={{ width: `${(statsData.cancelledBookings / Math.max(statsData.totalBookings, 1)) * 100}%` }}
-              ></div>
+            <div className="flex items-center">
+              <div className="w-6 h-6 bg-yellow-500 rounded mr-2 flex items-center justify-center">
+                <span className="text-xs text-white">1</span>
+              </div>
+              <span>จองแล้ว 1 งาน</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-6 h-6 bg-red-500 rounded mr-2 flex items-center justify-center">
+                <span className="text-xs text-white">2</span>
+              </div>
+              <span>จองเต็ม (2 งาน)</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-6 h-6 bg-gray-300 rounded mr-2 flex items-center justify-center">
+                <span className="text-xs text-white">X</span>
+              </div>
+              <span>วันที่ผ่านมา</span>
             </div>
           </div>
         </div>
