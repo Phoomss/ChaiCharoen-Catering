@@ -623,36 +623,81 @@ const CustomerBooking = () => {
                                 </div>
 
                                 <div>
-                                    <label className="label text-green-700 font-medium">เลือกรายการอาหาร</label>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto p-2 border rounded">
-                                        {allMenus.map(menu => {
-                                            const isSelected = selectedMenuSets.some(selected => selected.menu_name === menu.name);
+                                    <label className="label text-green-700 font-medium">เลือกรายการอาหารตามหมวดหมู่ (เลือกได้ 1-2 อย่างต่อหมวด)</label>
+                                    {/* Group menus by category */}
+                                    {(() => {
+                                        // Group all menus by category
+                                        const menusByCategory = {};
+                                        allMenus.forEach(menu => {
+                                            if (!menusByCategory[menu.category]) {
+                                                menusByCategory[menu.category] = [];
+                                            }
+                                            menusByCategory[menu.category].push(menu);
+                                        });
+
+                                        // Category names mapping
+                                        const categoryNames = {
+                                            appetizer: "ของกินเล่น",
+                                            maincourse: "อาหารจานหลัก",
+                                            carb: "ข้าว/เส้น",
+                                            soup: "ซุป",
+                                            dessert: "ของหวาน"
+                                        };
+
+                                        return Object.entries(menusByCategory).map(([category, categoryMenus]) => {
+                                            // Count how many items from this category are currently selected
+                                            const selectedCount = selectedMenuSets.filter(selected =>
+                                                categoryMenus.some(menu => menu.name === selected.menu_name)
+                                            ).length;
+
                                             return (
-                                                <div
-                                                    key={menu._id}
-                                                    className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                                                        isSelected
-                                                            ? 'bg-green-100 border-green-500'
-                                                            : selectedMenuSets.length >= 10 && !isSelected
-                                                                ? 'bg-gray-100 opacity-50 cursor-not-allowed'
-                                                                : 'bg-white hover:bg-gray-50 border-gray-200'
-                                                    }`}
-                                                    onClick={() => !isSelected && selectedMenuSets.length < 10 && addToSelectedMenu(menu)}
-                                                >
-                                                    <div className="flex justify-between items-start">
-                                                        <div>
-                                                            <h4 className="font-medium text-gray-800">{menu.name}</h4>
-                                                            <p className="text-sm text-gray-600">{menu.description}</p>
-                                                            <span className="text-xs text-gray-500">{menu.category}</span>
-                                                        </div>
-                                                        <span className="badge badge-outline">{typeof (menu.packagePrice || menu.price) === 'object'
-                                                            ? (menu.packagePrice || menu.price).$numberDecimal
-                                                            : (menu.packagePrice || menu.price)} บาท</span>
+                                                <div key={category} className="mb-6">
+                                                    <h4 className="font-semibold text-green-700 mb-3 border-b pb-1">
+                                                        {categoryNames[category] || category}
+                                                        <span className="text-sm text-gray-500 ml-2">
+                                                            (เลือกได้ {selectedCount}/2 อย่าง)
+                                                        </span>
+                                                    </h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto p-2 border rounded">
+                                                        {categoryMenus.map(menu => {
+                                                            const isSelected = selectedMenuSets.some(selected => selected.menu_name === menu.name);
+                                                            // Check if this category has reached the limit of 2 selections
+                                                            const isCategoryLimitReached = selectedCount >= 2 && !isSelected;
+
+                                                            return (
+                                                                <div
+                                                                    key={menu._id}
+                                                                    className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                                                                        isSelected
+                                                                            ? 'bg-green-100 border-green-500'
+                                                                            : isCategoryLimitReached || selectedMenuSets.length >= 10
+                                                                                ? 'bg-gray-100 opacity-50 cursor-not-allowed'
+                                                                                : 'bg-white hover:bg-gray-50 border-gray-200'
+                                                                    }`}
+                                                                    onClick={() => {
+                                                                        if (!isSelected && selectedMenuSets.length < 10 && !isCategoryLimitReached) {
+                                                                            addToSelectedMenu(menu);
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    <div className="flex justify-between items-start">
+                                                                        <div>
+                                                                            <h4 className="font-medium text-gray-800">{menu.name}</h4>
+                                                                            <p className="text-sm text-gray-600">{menu.description}</p>
+                                                                            <span className="text-xs text-gray-500">{categoryNames[menu.category] || menu.category}</span>
+                                                                        </div>
+                                                                        <span className="badge badge-outline">{typeof (menu.packagePrice || menu.price) === 'object'
+                                                                            ? (menu.packagePrice || menu.price).$numberDecimal
+                                                                            : (menu.packagePrice || menu.price)} บาท</span>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
                                                     </div>
                                                 </div>
                                             );
-                                        })}
-                                    </div>
+                                        });
+                                    })()}
                                 </div>
                             </div>
                         )}

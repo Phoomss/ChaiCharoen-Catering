@@ -93,21 +93,22 @@ const MapPicker = ({ onLocationSelect, initialAddress = '', initialLat = null, i
 
   return (
     <div className="w-full">
+      {/* Location name input field first */}
       <div className="mb-4">
+        <input
+          type="text"
+          placeholder="ชื่อสถานที่จัดงาน"
+          className="w-full input input-bordered border-green-200 map-search-input mb-2"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          onKeyPress={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleSearch(e.target.value);
+            }
+          }}
+        />
         <div className="flex gap-2">
-          <input
-            type="text"
-            placeholder="ค้นหาสถานที่..."
-            className="flex-grow input input-bordered border-green-200 map-search-input"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                handleSearch(e.target.value);
-              }
-            }}
-          />
           <button
             type="button"
             onClick={() => {
@@ -120,6 +121,7 @@ const MapPicker = ({ onLocationSelect, initialAddress = '', initialLat = null, i
         </div>
       </div>
 
+      {/* Then the map */}
       {isLoaded ? (
         <GoogleMap
           mapContainerStyle={containerStyle}

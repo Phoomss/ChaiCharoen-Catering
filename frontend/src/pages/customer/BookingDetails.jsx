@@ -655,26 +655,30 @@ const BookingDetails = () => {
 
                                     <div>
                                         <label className="label text-green-700 font-medium">จำนวนเงิน (บาท)</label>
-                                        <input
-                                            type="number"
-                                            className={`input ${paymentType === 'deposit' ? 'input-disabled' : 'input-bordered'} w-full bg-white border-green-200`}
-                                            value={paymentAmount}
-                                            onChange={(e) => {
-                                                // Only allow manual input if not deposit type
-                                                if (paymentType !== 'deposit') {
-                                                    setPaymentAmount(e.target.value);
-                                                }
-                                            }}
-                                            placeholder={paymentType === 'deposit' ? "จำนวนมัดจำที่ต้องชำระ" : "ระบุจำนวนเงิน"}
-                                            disabled={paymentType === 'deposit'}
-                                        />
-                                        {paymentType === 'deposit' && booking.deposit_required && (
-                                            <p className="text-sm text-green-700 mt-1 font-medium">
-                                                จำนวนมัดจำที่ต้องชำระ: {typeof booking.deposit_required === 'object'
-                                                    ? parseFloat(booking.deposit_required.$numberDecimal).toLocaleString()
-                                                    : parseFloat(booking.deposit_required).toLocaleString()} บาท
-                                            </p>
-                                        )}
+                                        <div className="relative">
+                                            <input
+                                                type="number"
+                                                className={`input ${paymentType === 'deposit' ? 'input-bordered' : 'input-bordered'} w-full bg-white border-green-200`}
+                                                value={paymentAmount}
+                                                onChange={(e) => {
+                                                    // Only allow manual input if not deposit type
+                                                    if (paymentType !== 'deposit') {
+                                                        setPaymentAmount(e.target.value);
+                                                    }
+                                                }}
+                                                placeholder={paymentType === 'deposit' ? "จำนวนมัดจำที่ต้องชำระ" : "ระบุจำนวนเงิน"}
+                                                disabled={paymentType === 'deposit'}
+                                            />
+                                            {paymentType === 'deposit' && booking.deposit_required && (
+                                                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                                    <span className="text-green-600 font-semibold">
+                                                        {typeof booking.deposit_required === 'object'
+                                                            ? parseFloat(booking.deposit_required.$numberDecimal).toLocaleString()
+                                                            : parseFloat(booking.deposit_required).toLocaleString()} บาท
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
 
                                     <div>
