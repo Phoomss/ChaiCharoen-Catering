@@ -137,12 +137,12 @@ const Header = ({ setSidebarOpen }) => {
   };
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
+    <header className="bg-white shadow-sm border-b border-green-200">
       <div className="flex items-center justify-between h-16 px-4 sm:px-6">
         <div className="flex items-center">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 rounded-md hover:bg-gray-100 mr-2"
+            className="lg:hidden p-2 rounded-md hover:bg-green-100 mr-2"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -153,10 +153,10 @@ const Header = ({ setSidebarOpen }) => {
           {/* Profile */}
           <div className="relative" ref={profileRef}>
             <div
-              className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 rounded-lg p-2"
+              className="flex items-center space-x-2 cursor-pointer hover:bg-green-100 rounded-lg p-2"
               onClick={() => setShowProfileMenu(!showProfileMenu)}
             >
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-sm">
+              <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-medium text-sm">
                 {user ? user.firstName?.charAt(0) || user.username?.charAt(0) || 'A' : 'A'}
               </div>
               <div className="hidden sm:block">
@@ -172,8 +172,8 @@ const Header = ({ setSidebarOpen }) => {
 
             {/* Profile dropdown menu */}
             {showProfileMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                <div className="p-4 border-b border-gray-200">
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-green-200 z-50">
+                <div className="p-4 border-b border-green-200">
                   <p className="font-medium text-gray-800">
                     {user ? `${user.title}${user.firstName} ${user.lastName}` : 'Admin User'}
                   </p>
@@ -184,17 +184,17 @@ const Header = ({ setSidebarOpen }) => {
                 <div className="py-1">
                   <Link
                     to="/admin/profile"
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center block"
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-100 flex items-center block"
                     onClick={() => setShowProfileMenu(false)}
                   >
                     <User className="w-4 h-4 mr-2" />
                     โปรไฟล์ของฉัน
                   </Link>
                 </div>
-                <div className="border-t border-gray-200 py-1">
+                <div className="border-t border-green-200 py-1">
                   <button
                     onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center"
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-green-100 flex items-center"
                   >
                     <LogOut className="w-4 h-4 mr-2" />
                     ออกจากระบบ

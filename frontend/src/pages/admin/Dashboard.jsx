@@ -187,7 +187,7 @@ const Dashboard = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {statsCards.map((stat, index) => (
-          <div key={index} className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+          <div key={index} className="bg-white rounded-xl shadow-sm p-6 border border-green-200">
             <div className={`w-12 h-12 rounded-lg bg-gradient-to-r ${
               stat.color === 'blue' ? 'from-blue-500 to-blue-600' :
               stat.color === 'green' ? 'from-green-500 to-green-600' :
@@ -218,7 +218,7 @@ const Dashboard = () => {
       </div>
 
       {/* Calendar View Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-green-200 p-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-gray-800">ปฏิทินการจองโต๊ะจีน</h3>
           <div className="flex items-center space-x-2">
@@ -240,7 +240,7 @@ const Dashboard = () => {
                 setViewMonth(prevMonth.getMonth());
                 setViewYear(prevMonth.getFullYear());
               }}
-              className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
+              className="p-2 rounded-lg bg-green-100 hover:bg-green-200"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -255,7 +255,7 @@ const Dashboard = () => {
                 setViewMonth(nextMonth.getMonth());
                 setViewYear(nextMonth.getFullYear());
               }}
-              className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
+              className="p-2 rounded-lg bg-green-100 hover:bg-green-200"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -264,7 +264,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="bg-gray-50 rounded-lg p-4">
+        <div className="bg-green-50 rounded-lg p-4">
           <div className="grid grid-cols-7 gap-1 mb-2">
             {['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'].map((day, index) => (
               <div key={index} className="text-center text-xs font-medium text-gray-500 py-2">
@@ -384,8 +384,8 @@ const Dashboard = () => {
       </div>
 
       {/* Recent Bookings Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
+      <div className="bg-white rounded-xl shadow-sm border border-green-200">
+        <div className="px-6 py-4 border-b border-green-200">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-800">การจองล่าสุด</h3>
             <Link to="/admin/bookings" className="btn btn-sm bg-green-600 text-white hover:bg-green-700">
@@ -397,7 +397,7 @@ const Dashboard = () => {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-200 bg-gray-50">
+              <tr className="border-b border-green-200 bg-green-50">
                 <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider">ID การจอง</th>
                 <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider">ลูกค้า</th>
                 <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider">ชุดโต๊ะจีน</th>
@@ -408,9 +408,9 @@ const Dashboard = () => {
                 <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider">การดำเนินการ</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-green-200">
               {recentBookings.map((booking) => (
-                <tr key={booking.id} className="hover:bg-gray-50">
+                <tr key={booking.id} className="hover:bg-green-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{booking.bookingCode}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{booking.customer}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{booking.package}</td>
@@ -426,12 +426,12 @@ const Dashboard = () => {
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => viewBookingDetails(booking)}
-                        className="p-1 hover:bg-gray-100 rounded text-blue-600"
+                        className="p-1 hover:bg-green-100 rounded text-blue-600"
                         type="button"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
-                      {/* <Link to={`/admin/bookings/${booking.id}/edit`} className="p-1 hover:bg-gray-100 rounded text-yellow-600">
+                      {/* <Link to={`/admin/bookings/${booking.id}/edit`} className="p-1 hover:bg-green-100 rounded text-yellow-600">
                         <Edit className="w-4 h-4" />
                       </Link> */}
                     </div>
@@ -445,19 +445,19 @@ const Dashboard = () => {
 
       {/* Quick Stats Bottom */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-green-200 p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-2">ลูกค้าใหม่ (เดือนนี้)</h3>
           <div className="text-3xl font-bold text-green-600">{statsData.newUsersThisMonth}</div>
           <div className="text-sm text-gray-600 mt-1">- จากเดือนที่แล้ว</div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-green-200 p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-2">การจองใหม่ (สัปดาห์นี้)</h3>
           <div className="text-3xl font-bold text-blue-600">{statsData.newBookingsThisWeek}</div>
           <div className="text-sm text-gray-600 mt-1">- จากสัปดาห์ที่แล้ว</div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-green-200 p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-2">อัตราการสำเร็จ</h3>
           <div className="text-3xl font-bold text-purple-600">{statsData.successRate}%</div>
           <div className="text-sm text-gray-600 mt-1">- จากเดือนที่แล้ว</div>
