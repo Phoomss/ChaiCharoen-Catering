@@ -772,7 +772,37 @@ const CustomerBooking = () => {
                                             }
                                         ] : [];
 
-                                        // Group all menus by category
+                                        // Get all menus from packages with prices <= selected package price (lower than or equal to)
+                                        // This includes the selected package's menus AND menus from packages with prices < X
+                                        // Use the existing currentPackage variable defined above
+                                        const currentPackagePrice = currentPackage ?
+                                            (typeof currentPackage.price === 'object' ?
+                                                parseFloat(currentPackage.price.$numberDecimal) :
+                                                parseFloat(currentPackage.price)) : 0;
+
+                                        // Get all menus from packages with prices <= current package price
+                                        const eligibleMenus = new Set();
+                                        menuPackages.forEach(pkg => {
+                                            const pkgPrice = typeof pkg.price === 'object' ?
+                                                parseFloat(pkg.price.$numberDecimal) :
+                                                parseFloat(pkg.price);
+
+                                            if (pkgPrice <= currentPackagePrice) {
+                                                if (pkg.menus && pkg.menus.length > 0) {
+                                                    pkg.menus.forEach(menu => {
+                                                        const menuId = typeof menu === 'object' ? menu._id : menu;
+                                                        eligibleMenus.add(menuId);
+                                                    });
+                                                }
+                                            }
+                                        });
+
+                                        // Filter allMenus to only include eligible menus
+                                        const filteredMenus = allMenus.filter(menu =>
+                                            eligibleMenus.has(menu._id)
+                                        );
+
+                                        // Group eligible menus by category
                                         const menusByCategory = {};
 
                                         // Add special menu items first if in special range
@@ -780,7 +810,7 @@ const CustomerBooking = () => {
                                             menusByCategory.special = specialMenuItems;
                                         }
 
-                                        allMenus.forEach(menu => {
+                                        filteredMenus.forEach(menu => {
                                             if (!menusByCategory[menu.category]) {
                                                 menusByCategory[menu.category] = [];
                                             }
