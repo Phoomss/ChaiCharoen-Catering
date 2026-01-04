@@ -319,7 +319,7 @@ const CustomerBooking = () => {
             (typeof currentPackage.price === 'object' ?
                 parseFloat(currentPackage.price.$numberDecimal) :
                 parseFloat(currentPackage.price)) : 0;
-        const maxSelections = (packagePrice >= 3000 && packagePrice <= 3500) ? 11 : 10;
+        const maxSelections = (packagePrice >= 3000 ) ? 11 : 10;
 
         if (selectedMenuSets.length >= maxSelections) {
             Swal.fire({
@@ -388,7 +388,7 @@ const CustomerBooking = () => {
             (typeof currentPackage.price === 'object' ?
                 parseFloat(currentPackage.price.$numberDecimal) :
                 parseFloat(currentPackage.price)) : 0;
-        const maxSelections = (packagePrice >= 3000 && packagePrice <= 3500) ? 11 : 10;
+        const maxSelections = (packagePrice >= 3000 ) ? 11 : 10;
 
         if (showMenuSelection && selectedMenuSets.length < 8) {
             Swal.fire({
@@ -658,7 +658,7 @@ const CustomerBooking = () => {
                                         (typeof currentPackage.price === 'object' ?
                                             parseFloat(currentPackage.price.$numberDecimal) :
                                             parseFloat(currentPackage.price)) : 0;
-                                    const maxSelections = (packagePrice >= 3000 && packagePrice <= 3500) ? 11 : 10;
+                                    const maxSelections = (packagePrice >= 3000 ) ? 11 : 10;
                                     return (
                                         <h3 className="text-lg font-semibold text-green-700 mb-4">เลือกรายการอาหาร ({selectedMenuSets.length}/{maxSelections})</h3>
                                     );
@@ -679,7 +679,7 @@ const CustomerBooking = () => {
                                                     (typeof currentPackage.price === 'object' ?
                                                         parseFloat(currentPackage.price.$numberDecimal) :
                                                         parseFloat(currentPackage.price)) : 0;
-                                                const isSpecialRange = packagePrice >= 3000 && packagePrice <= 3500;
+                                                const isSpecialRange = packagePrice >= 3000 ;
                                                 return isSpecialRange ? (
                                                     <span>สามารถเลือก <strong>8 อย่าง</strong> ได้ฟรี | สามารถเพิ่มได้สูงสุด <strong>อีก 2 อย่าง</strong> + <strong>เมนูพิเศษ 1 อย่าง</strong> (รวมทั้งหมด <strong>11 อย่าง</strong>)</span>
                                                 ) : (
@@ -724,7 +724,7 @@ const CustomerBooking = () => {
                                             (typeof currentPackage.price === 'object' ?
                                                 parseFloat(currentPackage.price.$numberDecimal) :
                                                 parseFloat(currentPackage.price)) : 0;
-                                        const isSpecialRange = packagePrice >= 3000 && packagePrice <= 3500;
+                                        const isSpecialRange = packagePrice >= 3000 ;
 
                                         // Special menu items for 3000-3500 range
                                         const specialMenuItems = isSpecialRange ? [

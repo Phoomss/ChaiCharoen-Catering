@@ -55,6 +55,33 @@ const MenuPackages = () => {
     }
   };
 
+  // Function to group menus by category
+  const groupMenusByCategory = (menus) => {
+    const grouped = {};
+
+    // Define category display names in Thai
+    const categoryNames = {
+      'appetizer': 'ของว่าง/ของกินเล่น',
+      'maincourse': 'อาหารจานหลัก',
+      'carb': 'ข้าว/เส้น',
+      'soup': 'ซุป',
+      'curry': 'แกง',
+      'dessert': 'ของหวาน'
+    };
+
+    menus.forEach(menu => {
+      const category = menu.category || 'other';
+      const categoryName = categoryNames[category] || category;
+
+      if (!grouped[categoryName]) {
+        grouped[categoryName] = [];
+      }
+      grouped[categoryName].push(menu);
+    });
+
+    return Object.entries(grouped);
+  };
+
 
   // Open modal for creating new package
   const openCreateModal = () => {
@@ -105,11 +132,28 @@ const MenuPackages = () => {
   const handleMenuSelect = (menuId) => {
     setFormData(prev => {
       const isSelected = prev.menus.includes(menuId);
-      const newMenus = isSelected
-        ? prev.menus.filter(id => id !== menuId)
-        : [...prev.menus, menuId];
 
-      return { ...prev, menus: newMenus };
+      // If menu is already selected, remove it
+      if (isSelected) {
+        const newMenus = prev.menus.filter(id => id !== menuId);
+        return { ...prev, menus: newMenus };
+      }
+      // If menu is not selected, check if we've reached the max selection limit
+      else if (prev.menus.length >= prev.maxSelect) {
+        // Show warning if trying to select more than allowed
+        Swal.fire({
+          icon: 'warning',
+          title: 'เลือกเมนูได้ถึงจำนวนสูงสุดแล้ว',
+          text: `คุณสามารถเลือกได้สูงสุด ${prev.maxSelect} เมนูเท่านั้น`,
+          confirmButtonColor: '#f59e0b'
+        });
+        return prev; // Don't add the menu
+      }
+      // Otherwise, add the menu
+      else {
+        const newMenus = [...prev.menus, menuId];
+        return { ...prev, menus: newMenus };
+      }
     });
   };
 
@@ -549,36 +593,48 @@ const MenuPackages = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      เมนูที่รวมอยู่
-                    </label>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-sm font-medium text-gray-700">
+                        เมนูที่รวมอยู่
+                      </label>
+                      <span className="text-sm text-gray-600">
+                        เลือกแล้ว: {formData.menus.length}/{formData.maxSelect}
+                      </span>
+                    </div>
                     <div className="border border-gray-300 rounded-lg max-h-60 overflow-y-auto">
                       {menus.length === 0 ? (
                         <div className="p-4 text-center text-gray-500">
                           ไม่มีรายการเมนู
                         </div>
                       ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2">
-                          {menus.map(menu => (
-                            <div
-                              key={menu._id}
-                              className={`flex items-center p-2 rounded cursor-pointer ${
-                                formData.menus.includes(menu._id)
-                                  ? 'bg-blue-100 border border-blue-300'
-                                  : 'hover:bg-gray-50 border border-gray-200'
-                              }`}
-                              onClick={() => handleMenuSelect(menu._id)}
-                            >
-                              <div className="flex items-center">
-                                <input
-                                  type="checkbox"
-                                  checked={formData.menus.includes(menu._id)}
-                                  readOnly
-                                  className="mr-2"
-                                />
-                                <span className="text-sm">{menu.code} {menu.name}</span>
+                        <div className="p-2">
+                          {/* Group menus by category */}
+                          {groupMenusByCategory(menus).map(([category, categoryMenus]) => (
+                            <div key={category} className="mb-3">
+                              <h5 className="font-semibold text-gray-800 mb-2 capitalize">{category}</h5>
+                              <div className="space-y-1">
+                                {categoryMenus.map(menu => (
+                                  <div
+                                    key={menu._id}
+                                    className={`flex items-center p-2 rounded cursor-pointer ${
+                                      formData.menus.includes(menu._id)
+                                        ? 'bg-blue-100 border border-blue-300'
+                                        : 'hover:bg-gray-50 border border-gray-200'
+                                    } ${formData.menus.length >= formData.maxSelect && !formData.menus.includes(menu._id) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    onClick={() => handleMenuSelect(menu._id)}
+                                  >
+                                    <div className="flex items-center">
+                                      <input
+                                        type="checkbox"
+                                        checked={formData.menus.includes(menu._id)}
+                                        readOnly
+                                        className="mr-2"
+                                      />
+                                      <span className="text-sm">{menu.code} {menu.name}</span>
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
-                              <span className="ml-auto text-xs text-gray-500">{formatPriceWithCurrency(menu.price)}</span>
                             </div>
                           ))}
                         </div>
