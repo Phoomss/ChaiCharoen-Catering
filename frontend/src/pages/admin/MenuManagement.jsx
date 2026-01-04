@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Search, Package, Utensils, X, Save } from 'lucide-react';
 import menuService from '../../services/MenuService';
 import Swal from 'sweetalert2';
-import { formatPriceWithCurrency } from '../../utils/priceUtils';
 
 const MenuManagement = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -20,8 +19,6 @@ const MenuManagement = () => {
     name: '',
     description: '',
     category: 'appetizer',
-    price: 0,
-    packagePrice: 0,
     image: '',
     tags: []
   });
@@ -170,8 +167,6 @@ const MenuManagement = () => {
           updateFormData.append('name', formData.name);
           updateFormData.append('description', formData.description);
           updateFormData.append('category', formData.category);
-          updateFormData.append('price', formData.price);
-          updateFormData.append('packagePrice', formData.packagePrice);
           updateFormData.append('image', imageFile);
           updateFormData.append('tags', JSON.stringify(formData.tags));
 
@@ -225,8 +220,6 @@ const MenuManagement = () => {
         name: '',
         description: '',
         category: 'appetizer',
-        price: 0,
-        packagePrice: 0,
         image: '',
         tags: []
       });
@@ -460,7 +453,6 @@ const MenuManagement = () => {
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">รหัส</th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">รายการ</th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">หมวดหมู่</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">ราคา</th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">สถานะ</th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">การจัดการ</th>
               </tr>
@@ -499,7 +491,6 @@ const MenuManagement = () => {
                      item.category === 'dessert' ? 'ของหวาน' :
                      item.category}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{formatPriceWithCurrency(item.price)}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(item.active)}`}>
                       {getStatusText(item.active)}
@@ -643,47 +634,6 @@ const MenuManagement = () => {
                     </select>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        ราคาปกติ
-                      </label>
-                      <input
-                        type="number"
-                        name="price"
-                        value={formData.price}
-                        onChange={handleInputChange}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          formErrors.price ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        min="0"
-                        step="0.01"
-                      />
-                      {formErrors.price && (
-                        <p className="mt-1 text-sm text-red-600">{formErrors.price}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        ราคา (Package)
-                      </label>
-                      <input
-                        type="number"
-                        name="packagePrice"
-                        value={formData.packagePrice}
-                        onChange={handleInputChange}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          formErrors.packagePrice ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        min="0"
-                        step="0.01"
-                      />
-                      {formErrors.packagePrice && (
-                        <p className="mt-1 text-sm text-red-600">{formErrors.packagePrice}</p>
-                      )}
-                    </div>
-                  </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">

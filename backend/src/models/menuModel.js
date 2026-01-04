@@ -35,19 +35,6 @@ const menuSchema = new mongoose.Schema(
       index: true,
     },
 
-    // ราคาปกติ
-    price: {
-      type: Decimal128,
-      default: 0,
-      min: 0,
-    },
-
-    // ราคาจัดชุด (ใช้ในโต๊ะจีน)
-    packagePrice: {
-      type: Decimal128,
-      default: 0,
-      min: 0,
-    },
 
     image: {
       type: String,

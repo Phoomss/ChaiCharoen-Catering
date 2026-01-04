@@ -119,9 +119,6 @@ const Menu = () => {
                   <h3 className="font-bold text-green-800 text-xl mb-2">{item.name}</h3>
                   <p className="text-gray-600 text-sm mb-3">{item.description}</p>
                   <div className="flex justify-between items-center">
-                    <span className="text-green-600 font-bold">
-                      ฿{typeof item.price === 'object' ? item.price.$numberDecimal : item.price}
-                    </span>
                     <button className="btn btn-sm bg-green-600 text-white hover:bg-green-700">
                       จองโต๊ะ
                     </button>

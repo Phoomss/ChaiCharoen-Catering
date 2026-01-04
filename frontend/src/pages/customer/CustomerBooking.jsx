@@ -728,9 +728,6 @@ const CustomerBooking = () => {
                                                                             <p className="text-sm text-gray-600">{menu.description}</p>
                                                                             <span className="text-xs text-gray-500">{categoryNames[menu.category] || menu.category}</span>
                                                                         </div>
-                                                                        <span className="badge badge-outline">{typeof (menu.packagePrice || menu.price) === 'object'
-                                                                            ? (menu.packagePrice || menu.price).$numberDecimal
-                                                                            : (menu.packagePrice || menu.price)} บาท</span>
                                                                     </div>
                                                                 </div>
                                                             );
