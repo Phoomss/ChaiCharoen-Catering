@@ -255,9 +255,16 @@ exports.updateBookingMenuSets = async (req, res) => {
     const extraMenuPrice = parseFloat(menuPackage.extraMenuPrice || 200);
 
     // ตรวจสอบว่าเลือกเกินจำนวนที่อนุญาตไหม
-    if (totalSelected > maxSelect + 2) { // ไม่เกิน maxSelect + 2 ตามข้อกำหนด
+    // ตรวจสอบราคาแพ็กเกจเพื่อจำกัดจำนวนเมนูพิเศษ
+    const packagePrice = parseFloat(menuPackage.price.toString());
+    const isSpecialRange = packagePrice >= 3000 && packagePrice <= 3500;
+    const maxAllowed = isSpecialRange ? maxSelect + 3 : maxSelect + 2; // สำหรับช่วง 3000-3500 อนุญาตให้เลือกได้มากขึ้น
+
+    if (totalSelected > maxAllowed) {
       return res.status(400).json({
-        message: `สามารถเลือกเมนูได้สูงสุด ${maxSelect + 2} อย่าง (แพ็กเกจปกติ ${maxSelect} อย่าง + เพิ่มได้อีก 2 อย่าง)`
+        message: isSpecialRange
+          ? `สามารถเลือกเมนูได้สูงสุด ${maxAllowed} อย่าง (แพ็กเกจปกติ ${maxSelect} อย่าง + เมนูพิเศษ 1 อย่าง + เพิ่มได้อีก 2 อย่าง)`
+          : `สามารถเลือกเมนูได้สูงสุด ${maxAllowed} อย่าง (แพ็กเกจปกติ ${maxSelect} อย่าง + เพิ่มได้อีก 2 อย่าง)`
       });
     }
 

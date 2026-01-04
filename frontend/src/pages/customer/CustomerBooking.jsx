@@ -313,10 +313,18 @@ const CustomerBooking = () => {
 
     // Function to add menu to selection
     const addToSelectedMenu = (menu) => {
-        if (selectedMenuSets.length >= 10) {
+        // Check if current package is in 3000-3500 range
+        const currentPackage = menuPackages.find(pkg => pkg._id === bookingData.package.packageID);
+        const packagePrice = currentPackage ?
+            (typeof currentPackage.price === 'object' ?
+                parseFloat(currentPackage.price.$numberDecimal) :
+                parseFloat(currentPackage.price)) : 0;
+        const maxSelections = (packagePrice >= 3000 && packagePrice <= 3500) ? 11 : 10;
+
+        if (selectedMenuSets.length >= maxSelections) {
             Swal.fire({
                 title: 'ไม่สามารถเลือกได้!',
-                text: 'สามารถเลือกได้สูงสุด 10 อย่างเท่านั้น',
+                text: `สามารถเลือกได้สูงสุด ${maxSelections} อย่างเท่านั้น`,
                 icon: 'warning',
                 confirmButtonColor: '#3085d6'
             });
@@ -374,10 +382,29 @@ const CustomerBooking = () => {
         e.preventDefault();
 
         // Validate menu selection - at least 8 menus must be selected
+        // Check if current package is in 3000-3500 range for max selection validation
+        const currentPackage = menuPackages.find(pkg => pkg._id === bookingData.package.packageID);
+        const packagePrice = currentPackage ?
+            (typeof currentPackage.price === 'object' ?
+                parseFloat(currentPackage.price.$numberDecimal) :
+                parseFloat(currentPackage.price)) : 0;
+        const maxSelections = (packagePrice >= 3000 && packagePrice <= 3500) ? 11 : 10;
+
         if (showMenuSelection && selectedMenuSets.length < 8) {
             Swal.fire({
                 title: 'กรุณาเลือกเมนูให้ครบ!',
                 text: `ต้องเลือกอย่างน้อย 8 อย่าง (คุณเลือก ${selectedMenuSets.length} อย่าง)`,
+                icon: 'warning',
+                confirmButtonText: 'ตกลง',
+                confirmButtonColor: '#10b981'
+            });
+            return;
+        }
+
+        if (showMenuSelection && selectedMenuSets.length > maxSelections) {
+            Swal.fire({
+                title: 'เลือกเมนูมากเกินไป!',
+                text: `คุณเลือกเมนูทั้งหมด ${selectedMenuSets.length} อย่าง ซึ่งเกินจำนวนสูงสุดที่อนุญาต ${maxSelections} อย่าง`,
                 icon: 'warning',
                 confirmButtonText: 'ตกลง',
                 confirmButtonColor: '#10b981'
@@ -624,7 +651,18 @@ const CustomerBooking = () => {
                         {/* Menu Selection Interface - Appears after package selection */}
                         {showMenuSelection && bookingData.package.packageID && (
                             <div className="bg-white p-6 rounded-lg border border-green-200 mt-6">
-                                <h3 className="text-lg font-semibold text-green-700 mb-4">เลือกรายการอาหาร ({selectedMenuSets.length}/10)</h3>
+                                {(() => {
+                                    // Check if current package is in 3000-3500 range
+                                    const currentPackage = menuPackages.find(pkg => pkg._id === bookingData.package.packageID);
+                                    const packagePrice = currentPackage ?
+                                        (typeof currentPackage.price === 'object' ?
+                                            parseFloat(currentPackage.price.$numberDecimal) :
+                                            parseFloat(currentPackage.price)) : 0;
+                                    const maxSelections = (packagePrice >= 3000 && packagePrice <= 3500) ? 11 : 10;
+                                    return (
+                                        <h3 className="text-lg font-semibold text-green-700 mb-4">เลือกรายการอาหาร ({selectedMenuSets.length}/{maxSelections})</h3>
+                                    );
+                                })()}
 
                                 <div className="mb-4">
                                     <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
@@ -634,7 +672,20 @@ const CustomerBooking = () => {
                                             <strong> จำนวนโต๊ะ:</strong> {bookingData.table_count} โต๊ะ
                                         </p>
                                         <p className="text-blue-800 mt-1">
-                                            สามารถเลือก <strong>8 อย่าง</strong> ได้ฟรี | สามารถเพิ่มได้สูงสุด <strong>อีก 2 อย่าง</strong> (รวมทั้งหมด 10 อย่าง)
+                                            {(() => {
+                                                // Check if current package is in 3000-3500 range
+                                                const currentPackage = menuPackages.find(pkg => pkg._id === bookingData.package.packageID);
+                                                const packagePrice = currentPackage ?
+                                                    (typeof currentPackage.price === 'object' ?
+                                                        parseFloat(currentPackage.price.$numberDecimal) :
+                                                        parseFloat(currentPackage.price)) : 0;
+                                                const isSpecialRange = packagePrice >= 3000 && packagePrice <= 3500;
+                                                return isSpecialRange ? (
+                                                    <span>สามารถเลือก <strong>8 อย่าง</strong> ได้ฟรี | สามารถเพิ่มได้สูงสุด <strong>อีก 2 อย่าง</strong> + <strong>เมนูพิเศษ 1 อย่าง</strong> (รวมทั้งหมด <strong>11 อย่าง</strong>)</span>
+                                                ) : (
+                                                    <span>สามารถเลือก <strong>8 อย่าง</strong> ได้ฟรี | สามารถเพิ่มได้สูงสุด <strong>อีก 2 อย่าง</strong> (รวมทั้งหมด 10 อย่าง)</span>
+                                                );
+                                            })()}
                                         </p>
                                         <p className="text-blue-800 mt-1">
                                             <strong>ค่าอาหารเพิ่มเติม:</strong> 200 บาท/อย่าง/โต๊ะ
@@ -667,8 +718,44 @@ const CustomerBooking = () => {
                                     <label className="label text-green-700 font-medium">เลือกรายการอาหารตามหมวดหมู่ (เลือกได้ 1-2 อย่างต่อหมวด)</label>
                                     {/* Group menus by category */}
                                     {(() => {
+                                        // Check if current package is in 3000-3500 range
+                                        const currentPackage = menuPackages.find(pkg => pkg._id === bookingData.package.packageID);
+                                        const packagePrice = currentPackage ?
+                                            (typeof currentPackage.price === 'object' ?
+                                                parseFloat(currentPackage.price.$numberDecimal) :
+                                                parseFloat(currentPackage.price)) : 0;
+                                        const isSpecialRange = packagePrice >= 3000 && packagePrice <= 3500;
+
+                                        // Special menu items for 3000-3500 range
+                                        const specialMenuItems = isSpecialRange ? [
+                                            {
+                                                _id: 'special-1',
+                                                name: 'ข้าวเกรียบ+เฟรนฟราย',
+                                                description: 'เมนูพิเศษสำหรับช่วงราคา 3000-3500',
+                                                category: 'special'
+                                            },
+                                            {
+                                                _id: 'special-2',
+                                                name: 'แปะก๊วยคั่วเกลือ',
+                                                description: 'เมนูพิเศษสำหรับช่วงราคา 3000-3500',
+                                                category: 'special'
+                                            },
+                                            {
+                                                _id: 'special-3',
+                                                name: 'เผือกหิมะ',
+                                                description: 'เมนูพิเศษสำหรับช่วงราคา 3000-3500',
+                                                category: 'special'
+                                            }
+                                        ] : [];
+
                                         // Group all menus by category
                                         const menusByCategory = {};
+
+                                        // Add special menu items first if in special range
+                                        if (isSpecialRange) {
+                                            menusByCategory.special = specialMenuItems;
+                                        }
+
                                         allMenus.forEach(menu => {
                                             if (!menusByCategory[menu.category]) {
                                                 menusByCategory[menu.category] = [];
@@ -678,6 +765,7 @@ const CustomerBooking = () => {
 
                                         // Category names mapping
                                         const categoryNames = {
+                                            special: "เมนูพิเศษ",
                                             appetizer: "ของกินเล่น",
                                             maincourse: "อาหารจานหลัก",
                                             carb: "ข้าว/เส้น",
@@ -686,25 +774,31 @@ const CustomerBooking = () => {
                                             dessert: "ของหวาน"
                                         };
 
+                                        // Determine max selections based on package price
+                                        const maxSelections = isSpecialRange ? 11 : 10;
+
                                         return Object.entries(menusByCategory).map(([category, categoryMenus]) => {
                                             // Count how many items from this category are currently selected
                                             const selectedCount = selectedMenuSets.filter(selected =>
                                                 categoryMenus.some(menu => menu.name === selected.menu_name)
                                             ).length;
 
+                                            // Special category has limit of 1, others have limit of 2
+                                            const categoryLimit = category === 'special' ? 1 : 2;
+
                                             return (
                                                 <div key={category} className="mb-6">
                                                     <h4 className="font-semibold text-green-700 mb-3 border-b pb-1">
                                                         {categoryNames[category] || category}
                                                         <span className="text-sm text-gray-500 ml-2">
-                                                            (เลือกได้ {selectedCount}/2 อย่าง)
+                                                            (เลือกได้ {selectedCount}/{categoryLimit} อย่าง)
                                                         </span>
                                                     </h4>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto p-2 border rounded">
                                                         {categoryMenus.map(menu => {
                                                             const isSelected = selectedMenuSets.some(selected => selected.menu_name === menu.name);
-                                                            // Check if this category has reached the limit of 2 selections
-                                                            const isCategoryLimitReached = selectedCount >= 2 && !isSelected;
+                                                            // Check if this category has reached its limit
+                                                            const isCategoryLimitReached = selectedCount >= categoryLimit && !isSelected;
 
                                                             return (
                                                                 <div
@@ -712,12 +806,12 @@ const CustomerBooking = () => {
                                                                     className={`p-3 border rounded-lg cursor-pointer transition-all ${
                                                                         isSelected
                                                                             ? 'bg-green-100 border-green-500'
-                                                                            : isCategoryLimitReached || selectedMenuSets.length >= 10
+                                                                            : isCategoryLimitReached || selectedMenuSets.length >= maxSelections
                                                                                 ? 'bg-gray-100 opacity-50 cursor-not-allowed'
                                                                                 : 'bg-white hover:bg-gray-50 border-gray-200'
                                                                     }`}
                                                                     onClick={() => {
-                                                                        if (!isSelected && selectedMenuSets.length < 10 && !isCategoryLimitReached) {
+                                                                        if (!isSelected && selectedMenuSets.length < maxSelections && !isCategoryLimitReached) {
                                                                             addToSelectedMenu(menu);
                                                                         }
                                                                     }}

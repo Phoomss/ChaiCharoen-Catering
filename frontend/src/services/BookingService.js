@@ -55,6 +55,11 @@ const getDateAvailability = () => {
     return publicInstance.get(`${BOOKING_API_URL}/availability`);
 };
 
+// Function to update booking menu sets
+const updateBookingMenuSets = (id, menuSetsData) => {
+    return http.put(`${BOOKING_API_URL}/${id}/menu-sets`, menuSetsData);
+};
+
 const bookingService = {
     createBooking,
     getAllBookings,
@@ -62,7 +67,8 @@ const bookingService = {
     updateBookingStatus,
     deleteBooking,
     uploadPaymentSlip,
-    getDateAvailability
+    getDateAvailability,
+    updateBookingMenuSets
 };
 
 export default bookingService;
