@@ -199,6 +199,11 @@ const CustomerBooking = () => {
                                 price_per_table: priceValue
                             }
                         }));
+
+                        // Set package menus when package is selected
+                        if (selectedPackage.menus && selectedPackage.menus.length > 0) {
+                            setPackageMenus(selectedPackage.menus);
+                        }
                     }
                 }
 
@@ -304,6 +309,13 @@ const CustomerBooking = () => {
                     price_per_table: priceValue
                 }
             }));
+
+            // Set package menus when package is selected
+            if (selectedPackage.menus && selectedPackage.menus.length > 0) {
+                setPackageMenus(selectedPackage.menus);
+            } else {
+                setPackageMenus([]);
+            }
 
             // Reset menu selections when package changes
             setSelectedMenuSets([]);
@@ -691,6 +703,18 @@ const CustomerBooking = () => {
                                             <strong>ค่าอาหารเพิ่มเติม:</strong> 200 บาท/อย่าง/โต๊ะ
                                         </p>
                                     </div>
+
+                                    {/* Legend for menu highlighting */}
+                                    <div className="flex flex-wrap gap-4 mt-3">
+                                        <div className="flex items-center">
+                                            <div className="w-4 h-4 bg-blue-100 border border-blue-500 rounded mr-2"></div>
+                                            <span className="text-sm">เมนูในแพ็คเกจ</span>
+                                        </div>
+                                        <div className="flex items-center">
+                                            <div className="w-4 h-4 bg-green-100 border border-green-500 rounded mr-2"></div>
+                                            <span className="text-sm">เมนูที่เลือกแล้ว</span>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div className="mb-4">
@@ -731,19 +755,19 @@ const CustomerBooking = () => {
                                             {
                                                 _id: 'special-1',
                                                 name: 'ข้าวเกรียบ+เฟรนฟราย',
-                                                description: 'เมนูพิเศษสำหรับช่วงราคา 3000-3500',
+                                                description: 'เมนูพิเศษสำหรับช่วงราคา 3000 ขึ้น',
                                                 category: 'special'
                                             },
                                             {
                                                 _id: 'special-2',
                                                 name: 'แปะก๊วยคั่วเกลือ',
-                                                description: 'เมนูพิเศษสำหรับช่วงราคา 3000-3500',
+                                                description: 'เมนูพิเศษสำหรับช่วงราคา 3000 ขึ้น',
                                                 category: 'special'
                                             },
                                             {
                                                 _id: 'special-3',
                                                 name: 'เผือกหิมะ',
-                                                description: 'เมนูพิเศษสำหรับช่วงราคา 3000-3500',
+                                                description: 'เมนูพิเศษสำหรับช่วงราคา 3000 ขึ้น',
                                                 category: 'special'
                                             }
                                         ] : [];
@@ -800,15 +824,24 @@ const CustomerBooking = () => {
                                                             // Check if this category has reached its limit
                                                             const isCategoryLimitReached = selectedCount >= categoryLimit && !isSelected;
 
+                                                            // Check if this menu is part of the selected package
+                                                            const isPackageMenu = packageMenus.some(pkgMenu => {
+                                                                // Handle both object and string IDs
+                                                                const pkgMenuId = typeof pkgMenu === 'object' ? pkgMenu._id : pkgMenu;
+                                                                return pkgMenuId === menu._id;
+                                                            });
+
                                                             return (
                                                                 <div
                                                                     key={menu._id}
                                                                     className={`p-3 border rounded-lg cursor-pointer transition-all ${
                                                                         isSelected
                                                                             ? 'bg-green-100 border-green-500'
-                                                                            : isCategoryLimitReached || selectedMenuSets.length >= maxSelections
-                                                                                ? 'bg-gray-100 opacity-50 cursor-not-allowed'
-                                                                                : 'bg-white hover:bg-gray-50 border-gray-200'
+                                                                            : isPackageMenu
+                                                                                ? 'bg-blue-100 border-blue-500' // Highlight package menus
+                                                                                : isCategoryLimitReached || selectedMenuSets.length >= maxSelections
+                                                                                    ? 'bg-gray-100 opacity-50 cursor-not-allowed'
+                                                                                    : 'bg-white hover:bg-gray-50 border-gray-200'
                                                                     }`}
                                                                     onClick={() => {
                                                                         if (!isSelected && selectedMenuSets.length < maxSelections && !isCategoryLimitReached) {
@@ -822,6 +855,11 @@ const CustomerBooking = () => {
                                                                             <p className="text-sm text-gray-600">{menu.description}</p>
                                                                             <span className="text-xs text-gray-500">{categoryNames[menu.category] || menu.category}</span>
                                                                         </div>
+                                                                        {isPackageMenu && (
+                                                                            <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
+                                                                                แพ็คเกจ
+                                                                            </span>
+                                                                        )}
                                                                     </div>
                                                                 </div>
                                                             );
