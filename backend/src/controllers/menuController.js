@@ -2,7 +2,7 @@ const menuModel = require("../models/menuModel")
 
 exports.createMenu = async (req, res) => {
   try {
-    const { code, name, description, category, image, tags } = req.body;
+    const { code, name, description, category, packagePrice, image, tags } = req.body;
 
     const exists = await menuModel.findOne({ code: code.toUpperCase() });
     if (exists) {
@@ -14,6 +14,7 @@ exports.createMenu = async (req, res) => {
       name,
       description,
       category,
+      packagePrice,
       image,
       tags,
     });
@@ -28,7 +29,7 @@ exports.createMenu = async (req, res) => {
 // 📸 Create menu with image upload
 exports.createMenuWithImage = async (req, res) => {
   try {
-    const { code, name, description, category, tags } = req.body;
+    const { code, name, description, category, packagePrice, tags } = req.body;
 
     // Check if menu with code already exists
     const exists = await menuModel.findOne({ code: code.toUpperCase() });
@@ -54,6 +55,7 @@ exports.createMenuWithImage = async (req, res) => {
       name,
       description,
       category,
+      packagePrice,
       image: imageUrl, // Save the image path
       tags,
     });
@@ -161,7 +163,7 @@ exports.updateMenuWithImage = async (req, res) => {
     }
 
     // Extract body data excluding the image
-    const { code, name, description, category, tags } = req.body;
+    const { code, name, description, category, packagePrice, tags } = req.body;
 
     // Prepare update data
     const updateData = {
@@ -169,6 +171,7 @@ exports.updateMenuWithImage = async (req, res) => {
       name: name || existingMenu.name,
       description: description || existingMenu.description,
       category: category || existingMenu.category,
+      packagePrice: packagePrice !== undefined ? packagePrice : existingMenu.packagePrice,
       tags: tags !== undefined ? tags : existingMenu.tags
     };
 

@@ -34,7 +34,13 @@ const menuSchema = new mongoose.Schema(
       enum: categoryList,
       index: true,
     },
-
+ 
+     // ราคาจัดชุด (ใช้ในโต๊ะจีน)
+    packagePrice: {
+      type: Decimal128,
+      default: 0,
+      min: 0,
+    },
 
     image: {
       type: String,

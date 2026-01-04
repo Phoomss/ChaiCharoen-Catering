@@ -632,6 +632,7 @@ const MenuPackages = () => {
                                       />
                                       <span className="text-sm">{menu.code} {menu.name}</span>
                                     </div>
+                                      <span className="ml-auto text-xs text-gray-500">{formatPriceWithCurrency(menu.packagePrice)}</span>
                                   </div>
                                 ))}
                               </div>
