@@ -682,6 +682,7 @@ const CustomerBooking = () => {
                                             maincourse: "อาหารจานหลัก",
                                             carb: "ข้าว/เส้น",
                                             soup: "ซุป",
+                                            curry: "ต้ม/แกง",
                                             dessert: "ของหวาน"
                                         };
 

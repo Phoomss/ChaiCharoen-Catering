@@ -3,11 +3,12 @@ import { Plus, Edit, Trash2, Package } from 'lucide-react';
 
 const Categories = () => {
   const [categories, setCategories] = useState([
-    { id: 1, name: 'Appetizers', description: 'Starter dishes and small plates', itemCount: 8, status: 'Active' },
-    { id: 2, name: 'Main Course', description: 'Primary dishes for the meal', itemCount: 15, status: 'Active' },
-    { id: 3, name: 'Desserts', description: 'Sweet treats to end the meal', itemCount: 6, status: 'Active' },
-    { id: 4, name: 'Drinks', description: 'Beverages and refreshments', itemCount: 10, status: 'Active' },
-    { id: 5, name: 'Vegetarian', description: 'Plant-based dishes', itemCount: 7, status: 'Active' },
+    { id: 1, name: 'ของกินเล่น', description: 'อาหารเรียกน้ำย่อยและของกินเล่น', itemCount: 8, status: 'Active' },
+    { id: 2, name: 'อาหารจานหลัก', description: 'อาหารจานหลักสำหรับมื้ออาหาร', itemCount: 15, status: 'Active' },
+    { id: 3, name: 'ข้าว/เส้น', description: 'อาหารประเภทข้าวและเส้น', itemCount: 12, status: 'Active' },
+    { id: 4, name: 'ซุป', description: 'อาหารต้มและน้ำพร้อม', itemCount: 6, status: 'Active' },
+    { id: 5, name: 'ต้ม/แกง', description: 'อาหารประเภทต้มและแกง', itemCount: 10, status: 'Active' },
+    { id: 6, name: 'ของหวาน', description: 'ของหวานและขนมหวาน', itemCount: 7, status: 'Active' },
   ]);
 
   const [showAddForm, setShowAddForm] = useState(false);

@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Decimal128 = mongoose.Types.Decimal128;
 
-const categoryList = ["appetizer", "maincourse", "carb", "soup", "dessert"];
+const categoryList = ["appetizer", "maincourse", "carb", "soup", "curry", "dessert"];
 
 const menuSchema = new mongoose.Schema(
   {

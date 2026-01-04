@@ -30,7 +30,7 @@ const MenuManagement = () => {
   const [formErrors, setFormErrors] = useState({});
 
   // Sample categories based on backend schema
-  const categories = ['appetizer', 'maincourse', 'carb', 'soup', 'dessert'];
+  const categories = ['appetizer', 'maincourse', 'carb', 'soup', 'curry', 'dessert'];
 
   // Load menu items from API
   useEffect(() => {
@@ -424,7 +424,15 @@ const MenuManagement = () => {
           >
             <option value="All">ทุกหมวดหมู่</option>
             {categories.map(cat => (
-              <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
+              <option key={cat} value={cat}>
+                {cat === 'appetizer' ? 'ของกินเล่น' :
+                 cat === 'maincourse' ? 'อาหารจานหลัก' :
+                 cat === 'carb' ? 'ข้าว/เส้น' :
+                 cat === 'soup' ? 'ซุป' :
+                 cat === 'curry' ? 'ต้ม/แกง' :
+                 cat === 'dessert' ? 'ของหวาน' :
+                 cat.charAt(0).toUpperCase() + cat.slice(1)}
+              </option>
             ))}
           </select>
           <select
@@ -482,7 +490,15 @@ const MenuManagement = () => {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 capitalize">{item.category}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {item.category === 'appetizer' ? 'ของกินเล่น' :
+                     item.category === 'maincourse' ? 'อาหารจานหลัก' :
+                     item.category === 'carb' ? 'ข้าว/เส้น' :
+                     item.category === 'soup' ? 'ซุป' :
+                     item.category === 'curry' ? 'ต้ม/แกง' :
+                     item.category === 'dessert' ? 'ของหวาน' :
+                     item.category}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{formatPriceWithCurrency(item.price)}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(item.active)}`}>
@@ -615,7 +631,13 @@ const MenuManagement = () => {
                     >
                       {categories.map(category => (
                         <option key={category} value={category}>
-                          {category.charAt(0).toUpperCase() + category.slice(1)}
+                          {category === 'appetizer' ? 'ของกินเล่น' :
+                           category === 'maincourse' ? 'อาหารจานหลัก' :
+                           category === 'carb' ? 'ข้าว/เส้น' :
+                           category === 'soup' ? 'ซุป' :
+                           category === 'curry' ? 'ต้ม/แกง' :
+                           category === 'dessert' ? 'ของหวาน' :
+                           category.charAt(0).toUpperCase() + category.slice(1)}
                         </option>
                       ))}
                     </select>
