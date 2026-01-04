@@ -6,13 +6,12 @@ import Swal from 'sweetalert2';
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const navigate = useNavigate();
   const sidebarItems = [
-    { path: '/admin/dashboard', icon: Home, label: 'Dashboard' },
-    { path: '/admin/menu', icon: Menu, label: 'Menu Management' },
-    { path: '/admin/menu-packages', icon: Package, label: 'Menu Packages' },
+    { path: '/admin/dashboard', icon: Home, label: 'แดชบอร์ด' },
+    { path: '/admin/menu', icon: Menu, label: 'จัดการเมนู' },
+    { path: '/admin/menu-packages', icon: Package, label: 'ชุดเมนู' },
     // { path: '/admin/categories', icon: Package, label: 'Categories' },
-    { path: '/admin/bookings', icon: Calendar, label: 'Bookings' },
-    { path: '/admin/customers', icon: Users2, label: 'Customers' },
-    { path: '/admin/chefs', icon: ChefHat, label: 'Chefs & Staff' },
+    { path: '/admin/bookings', icon: Calendar, label: 'การจอง' },
+    { path: '/admin/customers', icon: Users2, label: 'ลูกค้า' },
   ];
 
   const logout = async () => {
@@ -58,7 +57,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   return (
     <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
       <div className="flex items-center justify-between h-16 px-6 border-b border-green-200">
-        <h1 className="text-xl font-bold text-gray-800">Admin Panel</h1>
+        <h1 className="text-xl font-bold text-gray-800">ชัยเจริญโภชนา (เอ๋) นครปฐม</h1>
         <button
           onClick={() => setSidebarOpen(false)}
           className="lg:hidden p-2 rounded-md hover:bg-green-100"
@@ -91,7 +90,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           className="w-full flex items-center px-6 py-3 text-left hover:bg-green-100 transition-colors text-gray-600 mt-2"
         >
           <LogOut className="w-5 h-5 mr-3" />
-          Logout
+          ออกจากระบบ
         </button>
       </nav>
     </div>
