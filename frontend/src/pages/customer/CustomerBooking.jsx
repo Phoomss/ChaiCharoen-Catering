@@ -174,6 +174,7 @@ const CustomerBooking = () => {
     const [selectedMenuSets, setSelectedMenuSets] = useState([]);
     const [showMenuSelection, setShowMenuSelection] = useState(false);
     const [packageMenus, setPackageMenus] = useState([]);
+    const [autoSelectPackageMenus, setAutoSelectPackageMenus] = useState(true); // New state to track if we should auto-select package menus
 
     useEffect(() => {
         const fetchMenuPackages = async () => {
@@ -203,6 +204,11 @@ const CustomerBooking = () => {
                         // Set package menus when package is selected
                         if (selectedPackage.menus && selectedPackage.menus.length > 0) {
                             setPackageMenus(selectedPackage.menus);
+
+                            // Auto-select package menus if autoSelectPackageMenus is true
+                            if (autoSelectPackageMenus) {
+                                // We'll auto-select after allMenus are loaded
+                            }
                         }
                     }
                 }
@@ -219,7 +225,8 @@ const CustomerBooking = () => {
             try {
                 const menuResponse = await MenuService.getAllMenus();
                 if (menuResponse.data && menuResponse.data.data) {
-                    setAllMenus(menuResponse.data.data.filter(menu => menu.active)); // Only active menus
+                    const activeMenus = menuResponse.data.data.filter(menu => menu.active); // Only active menus
+                    setAllMenus(activeMenus);
                 }
             } catch (error) {
                 console.error('Error fetching menus:', error);
@@ -261,6 +268,27 @@ const CustomerBooking = () => {
         }
         fetchDateAvailability();
     }, [location.state]);
+
+    // Effect to auto-select package menus when package is selected and auto-select is enabled
+    useEffect(() => {
+        if (autoSelectPackageMenus && bookingData.package.packageID && allMenus.length > 0 && menuPackages.length > 0) {
+            const selectedPackage = menuPackages.find(pkg => pkg._id === bookingData.package.packageID);
+            if (selectedPackage && selectedPackage.menus && selectedPackage.menus.length > 0) {
+                const packageMenuItems = selectedPackage.menus.map(menuId => {
+                    // Find the actual menu object from allMenus
+                    const menuObj = allMenus.find(m =>
+                        typeof menuId === 'object' ? m._id === menuId._id : m._id === menuId
+                    );
+                    return {
+                        menu_name: menuObj ? menuObj.name : 'เมนูไม่ทราบชื่อ',
+                        quantity: 1
+                    };
+                });
+
+                setSelectedMenuSets(packageMenuItems);
+            }
+        }
+    }, [autoSelectPackageMenus, bookingData.package.packageID, allMenus, menuPackages]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -313,18 +341,38 @@ const CustomerBooking = () => {
             // Set package menus when package is selected
             if (selectedPackage.menus && selectedPackage.menus.length > 0) {
                 setPackageMenus(selectedPackage.menus);
+
+                // Auto-select package menus if autoSelectPackageMenus is true
+                if (autoSelectPackageMenus) {
+                    const packageMenuItems = selectedPackage.menus.map(menuId => {
+                        // Find the actual menu object from allMenus
+                        const menuObj = allMenus.find(m =>
+                            typeof menuId === 'object' ? m._id === menuId._id : m._id === menuId
+                        );
+                        return {
+                            menu_name: menuObj ? menuObj.name : 'เมนูไม่ทราบชื่อ',
+                            quantity: 1
+                        };
+                    });
+
+                    setSelectedMenuSets(packageMenuItems);
+                }
             } else {
                 setPackageMenus([]);
+                setSelectedMenuSets([]);
             }
 
-            // Reset menu selections when package changes
-            setSelectedMenuSets([]);
             setShowMenuSelection(true);
         }
     };
 
     // Function to add menu to selection
     const addToSelectedMenu = (menu) => {
+        // If auto-select is enabled, disable it when user manually adds a menu
+        if (autoSelectPackageMenus) {
+            setAutoSelectPackageMenus(false);
+        }
+
         // Check if current package is in 3000-3500 range
         const currentPackage = menuPackages.find(pkg => pkg._id === bookingData.package.packageID);
         const packagePrice = currentPackage ?
@@ -354,6 +402,10 @@ const CustomerBooking = () => {
 
     // Function to remove menu from selection
     const removeSelectedMenu = (index) => {
+        // If auto-select is enabled, disable it when user manually removes a menu
+        if (autoSelectPackageMenus) {
+            setAutoSelectPackageMenus(false);
+        }
         setSelectedMenuSets(prev => prev.filter((_, i) => i !== index));
     };
 
@@ -402,7 +454,12 @@ const CustomerBooking = () => {
                 parseFloat(currentPackage.price)) : 0;
         const maxSelections = (packagePrice >= 3000 ) ? 11 : 10;
 
-        if (showMenuSelection && selectedMenuSets.length < 8) {
+        // If auto-select is enabled, ensure we have the package menus selected
+        if (showMenuSelection && autoSelectPackageMenus && currentPackage && currentPackage.menus) {
+            // When auto-select is enabled, we should have the package menus already selected
+            // So we don't need to validate minimum selections since they're automatically selected
+        } else if (showMenuSelection && !autoSelectPackageMenus && selectedMenuSets.length < 8) {
+            // Only validate minimum selections when user is manually selecting menus
             Swal.fire({
                 title: 'กรุณาเลือกเมนูให้ครบ!',
                 text: `ต้องเลือกอย่างน้อย 8 อย่าง (คุณเลือก ${selectedMenuSets.length} อย่าง)`,
@@ -676,6 +733,45 @@ const CustomerBooking = () => {
                                     );
                                 })()}
 
+                                {/* Auto-select option */}
+                                <div className="mb-4">
+                                    <div className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            id="autoSelectMenus"
+                                            checked={autoSelectPackageMenus}
+                                            onChange={(e) => {
+                                                setAutoSelectPackageMenus(e.target.checked);
+                                                if (e.target.checked && bookingData.package.packageID) {
+                                                    // Auto-select package menus when checkbox is checked
+                                                    const selectedPackage = menuPackages.find(pkg => pkg._id === bookingData.package.packageID);
+                                                    if (selectedPackage && selectedPackage.menus && selectedPackage.menus.length > 0) {
+                                                        const packageMenuItems = selectedPackage.menus.map(menuId => {
+                                                            // Find the actual menu object from allMenus
+                                                            const menuObj = allMenus.find(m =>
+                                                                typeof menuId === 'object' ? m._id === menuId._id : m._id === menuId
+                                                            );
+                                                            return {
+                                                                menu_name: menuObj ? menuObj.name : 'เมนูไม่ทราบชื่อ',
+                                                                quantity: 1
+                                                            };
+                                                        });
+
+                                                        setSelectedMenuSets(packageMenuItems);
+                                                    }
+                                                } else if (!e.target.checked) {
+                                                    // Clear selections when checkbox is unchecked
+                                                    setSelectedMenuSets([]);
+                                                }
+                                            }}
+                                            className="checkbox checkbox-green mr-2"
+                                        />
+                                        <label htmlFor="autoSelectMenus" className="text-green-700">
+                                            ใช้เมนูตามแพ็กเกจ (เลือกอัตโนมัติ)
+                                        </label>
+                                    </div>
+                                </div>
+
                                 <div className="mb-4">
                                     <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
                                         <p className="text-blue-800">
@@ -723,13 +819,15 @@ const CustomerBooking = () => {
                                         {selectedMenuSets.map((menu, index) => (
                                             <div key={index} className="flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
                                                 {menu.menu_name}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeSelectedMenu(index)}
-                                                    className="ml-2 text-red-600 hover:text-red-800"
-                                                >
-                                                    ×
-                                                </button>
+                                                {!autoSelectPackageMenus && ( // Only show remove button when not auto-selecting
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeSelectedMenu(index)}
+                                                        className="ml-2 text-red-600 hover:text-red-800"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                )}
                                             </div>
                                         ))}
                                         {selectedMenuSets.length === 0 && (
