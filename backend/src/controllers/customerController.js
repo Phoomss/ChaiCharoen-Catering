@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const bookingModel = require('../models/bookingModel');
 const userModel = require('../models/userModel');
 const ReviewModel = require('../models/reviewModel');
+const { sendLineMessage } = require('../middleware/lineMessage');
+const { LINE_USER_ID } = require('../utils/constants');
 
 // Get customer dashboard summary
 const getCustomerDashboardSummary = async (req, res) => {
@@ -184,7 +186,15 @@ const cancelCustomerBooking = async (req, res) => {
         booking.payment_status = 'cancelled';
         await booking.save();
 
-        // Optionally, you could add a cancellation record or note here
+        // Send LINE notification about cancellation
+        const cancelMessage =
+          `❌ ยกเลิกการจองแล้ว\n\n` +
+          `🔖 Booking Code: ${booking.bookingCode}\n` +
+          `👤 ลูกค้า: ${booking.customer.name}\n` +
+          `📞 เบอร์: ${booking.customer.phone}\n` +
+          `📅 วันงาน: ${new Date(booking.event_datetime).toLocaleString("th-TH")}`;
+
+        await sendLineMessage(LINE_USER_ID, cancelMessage);
 
         res.status(200).json({
             message: "ยกเลิกการจองสำเร็จ",

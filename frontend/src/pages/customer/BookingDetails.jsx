@@ -20,6 +20,42 @@ const BookingDetails = () => {
     const [paymentAmount, setPaymentAmount] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
 
+    // Function to fetch booking details - available to all functions in the component
+    const fetchBookingDetails = async () => {
+        try {
+            const response = await CustomerService.getBookingById(id);
+            setBooking(response.data.data);
+
+            // Get customer info from the booking
+            const customer = {
+                _id: response.data.data.customer.customerID,
+                name: response.data.data.customer.name,
+                phone: response.data.data.customer.phone,
+                email: response.data.data.customer.email
+            };
+            setCustomerInfo(customer);
+
+            // Log for debugging
+            // console.log('Customer ID from booking:', response.data.data.customer.customerID);
+            // console.log('Type of Customer ID:', typeof response.data.data.customer.customerID);
+
+            // Check if a review already exists for this booking
+            try {
+                const reviewResponse = await reviewService.getReviewsByBooking(id);
+                if (reviewResponse.data) {
+                    setExistingReview(reviewResponse.data);
+                }
+            } catch (error) {
+                // If no review exists, that's fine
+                if (error.response?.status !== 404) {
+                    console.error('Error fetching review:', error);
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching booking details:', error);
+        }
+    };
+
     const cancelBooking = async (bookingId, bookingCode) => {
         const result = await Swal.fire({
             title: 'คุณแน่ใจหรือไม่?',
@@ -73,40 +109,6 @@ const BookingDetails = () => {
     const handleReviewSuccess = () => {
         setShowReviewForm(false);
         // Refresh the booking details to get the new review
-        const fetchBookingDetails = async () => {
-            try {
-                const response = await CustomerService.getBookingById(id);
-                setBooking(response.data.data);
-
-                // Get customer info from the booking
-                const customer = {
-                    _id: response.data.data.customer.customerID,
-                    name: response.data.data.customer.name,
-                    phone: response.data.data.customer.phone,
-                    email: response.data.data.customer.email
-                };
-                setCustomerInfo(customer);
-
-                // Log for debugging
-                // console.log('Customer ID from booking:', response.data.data.customer.customerID);
-                // console.log('Type of Customer ID:', typeof response.data.data.customer.customerID);
-
-                // Check if a review already exists for this booking
-                try {
-                    const reviewResponse = await reviewService.getReviewsByBooking(id);
-                    if (reviewResponse.data) {
-                        setExistingReview(reviewResponse.data);
-                    }
-                } catch (error) {
-                    // If no review exists, that's fine
-                    if (error.response?.status !== 404) {
-                        console.error('Error fetching review:', error);
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching booking details:', error);
-            }
-        };
         fetchBookingDetails();
     };
 
@@ -137,7 +139,7 @@ const BookingDetails = () => {
                 });
                 // Refresh the booking details to reflect the deleted review
                 setExistingReview(null);
-                handleReviewSuccess(); // This will refresh the booking details
+                fetchBookingDetails(); // This will refresh the booking details
             } catch (error) {
                 console.error('Error deleting review:', error);
                 Swal.fire({
@@ -248,7 +250,7 @@ const BookingDetails = () => {
             setSelectedFile(null);
 
             // Refresh booking details
-            handleReviewSuccess(); // This will refresh the booking details
+            fetchBookingDetails(); // This will refresh the booking details
         } catch (error) {
             console.error('Error submitting payment:', error);
 
