@@ -61,14 +61,22 @@ const MenuPackages = () => {
 
     // Define category display names in Thai
     const categoryNames = {
-      'appetizer': 'ของว่าง/ของกินเล่น',
-      'maincourse': 'อาหารจานหลัก',
-      'carb': 'ข้าว/เส้น',
+      'appetizer': 'ออเดิร์ฟ',
       'soup': 'ซุป',
-      'curry': 'แกง',
+      'maincourse': 'จานหลัก',
+      'carb': 'ข้าว/เส้น',
+      'curry': 'ต้ม/แกง',
       'dessert': 'ของหวาน'
     };
 
+    // Initialize all categories in the required order
+    const orderedCategories = ['appetizer', 'soup', 'maincourse', 'carb', 'curry', 'dessert'];
+    orderedCategories.forEach(category => {
+      const categoryName = categoryNames[category];
+      grouped[categoryName] = [];
+    });
+
+    // Group menus by category
     menus.forEach(menu => {
       const category = menu.category || 'other';
       const categoryName = categoryNames[category] || category;
@@ -79,7 +87,23 @@ const MenuPackages = () => {
       grouped[categoryName].push(menu);
     });
 
-    return Object.entries(grouped);
+    // Return categories in the specified order
+    const result = [];
+    orderedCategories.forEach(category => {
+      const categoryName = categoryNames[category];
+      if (grouped[categoryName] && grouped[categoryName].length > 0) {
+        result.push([categoryName, grouped[categoryName]]);
+      }
+    });
+
+    // Add any other categories that weren't in the predefined list
+    Object.entries(grouped).forEach(([categoryName, categoryMenus]) => {
+      if (!orderedCategories.some(cat => categoryNames[cat] === categoryName) && categoryMenus.length > 0) {
+        result.push([categoryName, categoryMenus]);
+      }
+    });
+
+    return result;
   };
 
 

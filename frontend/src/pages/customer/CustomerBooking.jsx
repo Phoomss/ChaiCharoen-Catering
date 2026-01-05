@@ -918,10 +918,10 @@ const CustomerBooking = () => {
                                         // Category names mapping
                                         const categoryNames = {
                                             special: "เมนูพิเศษ",
-                                            appetizer: "ของกินเล่น",
-                                            maincourse: "อาหารจานหลัก",
-                                            carb: "ข้าว/เส้น",
+                                            appetizer: "ออเดิร์ฟ",
                                             soup: "ซุป",
+                                            maincourse: "จานหลัก",
+                                            carb: "ข้าว/เส้น",
                                             curry: "ต้ม/แกง",
                                             dessert: "ของหวาน"
                                         };
@@ -929,7 +929,13 @@ const CustomerBooking = () => {
                                         // Determine max selections based on package price
                                         const maxSelections = isSpecialRange ? 11 : 10;
 
-                                        return Object.entries(menusByCategory).map(([category, categoryMenus]) => {
+                                        // Define the order of categories
+                                        const orderedCategories = ['appetizer', 'soup', 'maincourse', 'carb', 'curry', 'dessert', 'special'];
+
+                                        return orderedCategories
+                                          .filter(category => menusByCategory[category] && menusByCategory[category].length > 0)
+                                          .map(category => {
+                                            const categoryMenus = menusByCategory[category];
                                             // Count how many items from this category are currently selected
                                             const selectedCount = selectedMenuSets.filter(selected =>
                                                 categoryMenus.some(menu => menu.name === selected.menu_name)

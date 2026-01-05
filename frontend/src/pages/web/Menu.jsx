@@ -51,12 +51,12 @@ const Menu = () => {
   };
 
   // Get unique categories from menu items
-  const categories = [...new Set(menuItems.map(item => item.category))];
+  const categories = ['appetizer', 'soup', 'maincourse', 'carb', 'curry', 'dessert'];
   const categoryNames = {
-    appetizer: "ของกินเล่น",
-    maincourse: "อาหารจานหลัก",
-    carb: "ข้าว/เส้น",
+    appetizer: "ออเดิร์ฟ",
     soup: "ซุป",
+    maincourse: "จานหลัก",
+    carb: "ข้าว/เส้น",
     curry: "ต้ม/แกง",
     dessert: "ของหวาน"
   };
