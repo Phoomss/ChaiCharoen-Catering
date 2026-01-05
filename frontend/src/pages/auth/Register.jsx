@@ -176,7 +176,7 @@ const Register = () => {
                 <option value="">เลือกคำนำหน้า</option>
                 <option value="นาย.">นาย</option>
                 <option value="นาง.">นาง</option>
-                <option value="นางสาว.">นางสาว</option>
+                <option value="น.ส.">นางสาว</option>
                 <option value="Mr.">Mr.</option>
                 <option value="Mrs.">Mrs.</option>
                 <option value="Ms.">Ms.</option>
