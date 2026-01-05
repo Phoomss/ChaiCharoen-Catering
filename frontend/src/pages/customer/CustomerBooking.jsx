@@ -755,19 +755,19 @@ const CustomerBooking = () => {
                                             {
                                                 _id: 'special-1',
                                                 name: 'ข้าวเกรียบ+เฟรนฟราย',
-                                                description: 'เมนูพิเศษสำหรับช่วงราคา 3000 ขึ้น',
+                                                description: 'เมนูพิเศษสำหรับช่วงราคา 3000 ขึ้นไป',
                                                 category: 'special'
                                             },
                                             {
                                                 _id: 'special-2',
                                                 name: 'แปะก๊วยคั่วเกลือ',
-                                                description: 'เมนูพิเศษสำหรับช่วงราคา 3000 ขึ้น',
+                                                description: 'เมนูพิเศษสำหรับช่วงราคา 3000 ขึ้นไป',
                                                 category: 'special'
                                             },
                                             {
                                                 _id: 'special-3',
                                                 name: 'เผือกหิมะ',
-                                                description: 'เมนูพิเศษสำหรับช่วงราคา 3000 ขึ้น',
+                                                description: 'เมนูพิเศษสำหรับช่วงราคา 3000 ขึ้นไป',
                                                 category: 'special'
                                             }
                                         ] : [];
