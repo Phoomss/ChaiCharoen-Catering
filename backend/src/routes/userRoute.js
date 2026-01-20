@@ -28,6 +28,9 @@ router.get('/all', authenticateToken, adminAuth, asyncHandler(userController.get
 // Search users by role
 router.get('/search', authenticateToken, adminAuth, asyncHandler(userController.searchUserByRole));
 
+// GET: users with booking counts and VIP status (admin only) - PLACE BEFORE :id ROUTE
+router.get('/with-booking-counts', authenticateToken, adminAuth, asyncHandler(userController.getUsersWithBookingCounts));
+
 // Create user (admin only)
 router.post('/', authenticateToken, adminAuth, asyncHandler(userController.createUser));
 

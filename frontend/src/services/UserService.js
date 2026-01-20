@@ -40,6 +40,10 @@ const deleteUser = (id) => {
     return http.delete(`${API_URL}/${id}`);
 };
 
+const getUsersWithBookingCounts = () => {
+    return http.get(`${API_URL}/with-booking-counts`);
+};
+
 const userService = {
     getUserInfo,
     updateProfile,
@@ -48,7 +52,8 @@ const userService = {
     getUserById,
     updateUser,
     toggleUserStatus,
-    deleteUser
+    deleteUser,
+    getUsersWithBookingCounts
 };
 
 export default userService;

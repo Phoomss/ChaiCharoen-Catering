@@ -279,6 +279,56 @@ const deleteUser = async (req, res) => {
     }
 };
 
+// Get users with booking counts and VIP status
+const getUsersWithBookingCounts = async (req, res) => {
+    try {
+        // Get all users
+        const users = await userModel.find().select("-password");
+
+        // Get all bookings to count per customer
+        const BookingModel = require('../models/bookingModel');
+        const bookings = await BookingModel.find();
+
+        // Count bookings per customer
+        const bookingCounts = {};
+        bookings.forEach(booking => {
+            let customerId = null;
+
+            // Try different ways to get customer ID
+            if (booking.customer && typeof booking.customer === 'object') {
+                customerId = booking.customer.customerID || booking.customer._id;
+            } else if (booking.customer_id) {
+                customerId = booking.customer_id;
+            } else if (typeof booking.customer === 'string') {
+                customerId = booking.customer;
+            }
+
+            if (customerId) {
+                const customerIdStr = customerId.toString();
+                bookingCounts[customerIdStr] = (bookingCounts[customerIdStr] || 0) + 1;
+            }
+        });
+
+        // Add booking counts and VIP status to users
+        const usersWithBookingCounts = users.map(user => {
+            const bookingCount = bookingCounts[user._id.toString()] || 0;
+            const isVIP = bookingCount >= 3; // Consider as VIP if 3 or more bookings
+
+            return {
+                ...user.toObject(),
+                bookingCount,
+                isVIP
+            };
+        });
+
+        res.status(200).json({ data: usersWithBookingCounts });
+
+    } catch (error) {
+        console.error("getUsersWithBookingCounts Error:", error);
+        res.status(500).json({ message: "เกิดข้อผิดพลาดของเซิร์ฟเวอร์" });
+    }
+};
+
 module.exports = {
     getUserInfo,
     getAllUsers,
@@ -289,4 +339,5 @@ module.exports = {
     updateUser,
     toggleUserStatus,
     deleteUser,
+    getUsersWithBookingCounts,
 };
