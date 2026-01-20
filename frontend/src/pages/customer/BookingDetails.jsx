@@ -7,6 +7,7 @@ import ReviewForm from '../../components/shared/ReviewForm';
 import ReviewList from '../../components/shared/ReviewList';
 import StarRating from '../../components/shared/StarRating';
 import http from '../../services/http-common';
+import { formatNumber, formatPriceWithCurrency } from '../../utils/priceUtils';
 
 const BookingDetails = () => {
     const { id } = useParams();
@@ -411,22 +412,18 @@ const BookingDetails = () => {
                                 </div>
                                 <div className="flex">
                                     <div className="w-32 text-gray-600">จำนวนโต๊ะ</div>
-                                    <div className="flex-1 font-medium">{booking.table_count} โต๊ะ</div>
+                                    <div className="flex-1 font-medium">{formatNumber(booking.table_count)} โต๊ะ</div>
                                 </div>
                                 <div className="flex">
                                     <div className="w-32 text-gray-600">ราคารวม</div>
                                     <div className="flex-1 font-medium">
-                                        {typeof booking.total_price === 'object'
-                                            ? booking.total_price.$numberDecimal
-                                            : booking.total_price} บาท
+                                        {formatPriceWithCurrency(booking.total_price)}
                                     </div>
                                 </div>
                                 <div className="flex">
                                     <div className="w-32 text-gray-600">มัดจำที่ต้องชำระ</div>
                                     <div className="flex-1 font-medium">
-                                        {typeof booking.deposit_required === 'object'
-                                            ? booking.deposit_required.$numberDecimal
-                                            : booking.deposit_required} บาท
+                                        {formatPriceWithCurrency(booking.deposit_required)}
                                     </div>
                                 </div>
                             </div>
@@ -515,9 +512,7 @@ const BookingDetails = () => {
                                 <div className="flex">
                                     <div className="w-32 text-gray-600">ยอดมัดจำ</div>
                                     <div className="flex-1 font-medium">
-                                        {typeof booking.deposit_required === 'object'
-                                            ? booking.deposit_required.$numberDecimal
-                                            : booking.deposit_required} บาท
+                                        {formatPriceWithCurrency(booking.deposit_required)}
                                     </div>
                                 </div>
                             </div>

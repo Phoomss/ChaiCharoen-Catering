@@ -7,6 +7,7 @@ import UserService from '../../services/UserService';
 import BookingService from '../../services/BookingService';
 import MapPicker from '../../components/shared/MapPicker';
 import Swal from 'sweetalert2';
+import { formatNumber, formatPrice } from '../../utils/priceUtils';
 
 const CustomerBooking = () => {
     // CalendarView Component
@@ -1053,26 +1054,25 @@ const CustomerBooking = () => {
                                     </div>
                                     <div>
                                         <p className="text-gray-600">จำนวนโต๊ะ:</p>
-                                        <p className="font-medium">{bookingData.table_count} โต๊ะ</p>
+                                        <p className="font-medium">{formatNumber(bookingData.table_count)} โต๊ะ</p>
                                     </div>
                                     <div>
                                         <p className="text-gray-600">ราคาต่อโต๊ะ:</p>
                                         <p className="font-medium">
-                                            {/* 💡 ปรับปรุง: ใช้ค่าตรงๆ ได้เลย */}
-                                            {parseFloat(bookingData.package.price_per_table).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท
+                                            {formatPrice(bookingData.package.price_per_table)} บาท
                                         </p>
                                     </div>
                                     <div>
                                         <p className="text-gray-600">ราคารวม:</p>
                                         <p className="font-medium text-green-700 font-bold">
-                                            {calculateTotalPrice().toLocaleString()} บาท
+                                            {formatPrice(calculateTotalPrice())} บาท
                                         </p>
                                     </div>
                                     {selectedMenuSets.length > 8 && (
                                         <div className="col-span-2 mt-2">
                                             <p className="text-sm text-gray-600">
-                                                * ประกอบด้วยเมนูเพิ่มเติม {selectedMenuSets.length - 8} อย่าง
-                                                @ 200 บาท/อย่าง/โต๊ะ = {(selectedMenuSets.length - 8) * 200 * bookingData.table_count} บาท
+                                                * ประกอบด้วยเมนูเพิ่มเติม {formatNumber(selectedMenuSets.length - 8)} อย่าง
+                                                @ 200 บาท/อย่าง/โต๊ะ = {formatPrice((selectedMenuSets.length - 8) * 200 * bookingData.table_count)} บาท
                                             </p>
                                         </div>
                                     )}

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, User, MapPin, Phone, Mail, Edit, Trash2, Search, CheckCircle, Clock, XCircle, Filter, MoreVertical, X, Save } from 'lucide-react';
+import { Calendar, MapPin, Edit, Trash2, Search, CheckCircle, Clock, XCircle, X, Save } from 'lucide-react';
 import Swal from 'sweetalert2';
 import bookingService from './../../services/BookingService';
 import menuService from './../../services/MenuService';
 import MapDisplay from './../../components/shared/MapDisplay';
+import { formatNumber, formatPriceWithCurrency } from '../../utils/priceUtils';
 
 const Bookings = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -782,10 +783,7 @@ const Bookings = () => {
                         onClick={() => viewBookingDetails(booking)}
                         className="text-green-600 hover:text-green-800"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                          <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                        </svg>
+                        <Search className="w-4 h-4" />
                       </button>
 
                       {/* View Map Button
@@ -811,7 +809,7 @@ const Bookings = () => {
                         className="text-blue-600 hover:text-blue-800"
                       >
                         <Edit className="w-5 h-5" />
-                      </button> */} 
+                      </button> */}
 
                       {/* Delete Button */}
                       <button
@@ -1110,11 +1108,10 @@ const Bookings = () => {
                                   return (
                                     <div
                                       key={menu._id}
-                                      className={`flex items-center p-3 rounded-lg cursor-pointer ${
-                                        isSelected
+                                      className={`flex items-center p-3 rounded-lg cursor-pointer ${isSelected
                                           ? 'bg-blue-100 border border-blue-300'
                                           : 'bg-gray-50 hover:bg-gray-100 border border-gray-200'
-                                      }`}
+                                        }`}
                                       onClick={() => handleMenuSelection(menu)}
                                     >
                                       <div className="flex-1">

@@ -404,7 +404,7 @@ const Chefs = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <div className="flex items-center space-x-2">
-                      <button 
+                      <button
                         onClick={() => {
                           Swal.fire({
                             icon: "info",
@@ -413,10 +413,10 @@ const Chefs = () => {
                             confirmButtonColor: "#3b82f6"
                           });
                         }}
-                        className="p-1 hover:bg-gray-100 rounded" 
+                        className="p-1 hover:bg-gray-100 rounded"
                         title="ดูข้อมูล"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Search className="w-4 h-4" />
                       </button>
                       <button 
                         onClick={() => handleEditChef(chef)}

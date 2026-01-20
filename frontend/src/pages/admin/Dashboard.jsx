@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Eye, Edit, Trash2, Plus, Users, Calendar, ShoppingBag, DollarSign } from 'lucide-react';
+import { Users, Calendar, ShoppingBag, DollarSign, Search } from 'lucide-react';
 import { Link } from 'react-router';
 import adminService from '../../services/AdminService';
 import bookingService from '../../services/BookingService';
@@ -429,7 +429,7 @@ const Dashboard = () => {
                         className="p-1 hover:bg-green-100 rounded text-blue-600"
                         type="button"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Search className="w-4 h-4" />
                       </button>
                       {/* <Link to={`/admin/bookings/${booking.id}/edit`} className="p-1 hover:bg-green-100 rounded text-yellow-600">
                         <Edit className="w-4 h-4" />

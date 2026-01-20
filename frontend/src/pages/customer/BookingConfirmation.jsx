@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router';
 import CustomerService from '../../services/CustomerService';
+import { formatNumber, formatPriceWithCurrency } from '../../utils/priceUtils';
 
 const BookingConfirmation = () => {
     const { id } = useParams();
@@ -82,7 +83,7 @@ const BookingConfirmation = () => {
                                         minute: '2-digit'
                                     })}
                                 </p>
-                                <p className="text-gray-600"><span className="font-medium">จำนวนโต๊ะ:</span> {booking.table_count} โต๊ะ</p>
+                                <p className="text-gray-600"><span className="font-medium">จำนวนโต๊ะ:</span> {formatNumber(booking.table_count)} โต๊ะ</p>
                                 <p className="text-gray-600"><span className="font-medium">สถานะ:</span> 
                                     <span className={`ml-2 px-2 py-1 rounded text-xs ${
                                         booking.payment_status === 'pending-deposit' ? 'bg-yellow-100 text-yellow-800' :
@@ -103,10 +104,8 @@ const BookingConfirmation = () => {
                             <h3 className="text-lg font-semibold text-gray-800 mb-2">รายละเอียดแพ็กเกจ</h3>
                             <p className="text-gray-600"><span className="font-medium">ชื่อแพ็กเกจ:</span> {booking.package.package_name}</p>
                             <p className="text-gray-600">
-                                <span className="font-medium">ราคารวม:</span> 
-                                {typeof booking.total_price === 'object' 
-                                    ? booking.total_price.$numberDecimal 
-                                    : booking.total_price} บาท
+                                <span className="font-medium">ราคารวม:</span>
+                                {formatPriceWithCurrency(booking.total_price)}
                             </p>
                         </div>
 

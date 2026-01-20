@@ -370,7 +370,7 @@ const UserManagement = () => {
                         className="p-1 hover:bg-gray-100 rounded"
                         title="ดูข้อมูล"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Search className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => {

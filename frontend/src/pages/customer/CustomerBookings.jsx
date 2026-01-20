@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import CustomerService from '../../services/CustomerService';
 import Swal from 'sweetalert2';
+import { formatNumber, formatPriceWithCurrency } from '../../utils/priceUtils';
 
 const CustomerBookings = () => {
     const [bookings, setBookings] = useState([]);
@@ -133,7 +134,7 @@ const CustomerBookings = () => {
                                         <div className="text-sm text-gray-900">{new Date(booking.event_datetime).toLocaleDateString('th-TH')}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {booking.table_count} โต๊ะ
+                                        {formatNumber(booking.table_count)} โต๊ะ
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
@@ -148,9 +149,7 @@ const CustomerBookings = () => {
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {typeof booking.total_price === 'object'
-                                            ? booking.total_price.$numberDecimal
-                                            : booking.total_price} บาท
+                                        {formatPriceWithCurrency(booking.total_price)}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <Link to={`/customer/booking/${booking._id}`} className="text-green-600 hover:text-green-900 mr-3">ดูรายละเอียด</Link>
