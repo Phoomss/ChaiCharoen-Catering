@@ -718,60 +718,61 @@ const CustomerBooking = () => {
                             </select>
                         </div>
 
-                        {/* Menu Selection Interface - Appears after package selection */}
-                        {showMenuSelection && bookingData.package.packageID && (
-                            <div className="bg-white p-6 rounded-lg border border-green-200 mt-6">
-                                {(() => {
-                                    // Check if current package is in 3000-3500 range
-                                    const currentPackage = menuPackages.find(pkg => pkg._id === bookingData.package.packageID);
-                                    const packagePrice = currentPackage ?
-                                        (typeof currentPackage.price === 'object' ?
-                                            parseFloat(currentPackage.price.$numberDecimal) :
-                                            parseFloat(currentPackage.price)) : 0;
-                                    const maxSelections = (packagePrice >= 3000 ) ? 11 : 10;
-                                    return (
-                                        <h3 className="text-lg font-semibold text-green-700 mb-4">เลือกรายการอาหาร ({selectedMenuSets.length}/{maxSelections})</h3>
-                                    );
-                                })()}
+                        {/* Auto-select option - Always visible */}
+                        <div className="bg-white p-6 rounded-lg border border-green-200 mt-6">
+                            <div className="mb-4">
+                                <div className="flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        id="autoSelectMenus"
+                                        checked={autoSelectPackageMenus}
+                                        onChange={(e) => {
+                                            setAutoSelectPackageMenus(e.target.checked);
+                                            if (e.target.checked && bookingData.package.packageID) {
+                                                // Auto-select package menus when checkbox is checked
+                                                const selectedPackage = menuPackages.find(pkg => pkg._id === bookingData.package.packageID);
+                                                if (selectedPackage && selectedPackage.menus && selectedPackage.menus.length > 0) {
+                                                    const packageMenuItems = selectedPackage.menus.map(menuId => {
+                                                        // Find the actual menu object from allMenus
+                                                        const menuObj = allMenus.find(m =>
+                                                            typeof menuId === 'object' ? m._id === menuId._id : m._id === menuId
+                                                        );
+                                                        return {
+                                                            menu_name: menuObj ? menuObj.name : 'เมนูไม่ทราบชื่อ',
+                                                            quantity: 1
+                                                        };
+                                                    });
 
-                                {/* Auto-select option */}
-                                <div className="mb-4">
-                                    <div className="flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            id="autoSelectMenus"
-                                            checked={autoSelectPackageMenus}
-                                            onChange={(e) => {
-                                                setAutoSelectPackageMenus(e.target.checked);
-                                                if (e.target.checked && bookingData.package.packageID) {
-                                                    // Auto-select package menus when checkbox is checked
-                                                    const selectedPackage = menuPackages.find(pkg => pkg._id === bookingData.package.packageID);
-                                                    if (selectedPackage && selectedPackage.menus && selectedPackage.menus.length > 0) {
-                                                        const packageMenuItems = selectedPackage.menus.map(menuId => {
-                                                            // Find the actual menu object from allMenus
-                                                            const menuObj = allMenus.find(m =>
-                                                                typeof menuId === 'object' ? m._id === menuId._id : m._id === menuId
-                                                            );
-                                                            return {
-                                                                menu_name: menuObj ? menuObj.name : 'เมนูไม่ทราบชื่อ',
-                                                                quantity: 1
-                                                            };
-                                                        });
-
-                                                        setSelectedMenuSets(packageMenuItems);
-                                                    }
-                                                } else if (!e.target.checked) {
-                                                    // Clear selections when checkbox is unchecked
-                                                    setSelectedMenuSets([]);
+                                                    setSelectedMenuSets(packageMenuItems);
                                                 }
-                                            }}
-                                            className="checkbox checkbox-green mr-2"
-                                        />
-                                        <label htmlFor="autoSelectMenus" className="text-green-700">
-                                            ใช้เมนูตามแพ็กเกจ (เลือกอัตโนมัติ)
-                                        </label>
-                                    </div>
+                                            } else if (!e.target.checked) {
+                                                // Clear selections when checkbox is unchecked
+                                                setSelectedMenuSets([]);
+                                            }
+                                        }}
+                                        className="checkbox checkbox-green mr-2"
+                                    />
+                                    <label htmlFor="autoSelectMenus" className="text-green-700">
+                                        ใช้เมนูตามแพ็กเกจ (เลือกอัตโนมัติ)
+                                    </label>
                                 </div>
+                            </div>
+
+                            {/* Menu Selection Interface - Appears after package selection when not auto-selecting */}
+                            {showMenuSelection && bookingData.package.packageID && !autoSelectPackageMenus && (
+                                <div>
+                                    {(() => {
+                                        // Check if current package is in 3000-3500 range
+                                        const currentPackage = menuPackages.find(pkg => pkg._id === bookingData.package.packageID);
+                                        const packagePrice = currentPackage ?
+                                            (typeof currentPackage.price === 'object' ?
+                                                parseFloat(currentPackage.price.$numberDecimal) :
+                                                parseFloat(currentPackage.price)) : 0;
+                                        const maxSelections = (packagePrice >= 3000 ) ? 11 : 10;
+                                        return (
+                                            <h3 className="text-lg font-semibold text-green-700 mb-4">เลือกรายการอาหาร ({selectedMenuSets.length}/{maxSelections})</h3>
+                                        );
+                                    })()}
 
                                 <div className="mb-4">
                                     <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
@@ -1007,8 +1008,9 @@ const CustomerBooking = () => {
                                 </div>
                             </div>
                         )}
+                    </div>
 
-                        {/* Location */}
+                    {/* Location */}
                         <div>
                             <label className="label text-green-700 font-medium">เลือกตำแหน่งที่อยู่จัดงาน</label>
                             <div className="w-full">

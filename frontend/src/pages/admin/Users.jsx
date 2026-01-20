@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Plus, Eye, Edit, Trash2, UserCheck, UserX, User, Users as UsersIcon, ChefHat } from 'lucide-react';
+import { Search, Filter, Plus, Eye, Edit, Trash2, UserCheck, UserX, User, Users as UsersIcon, ChefHat, Star } from 'lucide-react';
 import userService from './../../services/UserService';
+import bookingService from './../../services/BookingService';
 import Swal from 'sweetalert2';
 
 const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
   const [users, setUsers] = useState([]);
+  const [bookingCounts, setBookingCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -15,19 +17,68 @@ const UserManagement = () => {
     loadUsers();
   }, []);
 
+  const loadBookingCounts = async () => {
+    try {
+      const response = await bookingService.getAllBookings();
+      const bookings = response.data.data || [];
+
+      // Count bookings per customer
+      const counts = {};
+      bookings.forEach(booking => {
+        const customerId = booking.customer_id || booking.customer?._id || booking.customer;
+        if (customerId) {
+          counts[customerId] = (counts[customerId] || 0) + 1;
+        }
+      });
+
+      setBookingCounts(counts);
+    } catch (err) {
+      console.error('Error loading booking counts:', err);
+      // Continue without booking counts if there's an error
+    }
+  };
+
   const loadUsers = async () => {
     try {
       setLoading(true);
-      const response = await userService.getAllUsers();
-      setUsers(response.data.data || []);
-      setError(null);
+      const [usersResponse, bookingsResponse] = await Promise.allSettled([
+        userService.getAllUsers(),
+        bookingService.getAllBookings()
+      ]);
+
+      if (usersResponse.status === 'fulfilled') {
+        setUsers(usersResponse.value.data.data || []);
+        setError(null);
+      } else {
+        setError('ไม่สามารถโหลดข้อมูลผู้ใช้งานได้');
+        console.error('Error loading users:', usersResponse.reason);
+        throw usersResponse.reason;
+      }
+
+      if (bookingsResponse.status === 'fulfilled') {
+        const bookings = bookingsResponse.value.data.data || [];
+
+        // Count bookings per customer
+        const counts = {};
+        bookings.forEach(booking => {
+          const customerId = booking.customer_id || booking.customer?._id || booking.customer;
+          if (customerId) {
+            counts[customerId] = (counts[customerId] || 0) + 1;
+          }
+        });
+
+        setBookingCounts(counts);
+      } else {
+        console.error('Error loading booking counts:', bookingsResponse.reason);
+        // Continue without booking counts if there's an error
+      }
     } catch (err) {
-      setError('ไม่สามารถโหลดข้อมูลผู้ใช้งานได้');
-      console.error('Error loading users:', err);
+      setError('ไม่สามารถโหลดข้อมูลได้');
+      console.error('Error loading data:', err);
       Swal.fire({
         icon: 'error',
         title: 'การโหลดข้อมูลล้มเหลว',
-        text: err.response?.data?.message || 'เกิดข้อผิดพลาดขณะโหลดข้อมูลผู้ใช้งาน',
+        text: err.response?.data?.message || 'เกิดข้อผิดพลาดขณะโหลดข้อมูล',
         confirmButtonColor: '#dc2626'
       });
     } finally {
@@ -71,6 +122,12 @@ const UserManagement = () => {
 
   const getAvatarInitials = (firstName, lastName) => {
     return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
+  };
+
+  const isVIPCustomer = (userId) => {
+    // Define VIP threshold - customers with 3 or more bookings are considered VIP
+    const vipThreshold = 3;
+    return bookingCounts[userId] >= vipThreshold;
   };
 
   const toggleUserStatus = async (user) => {
@@ -329,8 +386,13 @@ const UserManagement = () => {
                         {getAvatarInitials(user.firstName, user.lastName)}
                       </div>
                       <div className="ml-3">
-                        <div className="text-sm font-medium text-gray-900">
-                          {user.title}{user.firstName} {user.lastName}
+                        <div className="flex items-center">
+                          <div className="text-sm font-medium text-gray-900">
+                            {user.title}{user.firstName} {user.lastName}
+                          </div>
+                          {user.role === 'customer' && isVIPCustomer(user._id) && (
+                            <Star className="w-4 h-4 ml-2 text-yellow-500 fill-current" />
+                          )}
                         </div>
                         <div className="text-sm text-gray-500 sm:hidden">{user.email}</div>
                         <div className="text-sm text-gray-500 sm:hidden">{user.phone}</div>
