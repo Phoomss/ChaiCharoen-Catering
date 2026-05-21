@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const defaultOptions = {
-    baseURL: "http://localhost:8080/api",  // Updated to match backend server port
+    baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080/api",
     headers: {
         "Content-Type": "application/json",
     },
